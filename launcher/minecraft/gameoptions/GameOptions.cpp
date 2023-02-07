@@ -33,10 +33,11 @@
  *      limitations under the License.
  */
 
-#include "GameOptions.h"
-#include "FileSystem.h"
 #include <QDebug>
 #include <QSaveFile>
+
+#include "GameOptions.h"
+#include "FileSystem.h"
 
 static Qt::CheckState boolToState(bool b)
 {
@@ -44,68 +45,82 @@ static Qt::CheckState boolToState(bool b)
 };
 
 namespace {
-bool load(const QString& path, std::vector<GameOptionItem> &contents, int & version)
+bool load(const QString& path,
+          std::vector<GameOptionItem>& contents,
+          int& version,
+          QMap<QString, std::shared_ptr<GameOption>>* knownOptions)
 {
     contents.clear();
     QFile file(path);
-    if (!file.open(QFile::ReadOnly))
-    {
+    if (!file.open(QFile::ReadOnly)) {
         qWarning() << "Failed to read options file.";
         return false;
     }
+
+    knownOptions = GameOptionsSchema::getKnownOptions();
+
     version = 0;
-    while(!file.atEnd())
-    {
+    while (!file.atEnd()) {
+        // This should be handled by toml++ or some other toml parser rather than this manual parsing
         QString line = QString::fromUtf8(file.readLine());
         if (line.endsWith('\n')) {
             line.chop(1);
         }
+        if (line.endsWith('\r')) {
+            line.chop(1);
+        }
+        GameOptionItem item = GameOptionItem();
+
         auto parts = line.split(':');
-        QString key = parts[0];
-        QString value = parts[1];
-        bool boolValue = false;
-        int intValue = 0;
-        float floatValue = 0;
-        OptionType type = OptionType::String;
-        qDebug() << "!!" << key << "!!";
-        if (key == "version") {
-            version = value.toInt();
+
+        item.key = parts[0];
+        item.value = parts[1];
+        item.type = OptionType::String;
+        qDebug() << "Reading Game Options Key:" << item.key;
+
+        if (item.key == "version") {
+            version = item.value.toInt();
             continue;
         };
+
         bool isInt = false;
-        intValue = value.toInt(&isInt);
-        if (isInt) {
-            type = OptionType::Int;
-        }
         bool isFloat = false;
-        floatValue = value.toFloat(&isFloat);
-        if (isFloat) {
-            type = OptionType::Float;
+        item.intValue = item.value.toInt(&isInt);
+        item.floatValue = item.value.toFloat(&isFloat);
+        if (isInt) {
+            item.type = OptionType::Int;
+            // qDebug() << "The value" << value << "is a int";
+        } else if (isFloat) {
+            item.type = OptionType::Float;
+            // qDebug() << "The value" << value << "is a float";
+        } else if (item.value == "true" || item.value == "false") {
+            item.boolValue = item.value == "true" ? true : false;
+            item.type = OptionType::Bool;
+            qDebug() << "The value" << item.value << "is a bool";
+        } else if (item.value.endsWith("]") && item.value.startsWith("[")) {
+            for (QString part : item.value.mid(1, item.value.size() - 2).split(", ")) {
+                item.children.append(part);
+            }
         }
-        if (QString::compare(value, "true") || QString::compare(value, "false")) {
-            boolValue = QString::compare(value, "true") ? true : false;
-            type = OptionType::Bool;
-        }
-        contents.emplace_back(GameOptionItem{ key, boolValue, intValue, floatValue, value, type });
+
+        item.knownOption = knownOptions->find(item.key) != knownOptions->end() ? knownOptions->find(item.key).value() : nullptr;
+        contents.emplace_back(item);
     }
     qDebug() << "Loaded" << path << "with version:" << version;
     return true;
 }
-bool save(const QString& path, std::vector<GameOptionItem> &mapping, int version)
+bool save(const QString& path, std::vector<GameOptionItem>& mapping, int version)
 {
     QSaveFile out(path);
-    if(!out.open(QIODevice::WriteOnly))
-    {
+    if (!out.open(QIODevice::WriteOnly)) {
         return false;
     }
-    if(version != 0)
-    {
+    if (version != 0) {
         QString versionLine = QString("version:%1\n").arg(version);
         out.write(versionLine.toUtf8());
     }
     auto iter = mapping.begin();
-    while (iter != mapping.end())
-    {
+    while (iter != mapping.end()) {
         out.write(iter->key.toUtf8());
         out.write(":");
         out.write(iter->value.toUtf8());
@@ -114,22 +129,19 @@ bool save(const QString& path, std::vector<GameOptionItem> &mapping, int version
     }
     return out.commit();
 }
-}
+}  // namespace
 
-GameOptions::GameOptions(const QString& path):
-    path(path)
+GameOptions::GameOptions(const QString& path) : path(path)
 {
     reload();
 }
 
 QVariant GameOptions::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if(role != Qt::DisplayRole)
-    {
+    if (role != Qt::DisplayRole) {
         return QAbstractListModel::headerData(section, orientation, role);
     }
-    switch(section)
-    {
+    switch (section) {
         case 0:
             return tr("Key");
         case 1:
@@ -197,15 +209,18 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
     if (row < 0 || row >= int(contents.size()))
         return QVariant();
 
-    switch (role)
-    {
+    switch (role) {
         case Qt::DisplayRole: {
             switch (column) {
                 case Column::Key: {
                     return contents[row].key;
                 }
                 case Column::Description: {
-                    return "Description goes here!";
+                    if (contents[row].knownOption != nullptr) {
+                        return contents[row].knownOption->description;
+                    } else {
+                        return "";
+                    }
                 }
                 case Column::Value: {
                     switch (contents[row].type) {
@@ -253,8 +268,6 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                     }
             }
         }
-        case Qt::EditRole: {
-        }
         default: {
             return QVariant();
         }
@@ -262,9 +275,32 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
     return QVariant();
 }
 
-int GameOptions::rowCount(const QModelIndex&) const
+QModelIndex GameOptions::index(int row, int column, const QModelIndex& parent) const
 {
-    return contents.size();
+    if (!hasIndex(row, column, parent))
+        return QModelIndex();
+
+    if (parent.isValid()) {
+        // return child index
+        GameOptionItem* item = static_cast<GameOptionItem*>(parent.internalPointer());
+
+        auto child = item->children[row];
+        return createIndex(row, column, (void*)&child);
+    } else {
+        //return root index
+        return createIndex(row, column);
+    }
+    return QModelIndex();
+}
+
+int GameOptions::rowCount(const QModelIndex& parent) const
+{
+    if (!parent.isValid()) {
+        return contents.size();
+    }
+    if (parent.column() > 0)
+        return 0;
+    return contents[parent.row()].children.count();
 }
 
 int GameOptions::columnCount(const QModelIndex&) const
@@ -280,7 +316,7 @@ bool GameOptions::isLoaded() const
 bool GameOptions::reload()
 {
     beginResetModel();
-    loaded = load(path, contents, version);
+    loaded = load(path, contents, version, knownOptions);
     endResetModel();
     return loaded;
 }

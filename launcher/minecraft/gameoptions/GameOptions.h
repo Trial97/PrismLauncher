@@ -34,40 +34,36 @@
  */
 #pragma once
 
-#include <map>
-#include <QString>
 #include <QAbstractListModel>
+#include <QString>
+#include <map>
 
-enum class OptionType { String, Int, Float, Bool };
+#include "GameOptionsSchema.h"
 
-struct GameOptionItem
-{
+struct GameOptionItem {
     QString key;
     bool boolValue;
     int intValue;
     float floatValue;
     QString value;
     OptionType type;
+    std::shared_ptr<GameOption> knownOption;
+    QList<QString> children;
 };
 
-class GameOptions : public QAbstractListModel
-{
+class GameOptions : public QAbstractListModel {
     Q_OBJECT
    public:
-    enum class Column {
-        Key,
-        Description,
-        Value,
-        DefaultValue
-    };
+    enum class Column { Key, Description, Value, DefaultValue };
     explicit GameOptions(const QString& path);
     virtual ~GameOptions() = default;
 
-    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
-    int columnCount(const QModelIndex & parent) const override;
+    int rowCount(const QModelIndex& parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex& parent) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
+    QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
 
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
@@ -80,4 +76,6 @@ class GameOptions : public QAbstractListModel
     bool loaded = false;
     QString path;
     int version = 0;
+
+    QMap<QString, std::shared_ptr<GameOption>>* knownOptions;
 };
