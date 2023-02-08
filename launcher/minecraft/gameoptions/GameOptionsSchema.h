@@ -80,7 +80,7 @@ class GameOption {
     /// @param description Description for this Option
     /// @param range if left empty (0,0) no limits are assumed
     /// @param readOnly wether or not this option should be editable
-    GameOption(int defaultValue = 0, QString description = "", bool readOnly = false, Range<int> range = Range<int>{ 0, 0 })
+    GameOption(int defaultValue = 0, QString description = "", Range<int> range = Range<int>{ 0, 0 }, bool readOnly = false)
         : description(description), type(OptionType::Int), readOnly(readOnly)
     {
         GameOption::range.intRange = range;
@@ -89,7 +89,7 @@ class GameOption {
 
     QString description;
     OptionType type;
-    bool readOnly;
+    bool readOnly = false;
     QList<QString> validValues;  // if empty, treat as text input
     //int introducedVersion;
     //int removedVersion;
