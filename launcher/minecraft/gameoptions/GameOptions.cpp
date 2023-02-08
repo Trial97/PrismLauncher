@@ -236,22 +236,32 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                         case OptionType::Float: {
                             return contents[row].floatValue;
                         }
+                        case OptionType::KeyBind: {
+                            return contents[row].value;
+                        }
                     }
                 }
                 case Column::DefaultValue: {
-                    switch (contents[row].type) {
-                        case OptionType::String: {
-                            return contents[row].value;
+                    if (contents[row].knownOption != nullptr) {
+                        switch (contents[row].type) {
+                            case OptionType::String: {
+                                //return ((GameOptionString*)contents[row].knownOption.get())->defaultValue;
+                            }
+                            case OptionType::Int: {
+                                return ((GameOptionInt*)contents[row].knownOption.get())->defaultValue;
+                            }
+                            case OptionType::Bool: {
+                                return ((GameOptionBool*)contents[row].knownOption.get())->defaultValue;
+                            }
+                            case OptionType::Float: {
+                                return ((GameOptionFloat*)contents[row].knownOption.get())->defaultValue;
+                            }
+                            case OptionType::KeyBind: {
+                                return ((GameOptionKeyBind*)contents[row].knownOption.get())->defaultValue;
+                            }
                         }
-                        case OptionType::Int: {
-                            return contents[row].intValue;
-                        }
-                        case OptionType::Bool: {
-                            return contents[row].boolValue;
-                        }
-                        case OptionType::Float: {
-                            return contents[row].floatValue;
-                        }
+                    } else {
+                        return "";
                     }
                 }
             }
@@ -263,8 +273,8 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                         return boolToState(contents[row].boolValue);
                     }
                 case Column::DefaultValue:
-                    if (contents[row].type == OptionType::Bool) {
-                        return boolToState(contents[row].boolValue);
+                    if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
+                        return ((GameOptionBool*)contents[row].knownOption.get())->defaultValue;
                     }
             }
         }

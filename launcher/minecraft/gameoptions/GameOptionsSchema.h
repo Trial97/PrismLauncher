@@ -68,11 +68,16 @@ union a {
     } boolean;
 };
 
+union mouseOrKeyboardButton {
+    Qt::Key keyboardKey;
+    Qt::MouseButton mouseButton;
+};
+
 struct KeyBindData {
     QString minecraftKeyCode;
     int glfwCode;
     QString displayName;
-    QKeyCombination qtKeyCode;
+    mouseOrKeyboardButton qtKeyCode;
 };
 
 /// @brief defines constraints, default values and descriptions for known game settings 
