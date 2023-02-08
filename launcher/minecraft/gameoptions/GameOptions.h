@@ -40,6 +40,11 @@
 
 #include "GameOptionsSchema.h"
 
+struct GameOptionChildItem {
+    QString value;
+    int row;
+};
+
 struct GameOptionItem {
     QString key;
     bool boolValue;
@@ -48,10 +53,10 @@ struct GameOptionItem {
     QString value;
     OptionType type;
     std::shared_ptr<GameOption> knownOption;
-    QList<QString> children;
+    QList<GameOptionChildItem> children;
 };
 
-class GameOptions : public QAbstractListModel {
+class GameOptions : public QAbstractItemModel {
     Q_OBJECT
    public:
     enum class Column { Key, Description, Value, DefaultValue };
@@ -64,6 +69,7 @@ class GameOptions : public QAbstractListModel {
     QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role) const override;
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
+    QModelIndex parent(const QModelIndex &index) const override;
 
     bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 

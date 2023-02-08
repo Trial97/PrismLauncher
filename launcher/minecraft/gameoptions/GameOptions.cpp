@@ -98,8 +98,11 @@ bool load(const QString& path,
             item.type = OptionType::Bool;
             qDebug() << "The value" << item.value << "is a bool";
         } else if (item.value.endsWith("]") && item.value.startsWith("[")) {
-            for (QString part : item.value.mid(1, item.value.size() - 2).split(", ")) {
-                item.children.append(part);
+            qDebug() << "The value" << item.value << "is an array";
+            for (QString part : item.value.mid(1, item.value.size() - 2).split(",")) {
+                GameOptionChildItem child{ part, contents.size() };
+                qDebug() << "Array has entry" << part;
+                item.children.append(child);
             }
         }
 
@@ -139,7 +142,7 @@ GameOptions::GameOptions(const QString& path) : path(path)
 QVariant GameOptions::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role != Qt::DisplayRole) {
-        return QAbstractListModel::headerData(section, orientation, role);
+        return QAbstractItemModel::headerData(section, orientation, role);
     }
     switch (section) {
         case 0:
@@ -182,8 +185,16 @@ Qt::ItemFlags GameOptions::flags(const QModelIndex& index) const
 {
     Column column = (Column)index.column();
 
-    Qt::ItemFlags flags = QAbstractListModel::flags(index);
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     if (column == Column::Key) {
+        return flags;
+    }
+
+    if (index.parent().isValid()) {
+        return flags;
+    }
+
+    if (contents[index.row()].children.count() > 0) {
         return flags;
     }
 
@@ -208,6 +219,26 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
 
     if (row < 0 || row >= int(contents.size()))
         return QVariant();
+
+    if (index.parent().isValid())
+    {
+        switch (role) {
+            case Qt::DisplayRole:
+            {
+                if (column == Column::Value || column == Column::DefaultValue)
+                {
+                    GameOptionChildItem* item = static_cast<GameOptionChildItem*>(index.internalPointer());
+                    return item->value;
+                }
+                else
+                    return "";
+                }
+            default: {
+                return QVariant();
+            }
+        }
+    }
+
 
     switch (role) {
         case Qt::DisplayRole: {
@@ -290,27 +321,48 @@ QModelIndex GameOptions::index(int row, int column, const QModelIndex& parent) c
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    if (parent.isValid()) {
-        // return child index
+    if (parent.isValid())
+    {
+        if (parent.parent().isValid())
+            return QModelIndex();
+        
         GameOptionItem* item = static_cast<GameOptionItem*>(parent.internalPointer());
-
-        auto child = item->children[row];
-        return createIndex(row, column, (void*)&child);
-    } else {
-        //return root index
-        return createIndex(row, column);
+        return createIndex(row, column, &item->children[row]);
     }
-    return QModelIndex();
+    else
+        return createIndex(row, column, &contents[row]);
+}
+
+QModelIndex GameOptions::parent(const QModelIndex &index) const
+{
+    if (!index.isValid())
+        return QModelIndex();
+
+    const void* childItem = index.internalPointer();
+    // Determine where childItem points to
+
+    if (childItem >= &contents[0] && childItem <= &contents.back()) {
+        // Parent is contents
+        return QModelIndex();
+    } else {
+        GameOptionChildItem* child = static_cast<GameOptionChildItem*>(index.internalPointer());
+        return createIndex(child->row, 0, &contents[child->row]);
+    }
 }
 
 int GameOptions::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid()) {
         return contents.size();
+    } else {
+        // Our tree model is only one layer deep
+        // If we have parent, we can't go deeper
+        if (parent.parent().isValid())
+            return 0;
+
+        GameOptionItem* item = static_cast<GameOptionItem*>(parent.internalPointer());
+        return item->children.count();
     }
-    if (parent.column() > 0)
-        return 0;
-    return contents[parent.row()].children.count();
 }
 
 int GameOptions::columnCount(const QModelIndex&) const
