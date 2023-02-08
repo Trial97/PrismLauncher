@@ -24,45 +24,78 @@
 
 enum class OptionType { String, Int, Float, Bool, KeyBind };
 
-struct GameOption {
-    QString description;
-    OptionType type;
-    bool readOnly;
-    //a extraData;
-    int introducedVersion;
-    int removedVersion;
-};
-struct GameOptionFloat : GameOption {
-    std::pair<float, float> range;
-    float defaultValue;
-    OptionType type = OptionType::Float;
-};
-struct GameOptionInt : GameOption {
-    std::pair<int, int> range;
-    int defaultValue;
-    OptionType type = OptionType::Int;
-};
-struct GameOptionBool : GameOption {
-    bool defaultValue;
-    OptionType type = OptionType::Bool;
-};
-struct GameOptionString : GameOption {
-    QList<QString> validValues;  // if empty, treat as text input
-    QString defaultValue;
-    OptionType type = OptionType::String;
-};
-struct GameOptionKeyBind : GameOption {
-    QString defaultValue;
-    OptionType type = OptionType::KeyBind;
-};
-
-template <class T> struct Range {
+template <class T> struct UniversalRange {
     typename T min, max;
 };
 
+union Range {
+    UniversalRange<float> floatRange;
+    UniversalRange<int> intRange;
+};
+
+union OptionValue {
+    float floatValue;
+    int intValue;
+    bool boolValue;
+    // QString stringValue;
+};
+
+class GameOption {
+   public:
+
+    /// @brief Bool variant
+    /// @param description
+    /// @param type
+    /// @param readOnly
+    /// @param defaultValue
+    GameOption(bool defaultBool, QString description = "", bool readOnly = false)
+        : description(description)
+        , type(OptionType::Bool), readOnly(readOnly) {
+        defaultValue.boolValue = defaultBool;
+    };
+
+    /// @brief String variant
+    /// @param description 
+    /// @param type 
+    /// @param readOnly 
+    /// @param defaultValue 
+    /// @param validValues 
+    GameOption(QString defaultValue = "", QString description = "", QList<QString> validValues = QList<QString>(), bool readOnly = false)
+        : description(description), type(OptionType::String), readOnly(readOnly), defaultString(defaultValue), validValues(validValues){};
+
+    /// @brief Float variant
+    /// @param description 
+    /// @param type 
+    /// @param readOnly 
+    /// @param range 
+    /// @param defaultValue 
+    GameOption(float defaultValue = 0.0f, QString description = "", Range range = Range{ 0.0f, 0.0f }, bool readOnly = false)
+        : description(description), type(OptionType::Float), readOnly(readOnly), range(range), defaultValue{ defaultValue }{};
+
+    /// @brief Int variant
+    /// @param description 
+    /// @param type 
+    /// @param readOnly 
+    /// @param range 
+    /// @param defaultValue 
+    GameOption(int defaultInt = 0, QString description = "", bool readOnly = false, Range range = Range{ 0, 0 })
+        : description(description), type(OptionType::Int), readOnly(readOnly), range(range)
+    {
+        defaultValue.intValue = defaultInt;
+    };
+
+    QString description;
+    OptionType type;
+    bool readOnly;
+    Range range = { 0.0f, 0.0f };
+    OptionValue defaultValue = { 0.0f };
+    QString defaultString;
+    QList<QString> validValues;  // if empty, treat as text input
+    //int introducedVersion;
+    //int removedVersion;
+};
+
 union a {
-    Range<float> floatRange;
-    Range<int> intRange;
     QList<QString> enumValues;
     struct BoolMarker {
     } boolean;

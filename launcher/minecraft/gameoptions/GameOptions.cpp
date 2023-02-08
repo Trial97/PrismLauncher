@@ -245,19 +245,19 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                     if (contents[row].knownOption != nullptr) {
                         switch (contents[row].type) {
                             case OptionType::String: {
-                                //return ((GameOptionString*)contents[row].knownOption.get())->defaultValue;
+                                return contents[row].knownOption->defaultString;
                             }
                             case OptionType::Int: {
-                                return ((GameOptionInt*)contents[row].knownOption.get())->defaultValue;
+                                return contents[row].knownOption->defaultValue.intValue;
                             }
                             case OptionType::Bool: {
-                                return ((GameOptionBool*)contents[row].knownOption.get())->defaultValue;
+                                return contents[row].knownOption->defaultValue.boolValue;
                             }
                             case OptionType::Float: {
-                                return ((GameOptionFloat*)contents[row].knownOption.get())->defaultValue;
+                                return contents[row].knownOption->defaultValue.floatValue;
                             }
                             case OptionType::KeyBind: {
-                                return ((GameOptionKeyBind*)contents[row].knownOption.get())->defaultValue;
+                                return contents[row].knownOption->defaultString;
                             }
                         }
                     } else {
@@ -274,7 +274,7 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                     }
                 case Column::DefaultValue:
                     if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
-                        return ((GameOptionBool*)contents[row].knownOption.get())->defaultValue;
+                        return contents[row].knownOption->defaultValue.boolValue *2; // checkboxes are tristate, this 1(true) needs to be 2 for fully checked
                     }
             }
         }

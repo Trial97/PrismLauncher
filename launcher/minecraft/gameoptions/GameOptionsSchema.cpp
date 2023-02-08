@@ -34,169 +34,159 @@ QMap<QString, std::shared_ptr<GameOption>>* GameOptionsSchema::getKnownOptions()
 /// the order of options here should be the same order as in the file
 void GameOptionsSchema::populateInternalLists()
 {
+
+    // clang-format off
     // data version
-    knownOptions["version"] = std::shared_ptr<GameOptionInt>(new GameOptionInt{ 
-        "Data version of the client version this file was last saved in; used for upgrading default settings. (numeric)",
-        OptionType::Int,
-        true
-    });
+    knownOptions["version"] = std::shared_ptr<GameOption>(new GameOption(0, "Data version of the client version this file was last saved in; used for upgrading default settings. (numeric)", true));
 
     // general options
-    knownOptions["autoJump"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["autoSuggestions"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["chatColors"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["chatLinks"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["chatLinksPrompt"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["enableVsync"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["entityShadows"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["forceUnicodeFont"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["discrete_mouse_scroll"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["invertYMouse"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["realmsNotifications"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["reducedDebugInfo"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["showSubtitles"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["directionalAudio"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["touchscreen"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["fullscreen"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["bobView"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["toggleCrouch"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["toggleSprint"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["darkMojangStudiosBackground"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["hideLightningFlashes"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
+    knownOptions["autoJump"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["autoSuggestions"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatColors"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatLinks"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatLinksPrompt"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["enableVsync"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["entityShadows"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["forceUnicodeFont"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["discrete_mouse_scroll"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["invertYMouse"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["realmsNotifications"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["reducedDebugInfo"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["showSubtitles"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["directionalAudio"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["touchscreen"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["fullscreen"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["bobView"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["toggleCrouch"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["toggleSprint"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["darkMojangStudiosBackground"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["hideLightningFlashes"] = std::shared_ptr<GameOption>(new GameOption(""));
 
-    knownOptions["mouseSensitivity"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["fov"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["screenEffectScale"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["fovEffectScale"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["darknessEffectScale"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["gamma"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["renderDistance"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["simulationDistance"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["entityDistanceScaling"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["guiScale"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["particles"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["maxFps"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["difficulty‌"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["graphicsMode"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["ao"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["prioritizeChunkUpdates"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["biomeBlendRadius"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["renderClouds"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
+    knownOptions["mouseSensitivity"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["fov"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["screenEffectScale"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["fovEffectScale"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["darknessEffectScale"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["gamma"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["renderDistance"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["simulationDistance"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["entityDistanceScaling"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["guiScale"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["particles"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["maxFps"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["difficulty‌"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["graphicsMode"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["ao"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["prioritizeChunkUpdates"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["biomeBlendRadius"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["renderClouds"] = std::shared_ptr<GameOption>(new GameOption(""));
 
-    knownOptions["resourcePacks"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
-    knownOptions["incompatibleResourcePacks"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
+    knownOptions["resourcePacks"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["incompatibleResourcePacks"] = std::shared_ptr<GameOption>(new GameOption(""));
 
-    knownOptions["lastServer"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
-    knownOptions["lang"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
-    knownOptions["soundDevice"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
-    knownOptions["chatVisibility"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["chatOpacity"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["chatLineSpacing"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["textBackgroundOpacity"] = std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["backgroundForChatOnly"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["hideServerAddress"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["advancedItemTooltips"] = std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["pauseOnLostFocus"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{
-        "Whether switching out of Minecraft without pressing Esc or opening an in-game interface automatically pauses the game; toggled by "
-        "pressing F3 + P"
-    });
-    knownOptions["overrideWidth"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["overrideHeight"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["heldItemTooltips"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["chatHeightFocused"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["chatDelay"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["chatHeightUnfocused"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["chatScale"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["chatWidth"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["mipmapLevels"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["useNativeTransport"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["mainHand"] =  std::shared_ptr<GameOptionString>(new GameOptionString{
-        "Whether the main hand appears as left or right", OptionType::String, false, 0, 0, QStringList{ "left", "right" }, "right"
-    });
-    knownOptions["attackIndicator"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["narrator"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
+    knownOptions["lastServer"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["lang"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["soundDevice"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatVisibility"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatOpacity"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatLineSpacing"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["textBackgroundOpacity"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["backgroundForChatOnly"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["hideServerAddress"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["advancedItemTooltips"] = std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["pauseOnLostFocus"] =  std::shared_ptr<GameOption>(new GameOption(false, 
+            "Whether switching out of Minecraft without pressing Esc or opening an in-game interface automatically pauses the game; toggled by pressing F3 + P"));
+    knownOptions["overrideWidth"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["overrideHeight"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["heldItemTooltips"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatHeightFocused"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatDelay"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatHeightUnfocused"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatScale"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["chatWidth"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["mipmapLevels"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["useNativeTransport"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["mainHand"] =  std::shared_ptr<GameOption>(new GameOption("right", "Whether the main hand appears as left or right", QStringList{ "left", "right" }));
+    knownOptions["attackIndicator"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["narrator"] =  std::shared_ptr<GameOption>(new GameOption(""));
     knownOptions["tutorialStep"] =
-         std::shared_ptr<GameOptionString>(new GameOptionString{ "Next stage of tutorial hints to display",
-                              OptionType::String,
-                              false,
-                              0,
-                              0,
-                              QStringList{ "movement", "find_tree", "punch_tree", "open_inventory", "craft_planks", "none" },
-                              "movement" });
-    knownOptions["mouseWheelSensitivity"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["rawMouseInput"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["glDebugVerbosity"] =  std::shared_ptr<GameOptionInt>(new GameOptionInt{ "" });
-    knownOptions["skipMultiplayerWarning"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["skipRealms32bitWarning"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["hideMatchedNames"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["joinedFirstServer"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["hideBundleTutorial"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["syncChunkWrites"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["showAutosaveIndicator"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["allowServerListing"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
+         std::shared_ptr<GameOption>(new GameOption("movement", "Next stage of tutorial hints to display",
+             QStringList{ "movement", "find_tree", "punch_tree", "open_inventory", "craft_planks", "none" } 
+    ));
+    knownOptions["mouseWheelSensitivity"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["rawMouseInput"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["glDebugVerbosity"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["skipMultiplayerWarning"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["skipRealms32bitWarning"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["hideMatchedNames"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["joinedFirstServer"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["hideBundleTutorial"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["syncChunkWrites"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["showAutosaveIndicator"] =  std::shared_ptr<GameOption>(new GameOption(""));
+    knownOptions["allowServerListing"] =  std::shared_ptr<GameOption>(new GameOption(""));
 
     // Keys Binds
-    knownOptions["key_key.attack"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.use"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.forward"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.left"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.back"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.right"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.jump"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.sneak"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.sprint"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.drop"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.inventory"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.chat"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.playerlist"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.pickItem"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.command"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.socialInteractions"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.screenshot"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.togglePerspective"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.smoothCamera"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.fullscreen"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.spectatorOutlines"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.swapOffhand"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.saveToolbarActivator"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.loadToolbarActivator"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.advancements"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.1"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.2"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.3"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.4"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.5"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.6"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.7"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.8"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
-    knownOptions["key_key.hotbar.9"] =  std::shared_ptr<GameOptionKeyBind>(new GameOptionKeyBind{ "" });
+    /*knownOptions["key_key.attack"] = std::shared_ptr<GameOption>(new GameOption("Attack control", OptionType::KeyBind));
+    knownOptions["key_key.use"] = std::shared_ptr<GameOption>(new GameOption("Use Item control", OptionType::KeyBind));
+    knownOptions["key_key.forward"] = std::shared_ptr<GameOption>(new GameOption("Forward control ", OptionType::KeyBind));
+    knownOptions["key_key.left"] = std::shared_ptr<GameOption>(new GameOption("Left control", OptionType::KeyBind));
+    knownOptions["key_key.back"] = std::shared_ptr<GameOption>(new GameOption("Back control", OptionType::KeyBind));
+    knownOptions["key_key.right"] = std::shared_ptr<GameOption>(new GameOption("Right control", OptionType::KeyBind));
+    knownOptions["key_key.jump"] = std::shared_ptr<GameOption>(new GameOption("Jump control", OptionType::KeyBind));
+    knownOptions["key_key.sneak"] = std::shared_ptr<GameOption>(new GameOption("Sneak control", OptionType::KeyBind));
+    knownOptions["key_key.sprint"] = std::shared_ptr<GameOption>(new GameOption("Sprint control ", OptionType::KeyBind));
+    knownOptions["key_key.drop"] = std::shared_ptr<GameOption>(new GameOption("Drop control ", OptionType::KeyBind));
+    knownOptions["key_key.inventory"] = std::shared_ptr<GameOption>(new GameOption("Inventory control", OptionType::KeyBind));
+    knownOptions["key_key.chat"] = std::shared_ptr<GameOption>(new GameOption("Chat control", OptionType::KeyBind));
+    knownOptions["key_key.playerlist"] = std::shared_ptr<GameOption>(new GameOption("List Players control", OptionType::KeyBind));
+    knownOptions["key_key.pickItem"] = std::shared_ptr<GameOption>(new GameOption("Pick Block control", OptionType::KeyBind));
+    knownOptions["key_key.command"] = std::shared_ptr<GameOption>(new GameOption("Command control", OptionType::KeyBind));
+    knownOptions["key_key.socialInteractions"] = std::shared_ptr<GameOption>(new GameOption("Social Interaction control", OptionType::KeyBind));
+    knownOptions["key_key.screenshot"] = std::shared_ptr<GameOption>(new GameOption("Screenshot control", OptionType::KeyBind));
+    knownOptions["key_key.togglePerspective"] = std::shared_ptr<GameOption>(new GameOption("Perspective control", OptionType::KeyBind));
+    knownOptions["key_key.smoothCamera"] = std::shared_ptr<GameOption>(new GameOption("Mouse Smoothing control", OptionType::KeyBind));
+    knownOptions["key_key.fullscreen"] = std::shared_ptr<GameOption>(new GameOption("Fullscreen control", OptionType::KeyBind));
+    knownOptions["key_key.spectatorOutlines"] = std::shared_ptr<GameOption>(new GameOption("Visibility of player outlines in Spectator Mode control", OptionType::KeyBind));
+    knownOptions["key_key.swapOffhand"] = std::shared_ptr<GameOption>(new GameOption("Swapping of items between both hands control", OptionType::KeyBind));
+    knownOptions["key_key.saveToolbarActivator"] = std::shared_ptr<GameOption>(new GameOption("Save current toolbar to a slot (in Creative Mode)", OptionType::KeyBind));
+    knownOptions["key_key.loadToolbarActivator"] = std::shared_ptr<GameOption>(new GameOption("Load toolbar from a slot (in Creative Mode)", OptionType::KeyBind));
+    knownOptions["key_key.advancements"] = std::shared_ptr<GameOption>(new GameOption("Open the Advancements screen", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.1"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 1 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.2"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 2 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.3"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 3 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.4"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 4 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.5"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 5 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.6"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 6 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.7"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 7 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.8"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 8 control", OptionType::KeyBind));
+    knownOptions["key_key.hotbar.9"] = std::shared_ptr<GameOption>(new GameOption("Hotbar Slot 9 control", OptionType::KeyBind));*/
 
     // Sound
-    knownOptions["soundCategory_master"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_music"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_record"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_weather"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_block"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_hostile"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_neutral"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_player"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_ambient"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
-    knownOptions["soundCategory_voice"] =  std::shared_ptr<GameOptionFloat>(new GameOptionFloat{ "" });
+    knownOptions["soundCategory_master"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of all sounds", Range{ 0, 1 }));
+    knownOptions["soundCategory_music"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of gameplay music", Range{ 0, 1 }));
+    knownOptions["soundCategory_record"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of music/sounds from Jukeboxes and Note Blocks", Range{ 0, 1 }));
+    knownOptions["soundCategory_weather"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of rain and thunder", Range{ 0, 1 }));
+    knownOptions["soundCategory_block"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of blocks", Range{ 0, 1 }));
+    knownOptions["soundCategory_hostile"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of hostile and neutral mobs", Range{ 0, 1 }));
+    knownOptions["soundCategory_neutral"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of passive mobs", Range{ 0, 1 }));
+    knownOptions["soundCategory_player"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of players", Range{ 0, 1 }));
+    knownOptions["soundCategory_ambient"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of cave sounds and fireworks", Range{ 0, 1 }));
+    knownOptions["soundCategory_voice"] = std::shared_ptr<GameOption>(new GameOption(1.0f, "The volume of voices", Range{ 0, 1 }));
 
     // Model Parts
-    knownOptions["modelPart_cape"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_jacket"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_left_sleeve"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_right_sleeve"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_left_pants_leg"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_right_pants_leg"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
-    knownOptions["modelPart_hat"] =  std::shared_ptr<GameOptionBool>(new GameOptionBool{ "" });
+    knownOptions["modelPart_cape"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the cape is shown"));
+    knownOptions["modelPart_jacket"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Jacket\" skin layer is shown"));
+    knownOptions["modelPart_left_sleeve"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Left Sleeve\" skin layer is shown"));
+    knownOptions["modelPart_right_sleeve"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Right Sleeve\" skin layer is shown"));
+    knownOptions["modelPart_left_pants_leg"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Left Pants Leg\" skin layer is shown"));
+    knownOptions["modelPart_right_pants_leg"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Right Pants Leg\" skin layer is shown"));
+    knownOptions["modelPart_hat"] = std::shared_ptr<GameOption>(new GameOption(true, "Whether the \"Hat\" skin layer is shown"));
 
     // Misc
-    knownOptions["fullscreenResolution"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "" });
+    knownOptions["fullscreenResolution"] = std::shared_ptr<GameOption>(new GameOption("", "Changes the resolution of the game when in fullscreen mode. The only values allowed are the values supported by the user's monitor, shown when changing the screen resolution in the operating system settings. Setting this option to a value not supported by the monitor resets the option to \"Current\". When set to \"Current\", this option is absent from options.txt. "));
 
     // Not vanilla - from mods or modloaders
-    knownOptions["quilt_available_resourcepacks"] = std::shared_ptr<GameOptionString>(new GameOptionString{ "", OptionType::String, false });
+    //knownOptions["quilt_available_resourcepacks"] = std::shared_ptr<GameOption>(new GameOption{ "", OptionType::String, false });
 
     // ##########################
     //  Keyboard Bindings
@@ -369,4 +359,6 @@ void GameOptionsSchema::populateInternalLists()
     keyboardButtons.append(new KeyBindData{ "key.keyboard.world.1", 0, QObject::tr("World 1") });
     keyboardButtons.append(new KeyBindData{ "key.keyboard.world.2", 0, QObject::tr("World 2") });
     // keyboardButtons.append(new KeyBindData{ "scancode.###", 0, QObject::tr("scancode.###") }); no description, no translation, no mapping?
+
+    // clang-format on
 };
