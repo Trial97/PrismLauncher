@@ -24,13 +24,13 @@
 
 enum class OptionType { String, Int, Float, Bool, KeyBind };
 
-template <class T> struct UniversalRange {
+template <class T> struct Range {
     typename T min, max;
 };
 
-union Range {
-    UniversalRange<float> floatRange;
-    UniversalRange<int> intRange;
+union UniversalRange {
+    Range<float> floatRange;
+    Range<int> intRange;
 };
 
 union OptionValue {
@@ -44,55 +44,69 @@ class GameOption {
    public:
 
     /// @brief Bool variant
-    /// @param description
-    /// @param type
-    /// @param readOnly
-    /// @param defaultValue
-    GameOption(bool defaultBool, QString description = "", bool readOnly = false)
+    /// @param defaultValue Default Value
+    /// @param description The Description for this Option
+    /// @param readOnly wether or not this option should be editable
+    GameOption(bool defaultValue, QString description = "", bool readOnly = false)
         : description(description)
         , type(OptionType::Bool), readOnly(readOnly) {
-        defaultValue.boolValue = defaultBool;
+        GameOption::defaultValue.boolValue = defaultValue;
     };
 
     /// @brief String variant
-    /// @param description 
-    /// @param type 
-    /// @param readOnly 
-    /// @param defaultValue 
-    /// @param validValues 
+    /// @param defaultValue Default Value
+    /// @param description The Description for this Option
+    /// @param validValues List of possible options for this field, if empty any input will be possible
+    /// @param readOnly wether or not this option should be editable
     GameOption(QString defaultValue = "", QString description = "", QList<QString> validValues = QList<QString>(), bool readOnly = false)
         : description(description), type(OptionType::String), readOnly(readOnly), defaultString(defaultValue), validValues(validValues){};
 
+    /// @brief KeyBind variant
+    /// @param defaultValue Default Value
+    /// @param description The Description for this Option
+    GameOption(QString defaultValue = "", QString description = "", OptionType type = OptionType::KeyBind)
+        : description(description), type(OptionType::KeyBind), defaultString(defaultValue){};
+
     /// @brief Float variant
-    /// @param description 
-    /// @param type 
-    /// @param readOnly 
-    /// @param range 
-    /// @param defaultValue 
-    GameOption(float defaultValue = 0.0f, QString description = "", Range range = Range{ 0.0f, 0.0f }, bool readOnly = false)
-        : description(description), type(OptionType::Float), readOnly(readOnly), range(range), defaultValue{ defaultValue }{};
+    /// @param defaultValue Default Value
+    /// @param description The Description for this Option
+    /// @param range if left empty (0,0) no limits are assumed
+    /// @param readOnly wether or not this option should be editable
+    GameOption(float defaultValue = 0.0f, QString description = "", Range<float> range = Range<float>{ 0.0f, 0.0f }, bool readOnly = false)
+        : description(description), type(OptionType::Float), readOnly(readOnly), range{ range }, defaultValue{ defaultValue } {};
 
     /// @brief Int variant
-    /// @param description 
-    /// @param type 
-    /// @param readOnly 
-    /// @param range 
-    /// @param defaultValue 
-    GameOption(int defaultInt = 0, QString description = "", bool readOnly = false, Range range = Range{ 0, 0 })
-        : description(description), type(OptionType::Int), readOnly(readOnly), range(range)
+    /// @param defaultValue Default Value 
+    /// @param description Description for this Option
+    /// @param range if left empty (0,0) no limits are assumed
+    /// @param readOnly wether or not this option should be editable
+    GameOption(int defaultValue = 0, QString description = "", bool readOnly = false, Range<int> range = Range<int>{ 0, 0 })
+        : description(description), type(OptionType::Int), readOnly(readOnly)
     {
-        defaultValue.intValue = defaultInt;
+        GameOption::range.intRange = range;
+        GameOption::defaultValue.intValue = defaultValue;
     };
 
     QString description;
     OptionType type;
     bool readOnly;
-    Range range = { 0.0f, 0.0f };
-    OptionValue defaultValue = { 0.0f };
-    QString defaultString;
     QList<QString> validValues;  // if empty, treat as text input
     //int introducedVersion;
     //int removedVersion;
+
+    int getDefaultInt() { return defaultValue.intValue; };
+    bool getDefaultBool() { return defaultValue.boolValue; };
+    float getDefaultFloat() { return defaultValue.floatValue; };
+    QString getDefaultString() { return defaultString; };
+
+    Range<int> getIntRange() { return range.intRange; };
+    Range<float> getFloatRange() { return range.floatRange; };
+
+   private:
+    OptionValue defaultValue = { 0.0f };
+    QString defaultString;
+    UniversalRange range = { 0.0f, 0.0f };
+
 };
 
 union a {

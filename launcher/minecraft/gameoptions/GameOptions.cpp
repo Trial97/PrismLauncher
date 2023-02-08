@@ -36,8 +36,8 @@
 #include <QDebug>
 #include <QSaveFile>
 
-#include "GameOptions.h"
 #include "FileSystem.h"
+#include "GameOptions.h"
 
 static Qt::CheckState boolToState(bool b)
 {
@@ -220,96 +220,112 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
     if (row < 0 || row >= int(contents.size()))
         return QVariant();
 
-    if (index.parent().isValid())
-    {
+    if (index.parent().isValid()) {
         switch (role) {
-            case Qt::DisplayRole:
-            {
-                if (column == Column::Value)
-                {
+            case Qt::DisplayRole: {
+                if (column == Column::Value) {
                     GameOptionChildItem* item = static_cast<GameOptionChildItem*>(index.internalPointer());
                     return item->value;
+                } else {
+                    return QVariant();
                 }
-                else
-                    return "";
+                default: {
+                    return QVariant();
                 }
+            }
+        }
+
+        switch (role) {
+            case Qt::DisplayRole: {
+                switch (column) {
+                    case Column::Key: {
+                        return contents[row].key;
+                    }
+                    case Column::Description: {
+                        if (contents[row].knownOption != nullptr) {
+                            return contents[row].knownOption->description;
+                        } else {
+                            return QVariant();
+                        }
+                    }
+                    case Column::Value: {
+                        switch (contents[row].type) {
+                            case OptionType::String: {
+                                return contents[row].value;
+                            }
+                            case OptionType::Int: {
+                                return contents[row].intValue;
+                            }
+                            case OptionType::Bool: {
+                                return contents[row].boolValue;
+                            }
+                            case OptionType::Float: {
+                                return contents[row].floatValue;
+                            }
+                            case OptionType::KeyBind: {
+                                return contents[row].value;
+                            }
+                            default: {
+                                return QVariant();
+                            }
+                        }
+                    }
+                    case Column::DefaultValue: {
+                        if (contents[row].knownOption != nullptr) {
+                            switch (contents[row].type) {
+                                case OptionType::String: {
+                                    return contents[row].knownOption->getDefaultString();
+                                }
+                                case OptionType::Int: {
+                                    return contents[row].knownOption->getDefaultInt();
+                                }
+                                case OptionType::Bool: {
+                                    return contents[row].knownOption->getDefaultBool();
+                                }
+                                case OptionType::Float: {
+                                    return contents[row].knownOption->getDefaultFloat();
+                                }
+                                case OptionType::KeyBind: {
+                                    return contents[row].knownOption->getDefaultString();
+                                }
+                                default: {
+                                    return QVariant();
+                                }
+                            }
+                        } else {
+                            return QVariant();
+                        }
+                    }
+                    default: {
+                        return QVariant();
+                    }
+                }
+            }
+            case Qt::CheckStateRole: {
+                switch (column) {
+                    case Column::Value: {
+                        if (contents[row].type == OptionType::Bool) {
+                            return boolToState(contents[row].boolValue);
+                        } else {
+                            return QVariant();
+                        }
+                    }
+                    case Column::DefaultValue: {
+                        if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
+                            // checkboxes are tristate, this 1(true) needs to be 2 for fully checked
+                            return contents[row].knownOption->getDefaultBool() * 2;
+                        } else {
+                            return QVariant();
+                        }
+                    }
+                    default: {
+                        return QVariant();
+                    }
+                }
+            }
             default: {
                 return QVariant();
             }
-        }
-    }
-
-    switch (role) {
-        case Qt::DisplayRole: {
-            switch (column) {
-                case Column::Key: {
-                    return contents[row].key;
-                }
-                case Column::Description: {
-                    if (contents[row].knownOption != nullptr) {
-                        return contents[row].knownOption->description;
-                    } else {
-                        return "";
-                    }
-                }
-                case Column::Value: {
-                    switch (contents[row].type) {
-                        case OptionType::String: {
-                            return contents[row].value;
-                        }
-                        case OptionType::Int: {
-                            return contents[row].intValue;
-                        }
-                        case OptionType::Bool: {
-                            return contents[row].boolValue;
-                        }
-                        case OptionType::Float: {
-                            return contents[row].floatValue;
-                        }
-                        case OptionType::KeyBind: {
-                            return contents[row].value;
-                        }
-                    }
-                }
-                case Column::DefaultValue: {
-                    if (contents[row].knownOption != nullptr) {
-                        switch (contents[row].type) {
-                            case OptionType::String: {
-                                return contents[row].knownOption->defaultString;
-                            }
-                            case OptionType::Int: {
-                                return contents[row].knownOption->defaultValue.intValue;
-                            }
-                            case OptionType::Bool: {
-                                return contents[row].knownOption->defaultValue.boolValue;
-                            }
-                            case OptionType::Float: {
-                                return contents[row].knownOption->defaultValue.floatValue;
-                            }
-                            case OptionType::KeyBind: {
-                                return contents[row].knownOption->defaultString;
-                            }
-                        }
-                    } else {
-                        return "";
-                    }
-                }
-            }
-        }
-        case Qt::CheckStateRole: {
-            switch (column) {
-                case Column::Value:
-                    if (contents[row].type == OptionType::Bool) {
-                        return boolToState(contents[row].boolValue);
-                    }
-                case Column::DefaultValue:
-                    if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
-                        return contents[row].knownOption->defaultValue.boolValue *2; // checkboxes are tristate, this 1(true) needs to be 2 for fully checked
-                    }
-            }
-        }
-        default: {
-            return QVariant();
         }
     }
     return QVariant();
@@ -320,19 +336,18 @@ QModelIndex GameOptions::index(int row, int column, const QModelIndex& parent) c
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    if (parent.isValid())
-    {
+    if (parent.isValid()) {
         if (parent.parent().isValid())
             return QModelIndex();
-        
+
         GameOptionItem* item = static_cast<GameOptionItem*>(parent.internalPointer());
         return createIndex(row, column, &item->children[row]);
-    }
-    else
+    } else {
         return createIndex(row, column, &contents[row]);
+    }
 }
 
-QModelIndex GameOptions::parent(const QModelIndex &index) const
+QModelIndex GameOptions::parent(const QModelIndex& index) const
 {
     if (!index.isValid())
         return QModelIndex();
