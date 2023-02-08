@@ -48,7 +48,8 @@ namespace {
 bool load(const QString& path,
           std::vector<GameOptionItem>& contents,
           int& version,
-          QMap<QString, std::shared_ptr<GameOption>>* knownOptions)
+          QMap<QString, std::shared_ptr<GameOption>>* knownOptions,
+          QList<KeyBindData*>* keybindingOptions)
 {
     contents.clear();
     QFile file(path);
@@ -58,6 +59,7 @@ bool load(const QString& path,
     }
 
     knownOptions = GameOptionsSchema::getKnownOptions();
+    keybindingOptions = GameOptionsSchema::getKeyBindOptions();
 
     version = 0;
     while (!file.atEnd()) {
@@ -234,98 +236,107 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                 }
             }
         }
+    }
 
-        switch (role) {
-            case Qt::DisplayRole: {
-                switch (column) {
-                    case Column::Key: {
-                        return contents[row].key;
+    switch (role) {
+        case Qt::DisplayRole: {
+            switch (column) {
+                case Column::Key: {
+                    return contents[row].key;
+                }
+                case Column::Description: {
+                    if (contents[row].knownOption != nullptr) {
+                        return contents[row].knownOption->description;
+                    } else {
+                        return QVariant();
                     }
-                    case Column::Description: {
-                        if (contents[row].knownOption != nullptr) {
-                            return contents[row].knownOption->description;
-                        } else {
+                }
+                case Column::Value: {
+                    switch (contents[row].type) {
+                        case OptionType::String: {
+                            return contents[row].value;
+                        }
+                        case OptionType::Int: {
+                            return contents[row].intValue;
+                        }
+                        case OptionType::Bool: {
+                            return contents[row].boolValue;
+                        }
+                        case OptionType::Float: {
+                            return contents[row].floatValue;
+                        }
+                        case OptionType::KeyBind: {
+                            /* for (size_t i = 0; i < keybindingOptions->count(); i++) {
+                                if (keybindingOptions[i].value()->minecraftKeyCode == contents[row].value) {
+                                    return keybindingOptions[i].at()->displayName + " (" + contents[row].value + ")";
+                                }
+                            }*/
+                            /* for (auto keyBinding : keybindingOptions) {
+                                keybindingOptions.where(.minecraftKeyCode == contents[row].value).displayName;
+                            }*/
+
+                            return contents[row].value;
+                        }
+                        default: {
                             return QVariant();
                         }
                     }
-                    case Column::Value: {
+                }
+                case Column::DefaultValue: {
+                    if (contents[row].knownOption != nullptr) {
                         switch (contents[row].type) {
                             case OptionType::String: {
-                                return contents[row].value;
+                                return contents[row].knownOption->getDefaultString();
                             }
                             case OptionType::Int: {
-                                return contents[row].intValue;
+                                return contents[row].knownOption->getDefaultInt();
                             }
                             case OptionType::Bool: {
-                                return contents[row].boolValue;
+                                return contents[row].knownOption->getDefaultBool();
                             }
                             case OptionType::Float: {
-                                return contents[row].floatValue;
+                                return contents[row].knownOption->getDefaultFloat();
                             }
                             case OptionType::KeyBind: {
-                                return contents[row].value;
+                                return contents[row].knownOption->getDefaultString();
                             }
                             default: {
                                 return QVariant();
                             }
                         }
-                    }
-                    case Column::DefaultValue: {
-                        if (contents[row].knownOption != nullptr) {
-                            switch (contents[row].type) {
-                                case OptionType::String: {
-                                    return contents[row].knownOption->getDefaultString();
-                                }
-                                case OptionType::Int: {
-                                    return contents[row].knownOption->getDefaultInt();
-                                }
-                                case OptionType::Bool: {
-                                    return contents[row].knownOption->getDefaultBool();
-                                }
-                                case OptionType::Float: {
-                                    return contents[row].knownOption->getDefaultFloat();
-                                }
-                                case OptionType::KeyBind: {
-                                    return contents[row].knownOption->getDefaultString();
-                                }
-                                default: {
-                                    return QVariant();
-                                }
-                            }
-                        } else {
-                            return QVariant();
-                        }
-                    }
-                    default: {
+                    } else {
                         return QVariant();
                     }
                 }
+                default: {
+                    return QVariant();
+                }
             }
-            case Qt::CheckStateRole: {
-                switch (column) {
-                    case Column::Value: {
-                        if (contents[row].type == OptionType::Bool) {
-                            return boolToState(contents[row].boolValue);
-                        } else {
-                            return QVariant();
-                        }
-                    }
-                    case Column::DefaultValue: {
-                        if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
-                            // checkboxes are tristate, this 1(true) needs to be 2 for fully checked
-                            return contents[row].knownOption->getDefaultBool() * 2;
-                        } else {
-                            return QVariant();
-                        }
-                    }
-                    default: {
+        }
+        case Qt::CheckStateRole: {
+            switch (column) {
+                case Column::Value: {
+                    if (contents[row].type == OptionType::Bool) {
+                        return boolToState(contents[row].boolValue);
+                    } else {
                         return QVariant();
                     }
                 }
+                case Column::DefaultValue: {
+                    if (contents[row].knownOption != nullptr && contents[row].type == OptionType::Bool) {
+                        // checkboxes are tristate, this 1(true) needs to be 2 for fully checked
+                        return contents[row].knownOption->getDefaultBool() * 2;
+                    } else {
+                        return QVariant();
+                    }
+                }
+                default: {
+                    return QVariant();
+                }
             }
-            default: {
-                return QVariant();
-            }
+        }
+        default: {
+            return QVariant();
         }
     }
     return QVariant();
@@ -392,7 +403,7 @@ bool GameOptions::isLoaded() const
 bool GameOptions::reload()
 {
     beginResetModel();
-    loaded = load(path, contents, version, knownOptions);
+    loaded = load(path, contents, version, knownOptions, keybindingOptions);
     endResetModel();
     return loaded;
 }

@@ -145,11 +145,13 @@ class KeyBindData {
 class GameOptionsSchema {
    public:
     static QMap<QString, std::shared_ptr<GameOption>>* getKnownOptions();
+    static QList<KeyBindData*>* getKeyBindOptions();
 
    private:
     static QMap<QString, std::shared_ptr<GameOption>> knownOptions;
     static QList<KeyBindData*> keyboardButtons;
 
-    static void populateInternalLists();
+    static void populateInternalOptionList();
+    static void populateInternalKeyBindList();
 
 };

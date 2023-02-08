@@ -24,15 +24,24 @@ QList<KeyBindData*> GameOptionsSchema::keyboardButtons;
 QMap<QString, std::shared_ptr<GameOption>>* GameOptionsSchema::getKnownOptions()
 {
     if (knownOptions.isEmpty()) {
-        populateInternalLists();
+        populateInternalOptionList();
     }
 
     return &knownOptions;
 }
 
+QList<KeyBindData*>* GameOptionsSchema::getKeyBindOptions()
+{
+    if (keyboardButtons.isEmpty()) {
+        populateInternalKeyBindList();
+    }
+
+    return &keyboardButtons;
+}
+
 /// @brief this data is mostly copied from https://minecraft.fandom.com/wiki/Options.txt
 /// the order of options here should be the same order as in the file
-void GameOptionsSchema::populateInternalLists()
+void GameOptionsSchema::populateInternalOptionList()
 {
     // clang-format off
     
@@ -186,9 +195,11 @@ void GameOptionsSchema::populateInternalLists()
     // Not vanilla - from mods or modloaders
     knownOptions["quilt_available_resourcepacks"] = std::shared_ptr<GameOption>(new GameOption{"[]", "Quilt Internal Available Resource Packs", QStringList(), false});
 
-    // ##########################
-    //  Keyboard Bindings
-    // ##########################
+}
+
+/// @brief this data is mostly copied from https://minecraft.fandom.com/wiki/Key_codes
+void GameOptionsSchema::populateInternalKeyBindList() {
+    // TODO: add numeric (GLFW) key codes
 
     // Unboud
     keyboardButtons.append(new KeyBindData( "key.keyboard.unknown", 0, QObject::tr("Not bound"), Qt::Key_unknown ));  // 4th value is Qt key code
