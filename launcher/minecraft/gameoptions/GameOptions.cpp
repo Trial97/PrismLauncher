@@ -225,7 +225,7 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
         switch (role) {
             case Qt::DisplayRole:
             {
-                if (column == Column::Value || column == Column::DefaultValue)
+                if (column == Column::Value)
                 {
                     GameOptionChildItem* item = static_cast<GameOptionChildItem*>(index.internalPointer());
                     return item->value;
@@ -238,7 +238,6 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
             }
         }
     }
-
 
     switch (role) {
         case Qt::DisplayRole: {

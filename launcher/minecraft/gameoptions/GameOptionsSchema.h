@@ -106,7 +106,21 @@ union mouseOrKeyboardButton {
     Qt::MouseButton mouseButton;
 };
 
-struct KeyBindData {
+class KeyBindData {
+   public:
+    KeyBindData(QString minecraftKeyCode, int glfwCode, QString displayName, Qt::MouseButton mouseButton) : 
+        minecraftKeyCode(minecraftKeyCode), glfwCode(glfwCode), displayName(displayName)
+    {
+        qtKeyCode.mouseButton = mouseButton;
+    }
+
+    KeyBindData(QString minecraftKeyCode, int glfwCode, QString displayName, Qt::Key keyboardKey)
+        : minecraftKeyCode(minecraftKeyCode), glfwCode(glfwCode), displayName(displayName)
+    {
+        qtKeyCode.keyboardKey = keyboardKey;
+    }
+
+
     QString minecraftKeyCode;
     int glfwCode;
     QString displayName;
