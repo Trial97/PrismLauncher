@@ -81,4 +81,7 @@ public:
 private: // data
     Ui::GameOptionsPage *ui = nullptr;
     std::shared_ptr<GameOptions> m_model;
+
+private Q_SLOTS:
+    void OptionDoubleClicked(const QModelIndex& index);
 };

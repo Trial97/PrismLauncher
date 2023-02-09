@@ -55,6 +55,7 @@ GameOptionsPage::GameOptionsPage(MinecraftInstance * inst, QWidget* parent)
         }
         head->setSectionResizeMode(head->count() -1, QHeaderView::Stretch);
     }
+    connect(ui->optionsView, &QTreeView::doubleClicked, this, &GameOptionsPage::OptionDoubleClicked);
 }
 
 GameOptionsPage::~GameOptionsPage()
@@ -75,4 +76,22 @@ void GameOptionsPage::closedImpl()
 void GameOptionsPage::retranslate()
 {
     ui->retranslateUi(this);
+}
+
+// QTreeView's double click checks if the cell clicked on has children
+// but a typical tree model would only have children in the first column
+// Workaround this by calling expand ourself
+void GameOptionsPage::OptionDoubleClicked(const QModelIndex& index)
+{
+    if (!index.isValid() || index.column() == 0)
+        return;
+
+    const QModelIndex firstColumn = ui->optionsView->model()->index(index.row(), 0, index.parent());
+    if (!ui->optionsView->model()->hasChildren(firstColumn))
+        return;
+
+    if (ui->optionsView->isExpanded(firstColumn))
+        ui->optionsView->collapse(firstColumn);
+    else
+        ui->optionsView->expand(firstColumn);
 }
