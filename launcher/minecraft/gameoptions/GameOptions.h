@@ -42,7 +42,7 @@
 
 struct GameOptionChildItem {
     QString value;
-    int row;
+    int parentRow;
 };
 
 struct GameOptionItem {

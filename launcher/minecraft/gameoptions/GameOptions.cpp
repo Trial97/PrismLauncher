@@ -102,7 +102,7 @@ bool load(const QString& path,
         } else if (item.value.endsWith("]") && item.value.startsWith("[")) {
             qDebug() << "The value" << item.value << "is an array";
             for (QString part : item.value.mid(1, item.value.size() - 2).split(",")) {
-                GameOptionChildItem child{ part, contents.size() };
+                GameOptionChildItem child{ part, static_cast<int>(contents.size()) };
                 qDebug() << "Array has entry" << part;
                 item.children.append(child);
             }
@@ -185,9 +185,13 @@ bool GameOptions::setData(const QModelIndex& index, const QVariant& value, int r
 
 Qt::ItemFlags GameOptions::flags(const QModelIndex& index) const
 {
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
+
+    if (!index.isValid())
+        return flags;
+
     Column column = (Column)index.column();
 
-    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     if (column == Column::Key) {
         return flags;
     }
@@ -364,22 +368,25 @@ QModelIndex GameOptions::parent(const QModelIndex& index) const
         return QModelIndex();
 
     const void* childItem = index.internalPointer();
-    // Determine where childItem points to
 
+    // Determine where childItem points to
     if (childItem >= &contents[0] && childItem <= &contents.back()) {
-        // Parent is contents
+        // Parent is root/contents
         return QModelIndex();
     } else {
         GameOptionChildItem* child = static_cast<GameOptionChildItem*>(index.internalPointer());
-        return createIndex(child->row, 0, &contents[child->row]);
+        return createIndex(child->parentRow, 0, &contents[child->parentRow]);
     }
 }
 
 int GameOptions::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid()) {
-        return contents.size();
+        return static_cast<int>(contents.size());
     } else {
+        if (parent.column() > 0)
+            return 0;
+
         // Our tree model is only one layer deep
         // If we have parent, we can't go deeper
         if (parent.parent().isValid())
@@ -390,8 +397,13 @@ int GameOptions::rowCount(const QModelIndex& parent) const
     }
 }
 
-int GameOptions::columnCount(const QModelIndex&) const
+int GameOptions::columnCount(const QModelIndex& parent) const
 {
+    // Our tree model is only one layer deep
+    // If we have parent, we can't go deeper
+    if (parent.parent().isValid())
+        return 0;
+
     return 4;
 }
 
