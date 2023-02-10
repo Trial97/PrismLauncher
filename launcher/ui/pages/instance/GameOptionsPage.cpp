@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /*
- *  PolyMC - Minecraft Launcher
+ *  Prism Launcher - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
+ *  Copyright (C) 2023 Tayou <tayou@gmx.net>
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -45,6 +46,7 @@ GameOptionsPage::GameOptionsPage(MinecraftInstance * inst, QWidget* parent)
     ui->tabWidget->tabBar()->hide();
     m_model = inst->gameOptionsModel();
     ui->optionsView->setModel(m_model.get());
+    //ui->optionsView->itemDelegateForIndex();
     auto head = ui->optionsView->header();
     head->setDefaultSectionSize(250);
     if(head->count())
