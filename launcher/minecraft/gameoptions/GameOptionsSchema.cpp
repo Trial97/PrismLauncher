@@ -19,7 +19,7 @@
 #include <QObject>
 
 QMap<QString, std::shared_ptr<GameOption>> GameOptionsSchema::knownOptions;
-QList<KeyBindData*> GameOptionsSchema::keyboardButtons;
+QList<std::shared_ptr<KeyBindData>> GameOptionsSchema::keyboardButtons;
 
 QMap<QString, std::shared_ptr<GameOption>>* GameOptionsSchema::getKnownOptions()
 {
@@ -30,7 +30,7 @@ QMap<QString, std::shared_ptr<GameOption>>* GameOptionsSchema::getKnownOptions()
     return &knownOptions;
 }
 
-QList<KeyBindData*>* GameOptionsSchema::getKeyBindOptions()
+QList<std::shared_ptr<KeyBindData>>* GameOptionsSchema::getKeyBindOptions()
 {
     if (keyboardButtons.isEmpty()) {
         populateInternalKeyBindList();
@@ -202,172 +202,172 @@ void GameOptionsSchema::populateInternalKeyBindList() {
     // TODO: add numeric (GLFW) key codes
 
     // Unboud
-    keyboardButtons.append(new KeyBindData( "key.keyboard.unknown", 0, QObject::tr("Not bound"), Qt::Key_unknown ));  // 4th value is Qt key code
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.unknown", 0, QObject::tr("Not bound"), Qt::Key_unknown )));  // 4th value is Qt key code
 
     // Mouse
-    keyboardButtons.append(new KeyBindData( "key.mouse.left", 0, QObject::tr("Left Mouse Button"), Qt::MouseButton::LeftButton ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.right", 0, QObject::tr("Right Mouse Button"), Qt::MouseButton::RightButton ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.middle", 0, QObject::tr("Middle Mouse Button"), Qt::MouseButton::MiddleButton ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.4", 0, QObject::tr("Mouse Button 4"), Qt::MouseButton::BackButton ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.5", 0, QObject::tr("Mouse Button 5"), Qt::MouseButton::ExtraButton1 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.6", 0, QObject::tr("Mouse Button 6"), Qt::MouseButton::ExtraButton2 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.7", 0, QObject::tr("Mouse Button 7"), Qt::MouseButton::ExtraButton3 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.8", 0, QObject::tr("Mouse Button 8"), Qt::MouseButton::ExtraButton4 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.9", 0, QObject::tr("Mouse Button 9"), Qt::MouseButton::ExtraButton5 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.10", 0, QObject::tr("Mouse Button 10"), Qt::MouseButton::ExtraButton6 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.11", 0, QObject::tr("Mouse Button 11"), Qt::MouseButton::ExtraButton7 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.12", 0, QObject::tr("Mouse Button 12"), Qt::MouseButton::ExtraButton8 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.13", 0, QObject::tr("Mouse Button 13"), Qt::MouseButton::ExtraButton9 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.14", 0, QObject::tr("Mouse Button 14"), Qt::MouseButton::ExtraButton10 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.15", 0, QObject::tr("Mouse Button 15"), Qt::MouseButton::ExtraButton11 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.16", 0, QObject::tr("Mouse Button 16"), Qt::MouseButton::ExtraButton12 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.17", 0, QObject::tr("Mouse Button 17"), Qt::MouseButton::ExtraButton13 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.18", 0, QObject::tr("Mouse Button 18"), Qt::MouseButton::ExtraButton14 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.19", 0, QObject::tr("Mouse Button 19"), Qt::MouseButton::ExtraButton15 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.20", 0, QObject::tr("Mouse Button 20"), Qt::MouseButton::ExtraButton16 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.21", 0, QObject::tr("Mouse Button 21"), Qt::MouseButton::ExtraButton17 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.22", 0, QObject::tr("Mouse Button 22"), Qt::MouseButton::ExtraButton18 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.23", 0, QObject::tr("Mouse Button 23"), Qt::MouseButton::ExtraButton19 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.24", 0, QObject::tr("Mouse Button 24"), Qt::MouseButton::ExtraButton20 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.25", 0, QObject::tr("Mouse Button 25"), Qt::MouseButton::ExtraButton21 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.26", 0, QObject::tr("Mouse Button 26"), Qt::MouseButton::ExtraButton22 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.27", 0, QObject::tr("Mouse Button 27"), Qt::MouseButton::ExtraButton23 ));
-    keyboardButtons.append(new KeyBindData( "key.mouse.28", 0, QObject::tr("Mouse Button 28"), Qt::MouseButton::ExtraButton24 ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.left", 0, QObject::tr("Left Mouse Button"), Qt::MouseButton::LeftButton )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.right", 0, QObject::tr("Right Mouse Button"), Qt::MouseButton::RightButton )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.middle", 0, QObject::tr("Middle Mouse Button"), Qt::MouseButton::MiddleButton )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.4", 0, QObject::tr("Mouse Button 4"), Qt::MouseButton::BackButton )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.5", 0, QObject::tr("Mouse Button 5"), Qt::MouseButton::ExtraButton1 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.6", 0, QObject::tr("Mouse Button 6"), Qt::MouseButton::ExtraButton2 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.7", 0, QObject::tr("Mouse Button 7"), Qt::MouseButton::ExtraButton3 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.8", 0, QObject::tr("Mouse Button 8"), Qt::MouseButton::ExtraButton4 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.9", 0, QObject::tr("Mouse Button 9"), Qt::MouseButton::ExtraButton5 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.10", 0, QObject::tr("Mouse Button 10"), Qt::MouseButton::ExtraButton6 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.11", 0, QObject::tr("Mouse Button 11"), Qt::MouseButton::ExtraButton7 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.12", 0, QObject::tr("Mouse Button 12"), Qt::MouseButton::ExtraButton8 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.13", 0, QObject::tr("Mouse Button 13"), Qt::MouseButton::ExtraButton9 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.14", 0, QObject::tr("Mouse Button 14"), Qt::MouseButton::ExtraButton10 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.15", 0, QObject::tr("Mouse Button 15"), Qt::MouseButton::ExtraButton11 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.16", 0, QObject::tr("Mouse Button 16"), Qt::MouseButton::ExtraButton12 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.17", 0, QObject::tr("Mouse Button 17"), Qt::MouseButton::ExtraButton13 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.18", 0, QObject::tr("Mouse Button 18"), Qt::MouseButton::ExtraButton14 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.19", 0, QObject::tr("Mouse Button 19"), Qt::MouseButton::ExtraButton15 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.20", 0, QObject::tr("Mouse Button 20"), Qt::MouseButton::ExtraButton16 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.21", 0, QObject::tr("Mouse Button 21"), Qt::MouseButton::ExtraButton17 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.22", 0, QObject::tr("Mouse Button 22"), Qt::MouseButton::ExtraButton18 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.23", 0, QObject::tr("Mouse Button 23"), Qt::MouseButton::ExtraButton19 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.24", 0, QObject::tr("Mouse Button 24"), Qt::MouseButton::ExtraButton20 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.25", 0, QObject::tr("Mouse Button 25"), Qt::MouseButton::ExtraButton21 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.26", 0, QObject::tr("Mouse Button 26"), Qt::MouseButton::ExtraButton22 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.27", 0, QObject::tr("Mouse Button 27"), Qt::MouseButton::ExtraButton23 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.mouse.28", 0, QObject::tr("Mouse Button 28"), Qt::MouseButton::ExtraButton24 )));
     // not sure what if it makes sense to go this far, but its how far Qt can count.
     
     // Number Row
-    keyboardButtons.append(new KeyBindData( "key.keyboard.0", 0, QObject::tr("0"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.1", 0, QObject::tr("1"), Qt::Key::Key_1 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.2", 0, QObject::tr("2"), Qt::Key::Key_2 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.3", 0, QObject::tr("3"), Qt::Key::Key_3 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.4", 0, QObject::tr("4"), Qt::Key::Key_4 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.5", 0, QObject::tr("5"), Qt::Key::Key_5 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.6", 0, QObject::tr("6"), Qt::Key::Key_6 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.7", 0, QObject::tr("7"), Qt::Key::Key_7 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.8", 0, QObject::tr("8"), Qt::Key::Key_8 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.9", 0, QObject::tr("9"), Qt::Key::Key_9 ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.0", 0, QObject::tr("0"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.1", 0, QObject::tr("1"), Qt::Key::Key_1 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.2", 0, QObject::tr("2"), Qt::Key::Key_2 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.3", 0, QObject::tr("3"), Qt::Key::Key_3 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.4", 0, QObject::tr("4"), Qt::Key::Key_4 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.5", 0, QObject::tr("5"), Qt::Key::Key_5 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.6", 0, QObject::tr("6"), Qt::Key::Key_6 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.7", 0, QObject::tr("7"), Qt::Key::Key_7 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.8", 0, QObject::tr("8"), Qt::Key::Key_8 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.9", 0, QObject::tr("9"), Qt::Key::Key_9 )));
 
     // Letters
-    keyboardButtons.append(new KeyBindData( "key.keyboard.a", 0, QObject::tr("a"), Qt::Key::Key_A ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.b", 0, QObject::tr("b"), Qt::Key::Key_B ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.c", 0, QObject::tr("c"), Qt::Key::Key_C ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.d", 0, QObject::tr("d"), Qt::Key::Key_D ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.e", 0, QObject::tr("e"), Qt::Key::Key_E ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f", 0, QObject::tr("f"), Qt::Key::Key_F ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.g", 0, QObject::tr("g"), Qt::Key::Key_G ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.h", 0, QObject::tr("h"), Qt::Key::Key_H ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.i", 0, QObject::tr("i"), Qt::Key::Key_I ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.j", 0, QObject::tr("j"), Qt::Key::Key_J ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.k", 0, QObject::tr("k"), Qt::Key::Key_K ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.l", 0, QObject::tr("l"), Qt::Key::Key_L ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.m", 0, QObject::tr("m"), Qt::Key::Key_M ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.n", 0, QObject::tr("n"), Qt::Key::Key_N ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.o", 0, QObject::tr("o"), Qt::Key::Key_O ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.p", 0, QObject::tr("p"), Qt::Key::Key_P ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.q", 0, QObject::tr("q"), Qt::Key::Key_Q ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.r", 0, QObject::tr("r"), Qt::Key::Key_R ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.s", 0, QObject::tr("s"), Qt::Key::Key_S ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.t", 0, QObject::tr("t"), Qt::Key::Key_T ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.u", 0, QObject::tr("u"), Qt::Key::Key_U ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.v", 0, QObject::tr("v"), Qt::Key::Key_V ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.w", 0, QObject::tr("w"), Qt::Key::Key_W ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.x", 0, QObject::tr("x"), Qt::Key::Key_X ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.y", 0, QObject::tr("y"), Qt::Key::Key_Y ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.z", 0, QObject::tr("z"), Qt::Key::Key_Z ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.a", 0, QObject::tr("a"), Qt::Key::Key_A )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.b", 0, QObject::tr("b"), Qt::Key::Key_B )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.c", 0, QObject::tr("c"), Qt::Key::Key_C )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.d", 0, QObject::tr("d"), Qt::Key::Key_D )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.e", 0, QObject::tr("e"), Qt::Key::Key_E )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f", 0, QObject::tr("f"), Qt::Key::Key_F )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.g", 0, QObject::tr("g"), Qt::Key::Key_G )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.h", 0, QObject::tr("h"), Qt::Key::Key_H )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.i", 0, QObject::tr("i"), Qt::Key::Key_I )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.j", 0, QObject::tr("j"), Qt::Key::Key_J )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.k", 0, QObject::tr("k"), Qt::Key::Key_K )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.l", 0, QObject::tr("l"), Qt::Key::Key_L )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.m", 0, QObject::tr("m"), Qt::Key::Key_M )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.n", 0, QObject::tr("n"), Qt::Key::Key_N )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.o", 0, QObject::tr("o"), Qt::Key::Key_O )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.p", 0, QObject::tr("p"), Qt::Key::Key_P )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.q", 0, QObject::tr("q"), Qt::Key::Key_Q )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.r", 0, QObject::tr("r"), Qt::Key::Key_R )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.s", 0, QObject::tr("s"), Qt::Key::Key_S )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.t", 0, QObject::tr("t"), Qt::Key::Key_T )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.u", 0, QObject::tr("u"), Qt::Key::Key_U )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.v", 0, QObject::tr("v"), Qt::Key::Key_V )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.w", 0, QObject::tr("w"), Qt::Key::Key_W )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.x", 0, QObject::tr("x"), Qt::Key::Key_X )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.y", 0, QObject::tr("y"), Qt::Key::Key_Y )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.z", 0, QObject::tr("z"), Qt::Key::Key_Z )));
 
     // F Keys
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f1", 0, QObject::tr("F1"), Qt::Key::Key_F1 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f2", 0, QObject::tr("F2"), Qt::Key::Key_F2 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f3", 0, QObject::tr("F3"), Qt::Key::Key_F3 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f4", 0, QObject::tr("F4"), Qt::Key::Key_F4 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f5", 0, QObject::tr("F5"), Qt::Key::Key_F5 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f6", 0, QObject::tr("F6"), Qt::Key::Key_F6 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f7", 0, QObject::tr("F7"), Qt::Key::Key_F7 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f8", 0, QObject::tr("F8"), Qt::Key::Key_F8 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f9", 0, QObject::tr("F9"), Qt::Key::Key_F9 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f10", 0, QObject::tr("F10"), Qt::Key::Key_F10 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f11", 0, QObject::tr("F11"), Qt::Key::Key_F11 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f12", 0, QObject::tr("F12"), Qt::Key::Key_F12 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f13", 0, QObject::tr("F13"), Qt::Key::Key_F13 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f14", 0, QObject::tr("F14"), Qt::Key::Key_F14 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f15", 0, QObject::tr("F15"), Qt::Key::Key_F15 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f16", 0, QObject::tr("F16"), Qt::Key::Key_F16 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f17", 0, QObject::tr("F17"), Qt::Key::Key_F17 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f18", 0, QObject::tr("F18"), Qt::Key::Key_F18 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f19", 0, QObject::tr("F19"), Qt::Key::Key_F19 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f20", 0, QObject::tr("F20"), Qt::Key::Key_F20 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f21", 0, QObject::tr("F21"), Qt::Key::Key_F21 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f22", 0, QObject::tr("F22"), Qt::Key::Key_F22 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f23", 0, QObject::tr("F23"), Qt::Key::Key_F23 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f24", 0, QObject::tr("F24"), Qt::Key::Key_F24 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.f25", 0, QObject::tr("F25"), Qt::Key::Key_F25 ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f1", 0, QObject::tr("F1"), Qt::Key::Key_F1 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f2", 0, QObject::tr("F2"), Qt::Key::Key_F2 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f3", 0, QObject::tr("F3"), Qt::Key::Key_F3 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f4", 0, QObject::tr("F4"), Qt::Key::Key_F4 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f5", 0, QObject::tr("F5"), Qt::Key::Key_F5 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f6", 0, QObject::tr("F6"), Qt::Key::Key_F6 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f7", 0, QObject::tr("F7"), Qt::Key::Key_F7 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f8", 0, QObject::tr("F8"), Qt::Key::Key_F8 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f9", 0, QObject::tr("F9"), Qt::Key::Key_F9 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f10", 0, QObject::tr("F10"), Qt::Key::Key_F10 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f11", 0, QObject::tr("F11"), Qt::Key::Key_F11 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f12", 0, QObject::tr("F12"), Qt::Key::Key_F12 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f13", 0, QObject::tr("F13"), Qt::Key::Key_F13 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f14", 0, QObject::tr("F14"), Qt::Key::Key_F14 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f15", 0, QObject::tr("F15"), Qt::Key::Key_F15 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f16", 0, QObject::tr("F16"), Qt::Key::Key_F16 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f17", 0, QObject::tr("F17"), Qt::Key::Key_F17 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f18", 0, QObject::tr("F18"), Qt::Key::Key_F18 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f19", 0, QObject::tr("F19"), Qt::Key::Key_F19 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f20", 0, QObject::tr("F20"), Qt::Key::Key_F20 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f21", 0, QObject::tr("F21"), Qt::Key::Key_F21 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f22", 0, QObject::tr("F22"), Qt::Key::Key_F22 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f23", 0, QObject::tr("F23"), Qt::Key::Key_F23 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f24", 0, QObject::tr("F24"), Qt::Key::Key_F24 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.f25", 0, QObject::tr("F25"), Qt::Key::Key_F25 )));
 
     // Numblock
-    keyboardButtons.append(new KeyBindData( "key.keyboard.num.lock", 0, QObject::tr("Num Lock"), Qt::Key::Key_NumLock ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.0", 0, QObject::tr("Keypad 0"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.1", 0, QObject::tr("Keypad 1"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.2", 0, QObject::tr("Keypad 2"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.3", 0, QObject::tr("Keypad 3"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.4", 0, QObject::tr("Keypad 4"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.5", 0, QObject::tr("Keypad 5"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.6", 0, QObject::tr("Keypad 6"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.7", 0, QObject::tr("Keypad 7"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.8", 0, QObject::tr("Keypad 8"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.9", 0, QObject::tr("Keypad 9"), Qt::Key::Key_0 ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.add", 0, QObject::tr("Keypad +"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.decimal", 0, QObject::tr("Keypad Decimal"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.enter", 0, QObject::tr("Keypad Enter"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.equal", 0, QObject::tr("Keypad ="), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.multiply", 0, QObject::tr("Keypad *"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.divide", 0, QObject::tr("Keypad /"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.keypad.subtract", 0, QObject::tr("Keypad -"), Qt::Key_unknown )); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.num.lock", 0, QObject::tr("Num Lock"), Qt::Key::Key_NumLock )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.0", 0, QObject::tr("Keypad 0"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.1", 0, QObject::tr("Keypad 1"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.2", 0, QObject::tr("Keypad 2"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.3", 0, QObject::tr("Keypad 3"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.4", 0, QObject::tr("Keypad 4"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.5", 0, QObject::tr("Keypad 5"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.6", 0, QObject::tr("Keypad 6"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.7", 0, QObject::tr("Keypad 7"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.8", 0, QObject::tr("Keypad 8"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.9", 0, QObject::tr("Keypad 9"), Qt::Key::Key_0 )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.add", 0, QObject::tr("Keypad +"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.decimal", 0, QObject::tr("Keypad Decimal"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.enter", 0, QObject::tr("Keypad Enter"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.equal", 0, QObject::tr("Keypad ="), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.multiply", 0, QObject::tr("Keypad *"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.divide", 0, QObject::tr("Keypad /"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.keypad.subtract", 0, QObject::tr("Keypad -"), Qt::Key_unknown ))); // fix maybe?
 
     // Arrow Keys
-    keyboardButtons.append(new KeyBindData( "key.keyboard.down", 0, QObject::tr("Down Arrow"), Qt::Key::Key_Down ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left", 0, QObject::tr("Left Arrow"), Qt::Key::Key_Left ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right", 0, QObject::tr("Right Arrow"), Qt::Key::Key_Right ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.up", 0, QObject::tr("Up Arrow"), Qt::Key::Key_Up ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.down", 0, QObject::tr("Down Arrow"), Qt::Key::Key_Down )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left", 0, QObject::tr("Left Arrow"), Qt::Key::Key_Left )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right", 0, QObject::tr("Right Arrow"), Qt::Key::Key_Right )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.up", 0, QObject::tr("Up Arrow"), Qt::Key::Key_Up )));
 
     // Other
-    keyboardButtons.append(new KeyBindData( "key.keyboard.apostrophe", 0, QObject::tr("'"), Qt::Key::Key_Apostrophe ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.backslash", 0, QObject::tr("\\"), Qt::Key::Key_Backslash ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.comma", 0, QObject::tr(","), Qt::Key::Key_Comma ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.equal", 0, QObject::tr("="), Qt::Key::Key_Equal ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.grave.accent", 0, QObject::tr("`"), Qt::Key::Key_Dead_Grave ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left.bracket", 0, QObject::tr("["), Qt::Key::Key_BracketLeft ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.minus", 0, QObject::tr("-"), Qt::Key::Key_Minus ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.period", 0, QObject::tr("."), Qt::Key::Key_Period ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right.bracket", 0, QObject::tr("]"), Qt::Key::Key_BracketRight ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.semicolon", 0, QObject::tr(";"), Qt::Key::Key_Semicolon ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.slash", 0, QObject::tr("/"), Qt::Key::Key_Slash ));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.apostrophe", 0, QObject::tr("'"), Qt::Key::Key_Apostrophe )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.backslash", 0, QObject::tr("\\"), Qt::Key::Key_Backslash )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.comma", 0, QObject::tr(","), Qt::Key::Key_Comma )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.equal", 0, QObject::tr("="), Qt::Key::Key_Equal )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.grave.accent", 0, QObject::tr("`"), Qt::Key::Key_Dead_Grave )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left.bracket", 0, QObject::tr("["), Qt::Key::Key_BracketLeft )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.minus", 0, QObject::tr("-"), Qt::Key::Key_Minus )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.period", 0, QObject::tr("."), Qt::Key::Key_Period )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right.bracket", 0, QObject::tr("]"), Qt::Key::Key_BracketRight )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.semicolon", 0, QObject::tr(";"), Qt::Key::Key_Semicolon )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.slash", 0, QObject::tr("/"), Qt::Key::Key_Slash )));
 
-    keyboardButtons.append(new KeyBindData( "key.keyboard.space", 0, QObject::tr("Space"), Qt::Key::Key_Space ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.tab", 0, QObject::tr("Tab"), Qt::Key::Key_Tab ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left.alt", 0, QObject::tr("Left Alt"), Qt::Key::Key_Alt ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left.control", 0, QObject::tr("Left Control"), Qt::Key::Key_Control ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left.shift", 0, QObject::tr("Left Shift"), Qt::Key::Key_Shift ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.left.win", 0, QObject::tr("Left Win"), Qt::Key::Key_Meta ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right.alt", 0, QObject::tr("Right Alt"), Qt::Key::Key_AltGr ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right.control", 0, QObject::tr("Right Control"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right.shift", 0, QObject::tr("Right Shift"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.right.win", 0, QObject::tr("Right Win"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.enter", 0, QObject::tr("Enter"), Qt::Key::Key_Enter ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.escape", 0, QObject::tr("Escape"), Qt::Key::Key_Escape ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.backspace", 0, QObject::tr("Backspace"), Qt::Key::Key_Backspace ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.delete", 0, QObject::tr("Delete"), Qt::Key::Key_Delete ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.end", 0, QObject::tr("End"), Qt::Key::Key_End ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.home", 0, QObject::tr("Home"), Qt::Key::Key_Home ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.insert", 0, QObject::tr("Insert"), Qt::Key::Key_Insert ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.page.down", 0, QObject::tr("Page Down"), Qt::Key::Key_PageDown ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.page.up", 0, QObject::tr("Page Up"), Qt::Key::Key_PageUp ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.caps.lock", 0, QObject::tr("Caps Lock"), Qt::Key::Key_CapsLock ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.pause", 0, QObject::tr("Pause"), Qt::Key::Key_Pause ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.scroll.lock", 0, QObject::tr("Scroll Lock"), Qt::Key::Key_ScrollLock ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.menu", 0, QObject::tr("Menu"), Qt::Key::Key_Menu ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.print.screen", 0, QObject::tr("Print Screen"), Qt::Key::Key_Print ));
-    keyboardButtons.append(new KeyBindData( "key.keyboard.world.1", 0, QObject::tr("World 1"), Qt::Key_unknown )); // fix maybe?
-    keyboardButtons.append(new KeyBindData( "key.keyboard.world.2", 0, QObject::tr("World 2"), Qt::Key_unknown )); // fix maybe?
-    // keyboardButtons.append(new KeyBindData( "scancode.###", 0, QObject::tr("scancode.###") )); no description, no translation, no mapping?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.space", 0, QObject::tr("Space"), Qt::Key::Key_Space )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.tab", 0, QObject::tr("Tab"), Qt::Key::Key_Tab )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left.alt", 0, QObject::tr("Left Alt"), Qt::Key::Key_Alt )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left.control", 0, QObject::tr("Left Control"), Qt::Key::Key_Control )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left.shift", 0, QObject::tr("Left Shift"), Qt::Key::Key_Shift )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.left.win", 0, QObject::tr("Left Win"), Qt::Key::Key_Meta )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right.alt", 0, QObject::tr("Right Alt"), Qt::Key::Key_AltGr )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right.control", 0, QObject::tr("Right Control"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right.shift", 0, QObject::tr("Right Shift"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.right.win", 0, QObject::tr("Right Win"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.enter", 0, QObject::tr("Enter"), Qt::Key::Key_Enter )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.escape", 0, QObject::tr("Escape"), Qt::Key::Key_Escape )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.backspace", 0, QObject::tr("Backspace"), Qt::Key::Key_Backspace )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.delete", 0, QObject::tr("Delete"), Qt::Key::Key_Delete )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.end", 0, QObject::tr("End"), Qt::Key::Key_End )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.home", 0, QObject::tr("Home"), Qt::Key::Key_Home )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.insert", 0, QObject::tr("Insert"), Qt::Key::Key_Insert )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.page.down", 0, QObject::tr("Page Down"), Qt::Key::Key_PageDown )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.page.up", 0, QObject::tr("Page Up"), Qt::Key::Key_PageUp )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.caps.lock", 0, QObject::tr("Caps Lock"), Qt::Key::Key_CapsLock )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.pause", 0, QObject::tr("Pause"), Qt::Key::Key_Pause )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.scroll.lock", 0, QObject::tr("Scroll Lock"), Qt::Key::Key_ScrollLock )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.menu", 0, QObject::tr("Menu"), Qt::Key::Key_Menu )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.print.screen", 0, QObject::tr("Print Screen"), Qt::Key::Key_Print )));
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.world.1", 0, QObject::tr("World 1"), Qt::Key_unknown ))); // fix maybe?
+    keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "key.keyboard.world.2", 0, QObject::tr("World 2"), Qt::Key_unknown ))); // fix maybe?
+    // keyboardButtons.append(std::shared_ptr<KeyBindData>(new KeyBindData( "scancode.###", 0, QObject::tr("scancode.###") ))); no description, no translation, no mapping?
 
     // clang-format on
 };

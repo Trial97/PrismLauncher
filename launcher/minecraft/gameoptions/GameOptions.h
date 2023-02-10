@@ -84,5 +84,5 @@ class GameOptions : public QAbstractItemModel {
     int version = 0;
 
     QMap<QString, std::shared_ptr<GameOption>>* knownOptions;
-    QList<KeyBindData*>* keybindingOptions;
+    QList<std::shared_ptr<KeyBindData>>* keybindingOptions;
 };

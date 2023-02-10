@@ -48,8 +48,8 @@ namespace {
 bool load(const QString& path,
           std::vector<GameOptionItem>& contents,
           int& version,
-          QMap<QString, std::shared_ptr<GameOption>>* knownOptions,
-          QList<KeyBindData*>* keybindingOptions)
+          QMap<QString, std::shared_ptr<GameOption>>* &knownOptions,
+          QList<std::shared_ptr<KeyBindData>>* &keybindingOptions)
 {
     contents.clear();
     QFile file(path);
@@ -106,8 +106,11 @@ bool load(const QString& path,
                 qDebug() << "Array has entry" << part;
                 item.children.append(child);
             }
+        } else if (item.key.startsWith("key_")) {
+            item.type = OptionType::KeyBind;
         }
 
+        // adds reference to known option from gameOptionsSchema if avaiable to get display name and other metadata
         item.knownOption = knownOptions->find(item.key) != knownOptions->end() ? knownOptions->find(item.key).value() : nullptr;
         contents.emplace_back(item);
     }
@@ -270,14 +273,12 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                             return contents[row].floatValue;
                         }
                         case OptionType::KeyBind: {
-                            /* for (size_t i = 0; i < keybindingOptions->count(); i++) {
-                                if (keybindingOptions[i].value()->minecraftKeyCode == contents[row].value) {
-                                    return keybindingOptions[i].at()->displayName + " (" + contents[row].value + ")";
+                            for (auto& keyBinding : *keybindingOptions) {
+                                // this could become a std::find_if eventually, if someone wants to bother making it that.
+                                if (keyBinding->minecraftKeyCode == contents[row].value) {
+                                    return keyBinding->displayName; // + " (" + contents[row].value + ")";
                                 }
-                            }*/
-                            /* for (auto keyBinding : keybindingOptions) {
-                                keybindingOptions.where(.minecraftKeyCode == contents[row].value).displayName;
-                            }*/
+                            }
 
                             return contents[row].value;
                         }
@@ -302,6 +303,13 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                                 return contents[row].knownOption->getDefaultFloat();
                             }
                             case OptionType::KeyBind: {
+                                for (auto& keyBinding : *keybindingOptions) {
+                                    // this could become a std::find_if eventually, if someone wants to bother making it that.
+                                    if (keyBinding->minecraftKeyCode == contents[row].knownOption->getDefaultString()) {
+                                        return keyBinding->displayName;  // + " (" + contents[row].knownOption->getDefaultString() + ")";
+                                    }
+                                }
+
                                 return contents[row].knownOption->getDefaultString();
                             }
                             default: {
