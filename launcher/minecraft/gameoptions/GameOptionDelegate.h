@@ -19,18 +19,22 @@
 
 #include <QStyledItemDelegate>
 #include <QString>
+#include <QWidget>
 
-class GameOptionDelegate : QStyledItemDelegate {
+#include "GameOptions.h"
+
+class GameOptionDelegate : public QStyledItemDelegate {
    public:
-    QWidget* GameOptionDelegate::createEditor(QWidget* parent,
+    GameOptionDelegate(QObject* parent, std::vector<GameOptionItem>* contents) : contents(contents), QStyledItemDelegate(parent){};
+    QWidget* createEditor(QWidget* parent,
                                                const QStyleOptionViewItem& option,
                                                const QModelIndex& index) const override;
-    void GameOptionDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const override;
-    void GameOptionDelegate::updateEditorGeometry(QWidget* editor,
+    void setEditorData(QWidget* editor, const QModelIndex& index) const override;
+    void updateEditorGeometry(QWidget* editor,
                                                    const QStyleOptionViewItem& option,
                                                    const QModelIndex& index) const override;
-    void GameOptionDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
+    void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
    private:
-    QComboBox comboBox;
+    std::vector<GameOptionItem>* contents;
 };
