@@ -25,7 +25,10 @@
 
 class GameOptionDelegate : public QStyledItemDelegate {
    public:
-    GameOptionDelegate(QObject* parent, std::vector<GameOptionItem>* contents) : contents(contents), QStyledItemDelegate(parent){};
+    GameOptionDelegate(QObject* parent, std::vector<GameOptionItem>* contents) : contents(contents), QStyledItemDelegate(parent)
+    {
+        keybindingOptions = GameOptionsSchema::getKeyBindOptions();
+    };
     QWidget* createEditor(QWidget* parent,
                                                const QStyleOptionViewItem& option,
                                                const QModelIndex& index) const override;
@@ -37,4 +40,5 @@ class GameOptionDelegate : public QStyledItemDelegate {
 
    private:
     std::vector<GameOptionItem>* contents;
+    QList<std::shared_ptr<KeyBindData>>* keybindingOptions;
 };

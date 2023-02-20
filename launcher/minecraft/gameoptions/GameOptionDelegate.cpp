@@ -24,13 +24,14 @@
 #include <QSpinBox>
 #include <QDoubleSpinBox>
 #include <QSlider>
+#include <QKeySequenceEdit>
 
 QWidget* GameOptionDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const {
-    std::shared_ptr<GameOption> knownOption = contents->at(index.column()).knownOption;
+    std::shared_ptr<GameOption> knownOption = contents->at(index.row()).knownOption;
 
-    switch (contents->at(index.column()).type) {
+    switch (contents->at(index.row()).type) {
         case OptionType::String: {
-            if (knownOption != nullptr && knownOption->validValues.isEmpty()) {
+            if (knownOption != nullptr && !knownOption->validValues.isEmpty()) {
                 QComboBox* comboBox = new QComboBox(parent);
                 for (auto value : knownOption->validValues) {
                     comboBox->addItem(value);
@@ -48,6 +49,7 @@ QWidget* GameOptionDelegate::createEditor(QWidget* parent, const QStyleOptionVie
                 QSlider* slider = new QSlider(parent);
                 slider->setMinimum(knownOption->getIntRange().min);
                 slider->setMaximum(knownOption->getIntRange().max);
+                slider->setOrientation(Qt::Horizontal);
                 slider->setGeometry(option.rect);
                 return slider;
             } else {
@@ -64,8 +66,9 @@ QWidget* GameOptionDelegate::createEditor(QWidget* parent, const QStyleOptionVie
         case OptionType::Float: {
             if (knownOption != nullptr && (knownOption->getFloatRange().max != 0 || knownOption->getFloatRange().min != 0)) {
                 QSlider* slider = new QSlider(parent);
-                slider->setMinimum(knownOption->getFloatRange().min);
-                slider->setMaximum(knownOption->getFloatRange().max);
+                slider->setMinimum(knownOption->getFloatRange().min*100);
+                slider->setMaximum(knownOption->getFloatRange().max*100);
+                slider->setOrientation(Qt::Horizontal);
                 slider->setGeometry(option.rect);
                 return slider;
             } else {
@@ -75,10 +78,9 @@ QWidget* GameOptionDelegate::createEditor(QWidget* parent, const QStyleOptionVie
             }
         }
         case OptionType::KeyBind: {
-            QPushButton* pushButton = new QPushButton(parent);
-            //pushButton->addAction(QAction());
-            pushButton->setGeometry(option.rect);
-            return pushButton;
+            QKeySequenceEdit* keySequenceEdit = new QKeySequenceEdit(parent);
+            keySequenceEdit->setGeometry(option.rect);
+            return keySequenceEdit;
         }
         default:
             break;
@@ -86,40 +88,52 @@ QWidget* GameOptionDelegate::createEditor(QWidget* parent, const QStyleOptionVie
 };
 void GameOptionDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    std::shared_ptr<GameOption> knownOption = contents->at(index.column()).knownOption;
+    std::shared_ptr<GameOption> knownOption = contents->at(index.row()).knownOption;
 
-    switch (contents->at(index.column()).type) {
+    switch (contents->at(index.row()).type) {
         case OptionType::String: {
-            if (knownOption != nullptr && !knownOption->validValues.isEmpty()) {
-                ((QComboBox*)editor)->setCurrentIndex(((QComboBox*)editor)->findText(contents->at(index.column()).value));
+            QComboBox* comboBox;
+            if ((comboBox = dynamic_cast<QComboBox*>(editor)) != nullptr) {
+                comboBox->setCurrentIndex(comboBox->findText(contents->at(index.row()).value));
             } else {
-                ((QLineEdit*)editor)->setText(contents->at(index.column()).value);
+                ((QLineEdit*)editor)->setText(contents->at(index.row()).value);
             }
             return;
         }
         case OptionType::Int: {
-            if (knownOption != nullptr && (knownOption->getIntRange().max != 0 || knownOption->getIntRange().min != 0)) {
-                ((QSlider*)editor)->setValue(contents->at(index.column()).value.toInt());
+            QSlider* slider;
+            if ((slider = dynamic_cast<QSlider*>(editor)) != nullptr) {
+                slider->setValue(contents->at(index.row()).intValue);
             } else {
-                ((QSpinBox*)editor)->setValue(contents->at(index.column()).value.toInt());
+                ((QSpinBox*)editor)->setValue(contents->at(index.row()).intValue);
             }
             return;
         }
         case OptionType::Bool: {
-            ((QCheckBox*)editor)->setText(contents->at(index.column()).value);
-            ((QCheckBox*)editor)->setChecked(contents->at(index.column()).value == "true" ? true : false);
+            ((QCheckBox*)editor)->setText(contents->at(index.row()).value);
+            ((QCheckBox*)editor)->setChecked(contents->at(index.row()).boolValue);
             return;
         }
         case OptionType::Float: {
-            if (knownOption != nullptr && (knownOption->getFloatRange().max != 0 || knownOption->getFloatRange().min != 0)) {
-                ((QSlider*)editor)->setValue(contents->at(index.column()).value.toFloat());
+            QSlider* slider;
+            if ((slider = dynamic_cast<QSlider*>(editor)) != nullptr) {
+                slider->setValue(contents->at(index.row()).floatValue*100);
             } else {
-                ((QDoubleSpinBox*)editor)->setValue(contents->at(index.column()).value.toFloat());
+                ((QDoubleSpinBox*)editor)->setValue(contents->at(index.row()).floatValue);
             }
             return;
         }
         case OptionType::KeyBind: {
-            ((QPushButton*)editor)->setText(contents->at(index.column()).value);
+            // TODO: fall back to QLineEdit if keybind can't be represented, like some mods do (by using another key input API)
+            // TODO: mouse binding? If not possible, fall back as well maybe?
+            Qt::Key key;
+            for (auto& keyBinding : *keybindingOptions) {
+                // this could become a std::find_if eventually, if someone wants to bother making it that.
+                if (keyBinding->minecraftKeyCode == contents->at(index.row()).value) {
+                    key = keyBinding->qtKeyCode.keyboardKey;
+                }
+            }
+            ((QKeySequenceEdit*)editor)->setKeySequence(QKeySequence(key));
             return;
         }
         default:
@@ -130,40 +144,53 @@ void GameOptionDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptio
     editor->setGeometry(option.rect);
 };
 void GameOptionDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const {
-    std::shared_ptr<GameOption> knownOption = contents->at(index.column()).knownOption;
+    std::shared_ptr<GameOption> knownOption = contents->at(index.row()).knownOption;
 
-    switch (contents->at(index.column()).type) {
+    switch (contents->at(index.row()).type) {
         case OptionType::String: {
-            if (knownOption != nullptr && knownOption->validValues.isEmpty()) {
-                contents->at(index.column()).value = ((QComboBox*)editor)->currentText();
+            QComboBox* comboBox;
+            if ((comboBox = dynamic_cast<QComboBox*>(editor)) != nullptr) {
+                contents->at(index.row()).value = comboBox->currentText();
             } else {
-                contents->at(index.column()).value = ((QLineEdit*)editor)->text();
+                contents->at(index.row()).value = ((QLineEdit*)editor)->text();
             }
             return;
         }
         case OptionType::Int: {
-            if (knownOption != nullptr && (knownOption->getIntRange().max != 0 || knownOption->getIntRange().min != 0)) {
-                contents->at(index.column()).intValue = ((QSlider*)editor)->value();
+            QSlider* slider;
+            if ((slider = dynamic_cast<QSlider*>(editor)) != nullptr) {
+                contents->at(index.row()).intValue = slider->value();
             } else {
-                contents->at(index.column()).intValue = ((QSpinBox*)editor)->value();
+                contents->at(index.row()).intValue = ((QSpinBox*)editor)->value();
             }
             return;
         }
         case OptionType::Bool: {
-            ((QCheckBox*)editor)->setText(contents->at(index.column()).value);
-            contents->at(index.column()).boolValue = ((QCheckBox*)editor)->isChecked();
+            ((QCheckBox*)editor)->setText(contents->at(index.row()).value);
+            contents->at(index.row()).boolValue = ((QCheckBox*)editor)->isChecked();
             return;
         }
         case OptionType::Float: {
-            if (knownOption != nullptr && (knownOption->getFloatRange().max != 0 || knownOption->getFloatRange().min != 0)) {
-                contents->at(index.column()).floatValue = ((QSlider*)editor)->value();
+            QSlider* slider;
+            if ((slider = dynamic_cast<QSlider*>(editor)) != nullptr) {
+                contents->at(index.row()).floatValue = slider->value()/100.0f;
             } else {
-                contents->at(index.column()).floatValue = ((QDoubleSpinBox*)editor)->value();
+                contents->at(index.row()).floatValue = ((QDoubleSpinBox*)editor)->value();
             }
             return;
         }
         case OptionType::KeyBind: {
-            contents->at(index.column()).value = ((QPushButton*)editor)->text();
+            QKeySequenceEdit* keySequenceEdit = (QKeySequenceEdit*)editor;
+
+            QString minecraftKeyCode;
+            for (auto& keyBinding : *keybindingOptions) {
+                // this could become a std::find_if eventually, if someone wants to bother making it that.
+                if (keyBinding->qtKeyCode.keyboardKey == keySequenceEdit->keySequence()[0].key() ||
+                    keyBinding->qtKeyCode.mouseButton == keySequenceEdit->keySequence()[0].key()) {
+                    minecraftKeyCode = keyBinding->minecraftKeyCode;
+                }
+            }
+            contents->at(index.row()).value = minecraftKeyCode;
             return;
         }
         default:
