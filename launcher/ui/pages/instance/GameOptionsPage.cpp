@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /*
- *  PolyMC - Minecraft Launcher
+ *  Prism Launcher - Minecraft Launcher
  *  Copyright (c) 2022 Jamie Mansfield <jmansfield@cadixdev.org>
  *  Copyright (C) 2023 Tayou <tayou@gmx.net>
  *  Copyright (C) 2023 TheLastRar <TheLastRar@users.noreply.github.com>
@@ -39,6 +39,7 @@
 #include "ui_GameOptionsPage.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/gameoptions/GameOptions.h"
+#include "minecraft/gameoptions/GameOptionDelegate.h"
 
 GameOptionsPage::GameOptionsPage(MinecraftInstance * inst, QWidget* parent)
     : QWidget(parent), ui(new Ui::GameOptionsPage)
@@ -47,6 +48,8 @@ GameOptionsPage::GameOptionsPage(MinecraftInstance * inst, QWidget* parent)
     ui->tabWidget->tabBar()->hide();
     m_model = inst->gameOptionsModel();
     ui->optionsView->setModel(m_model.get());
+    ui->optionsView->setItemDelegateForColumn(2, new GameOptionDelegate(ui->optionsView, m_model->getContents()));
+    ui->optionsView->setEditTriggers(QAbstractItemView::AllEditTriggers);
     auto head = ui->optionsView->header();
     head->setDefaultSectionSize(250);
     if(head->count())
