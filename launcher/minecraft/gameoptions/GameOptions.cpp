@@ -219,9 +219,9 @@ QVariant GameOptions::data(const QModelIndex& index, int role) const
                 } else {
                     return QVariant();
                 }
-                default: {
-                    return QVariant();
-                }
+            }
+            default: {
+                return QVariant();
             }
         }
     }
