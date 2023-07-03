@@ -247,6 +247,8 @@ set(MINECRAFT_SOURCES
     minecraft/gameoptions/GameOptionsSchema.cpp
     minecraft/gameoptions/GameOptionDelegate.h
     minecraft/gameoptions/GameOptionDelegate.cpp
+    minecraft/gameoptions/GameOptionsHeader.h
+    minecraft/gameoptions/GameOptionsHeader.cpp
 
     minecraft/update/AssetUpdateTask.h
     minecraft/update/AssetUpdateTask.cpp

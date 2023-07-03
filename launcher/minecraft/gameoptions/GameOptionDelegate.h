@@ -44,4 +44,5 @@ class GameOptionDelegate : public QStyledItemDelegate {
    private:
     std::vector<GameOptionItem>* contents;
     QList<std::shared_ptr<KeyBindData>>* keybindingOptions;
+    void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
 };
