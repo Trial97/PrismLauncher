@@ -72,6 +72,7 @@
 #include <QToolButton>
 #include <QWidget>
 #include <QWidgetAction>
+#include <memory>
 
 #include <BaseInstance.h>
 #include <BuildConfig.h>
@@ -984,7 +985,7 @@ void MainWindow::processURLs(QList<QUrl> urls)
         QUrl local_url;
         if (!url.isLocalFile()) {  // download the remote resource and identify
             QUrl dl_url;
-            if(url.scheme() == "curseforge") {
+            if (url.scheme() == "curseforge") {
                 // need to find the download link for the modpack / resource
                 // format of url curseforge://install?addonId=IDHERE&fileId=IDHERE
                 QUrlQuery query(url);
@@ -995,13 +996,13 @@ void MainWindow::processURLs(QList<QUrl> urls)
                 extra_info.insert("pack_id", addonId);
                 extra_info.insert("pack_version_id", fileId);
 
-                auto array = new QByteArray();
+                auto array = std::make_shared<QByteArray>();
 
                 auto api = FlameAPI();
                 auto job = api.getFile(addonId, fileId, array);
 
                 QString resource_name;
-                
+
                 connect(job.get(), &Task::failed, this,
                         [this](QString reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
                 connect(job.get(), &Task::succeeded, this, [this, array, addonId, fileId, &dl_url, &resource_name] {
@@ -1027,19 +1028,18 @@ void MainWindow::processURLs(QList<QUrl> urls)
                     resource_name = Json::ensureString(data, "displayName", dl_file.completeBaseName(), "displayName");
                 });
 
-                { // drop stack
+                {  // drop stack
                     ProgressDialog dlUrlDialod(this);
                     dlUrlDialod.setSkipButton(true, tr("Abort"));
                     dlUrlDialod.execWithTask(job.get());
                 }
-                
 
             } else {
                 dl_url = url;
             }
 
             if (!dl_url.isValid()) {
-                continue; // no valid url to download this resource
+                continue;  // no valid url to download this resource
             }
 
             const QString path = dl_url.host() + '/' + dl_url.path();
@@ -1050,17 +1050,18 @@ void MainWindow::processURLs(QList<QUrl> urls)
             auto archivePath = entry->getFullPath();
 
             bool dl_success = false;
-            connect(dl_job.get(), &Task::failed, this, [this](QString reason){CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
-            connect(dl_job.get(), &Task::succeeded, this, [&dl_success]{dl_success = true;});
+            connect(dl_job.get(), &Task::failed, this,
+                    [this](QString reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
+            connect(dl_job.get(), &Task::succeeded, this, [&dl_success] { dl_success = true; });
 
-            { // drop stack
+            {  // drop stack
                 ProgressDialog dlUrlDialod(this);
                 dlUrlDialod.setSkipButton(true, tr("Abort"));
                 dlUrlDialod.execWithTask(dl_job.get());
             }
 
             if (!dl_success) {
-                continue; // no local file to identify
+                continue;  // no local file to identify
             }
             local_url = QUrl::fromLocalFile(archivePath);
 
