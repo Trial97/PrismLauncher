@@ -902,11 +902,19 @@ SET(LAUNCHER_SOURCES
     ui/pages/modplatform/flame/FlameResourceModels.h
     ui/pages/modplatform/flame/FlameResourcePages.cpp
     ui/pages/modplatform/flame/FlameResourcePages.h
+    ui/pages/modplatform/flame/FlameManagedPackPage.h
+    ui/pages/modplatform/flame/FlameManagedPackPage.cpp
 
     ui/pages/modplatform/modrinth/ModrinthPage.cpp
     ui/pages/modplatform/modrinth/ModrinthPage.h
     ui/pages/modplatform/modrinth/ModrinthModel.cpp
     ui/pages/modplatform/modrinth/ModrinthModel.h
+    ui/pages/modplatform/modrinth/ModrinthResourceModels.cpp
+    ui/pages/modplatform/modrinth/ModrinthResourceModels.h
+    ui/pages/modplatform/modrinth/ModrinthResourcePages.cpp
+    ui/pages/modplatform/modrinth/ModrinthResourcePages.h
+    ui/pages/modplatform/modrinth/ModrinthManagedPackPage.h
+    ui/pages/modplatform/modrinth/ModrinthManagedPackPage.cpp
 
     ui/pages/modplatform/technic/TechnicModel.cpp
     ui/pages/modplatform/technic/TechnicModel.h
@@ -915,11 +923,6 @@ SET(LAUNCHER_SOURCES
 
     ui/pages/modplatform/ImportPage.cpp
     ui/pages/modplatform/ImportPage.h
-
-    ui/pages/modplatform/modrinth/ModrinthResourceModels.cpp
-    ui/pages/modplatform/modrinth/ModrinthResourceModels.h
-    ui/pages/modplatform/modrinth/ModrinthResourcePages.cpp
-    ui/pages/modplatform/modrinth/ModrinthResourcePages.h
 
     # GUI - dialogs
     ui/dialogs/AboutDialog.cpp
