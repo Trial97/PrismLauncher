@@ -22,6 +22,7 @@
  */
 
 #include "FlameManagedPackPage.h"
+#include "modplatform/ModIndex.h"
 #include "ui_ManagedPackPage.h"
 
 #include <QDesktopServices>
@@ -139,8 +140,7 @@ void FlameManagedPackPage::parseManagedPack()
 
 QString FlameManagedPackPage::url() const
 {
-    // FIXME: We should display the websiteUrl field, but this requires doing the API request first :(
-    return {};
+    return ModPlatform::getMetaURL(ModPlatform::ResourceProvider::FLAME, m_inst->getManagedPackID());
 }
 
 void FlameManagedPackPage::suggestVersion()

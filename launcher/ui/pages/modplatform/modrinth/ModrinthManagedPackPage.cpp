@@ -130,7 +130,7 @@ void ModrinthManagedPackPage::parseManagedPack()
 
 QString ModrinthManagedPackPage::url() const
 {
-    return "https://modrinth.com/mod/" + m_inst->getManagedPackID();
+    return ModPlatform::getMetaURL(ModPlatform::ResourceProvider::MODRINTH, m_inst->getManagedPackID());
 }
 
 void ModrinthManagedPackPage::suggestVersion()
