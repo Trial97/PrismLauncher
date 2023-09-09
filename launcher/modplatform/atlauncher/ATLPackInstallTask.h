@@ -39,12 +39,11 @@
 #include <meta/VersionList.h>
 #include "ATLPackManifest.h"
 
+#include "BaseInstance.h"
 #include "InstanceTask.h"
 #include "meta/Version.h"
-#include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
 #include "net/NetJob.h"
-#include "settings/INISettingsObject.h"
 
 #include <memory>
 #include <optional>
@@ -83,9 +82,11 @@ class PackInstallTask : public InstanceTask {
 
    public:
     explicit PackInstallTask(UserInteractionSupport* support,
+                             QString packId,
                              QString packName,
                              QString version,
-                             InstallMode installMode = InstallMode::Install);
+                             InstallMode installMode = InstallMode::Install,
+                             QString original_instance_id = {});
     virtual ~PackInstallTask() { delete m_support; }
 
     bool canAbort() const override { return true; }
@@ -117,6 +118,7 @@ class PackInstallTask : public InstanceTask {
     bool extractMods(const QMap<QString, VersionMod>& toExtract,
                      const QMap<QString, VersionMod>& toDecomp,
                      const QMap<QString, QString>& toCopy);
+    void chekUpdateInstance();
     void install();
 
    private:
@@ -128,6 +130,7 @@ class PackInstallTask : public InstanceTask {
     std::shared_ptr<QByteArray> response = std::make_shared<QByteArray>();
 
     InstallMode m_install_mode;
+    QString m_pack_id;
     QString m_pack_name;
     QString m_pack_safe_name;
     QString m_version_name;
@@ -147,6 +150,8 @@ class PackInstallTask : public InstanceTask {
 
     QFuture<bool> m_modExtractFuture;
     QFutureWatcher<bool> m_modExtractFutureWatcher;
+
+    std::optional<InstancePtr> m_instance;
 };
 
 }  // namespace ATLauncher

@@ -35,11 +35,10 @@
 
 #pragma once
 
+#include "BaseInstance.h"
 #include "InstanceCreationTask.h"
 
 #include <optional>
-
-#include "minecraft/MinecraftInstance.h"
 
 #include "modplatform/flame/FileResolvingTask.h"
 

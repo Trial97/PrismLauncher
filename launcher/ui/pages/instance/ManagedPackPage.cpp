@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 
 #include "ManagedPackPage.h"
+#include "ui/pages/modplatform/atlauncher/AtlManagedPackPage.h"
 #include "ui_ManagedPackPage.h"
 
 #include <QDesktopServices>
@@ -77,6 +78,8 @@ ManagedPackPage* ManagedPackPage::createPage(BaseInstance* inst, QString type, Q
         return new ModrinthManagedPackPage(inst, nullptr, parent);
     if (type == "flame" && (APPLICATION->capabilities() & Application::SupportsFlame))
         return new FlameManagedPackPage(inst, nullptr, parent);
+    if (type == "atlauncher")
+        return new AtlManagedPackPage(inst, nullptr, parent);
 
     return new GenericManagedPackPage(inst, nullptr, parent);
 }

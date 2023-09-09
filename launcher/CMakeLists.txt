@@ -883,6 +883,8 @@ SET(LAUNCHER_SOURCES
     ui/pages/modplatform/atlauncher/AtlPage.h
     ui/pages/modplatform/atlauncher/AtlUserInteractionSupportImpl.cpp
     ui/pages/modplatform/atlauncher/AtlUserInteractionSupportImpl.h
+    ui/pages/modplatform/atlauncher/AtlManagedPackPage.cpp
+    ui/pages/modplatform/atlauncher/AtlManagedPackPage.h
 
     ui/pages/modplatform/legacy_ftb/Page.cpp
     ui/pages/modplatform/legacy_ftb/Page.h

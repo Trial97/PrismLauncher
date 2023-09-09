@@ -41,9 +41,11 @@
 #include <quazip/quazip.h>
 
 #include "FileSystem.h"
+#include "InstanceList.h"
 #include "Json.h"
 #include "MMCZip.h"
 #include "Version.h"
+#include "launch/steps/Update.h"
 #include "meta/Index.h"
 #include "meta/Version.h"
 #include "meta/VersionList.h"
@@ -62,13 +64,20 @@ namespace ATLauncher {
 
 static Meta::Version::Ptr getComponentVersion(const QString& uid, const QString& version);
 
-PackInstallTask::PackInstallTask(UserInteractionSupport* support, QString packName, QString version, InstallMode installMode)
+PackInstallTask::PackInstallTask(UserInteractionSupport* support,
+                                 QString packId,
+                                 QString packName,
+                                 QString version,
+                                 InstallMode installMode,
+                                 QString original_instance_id)
 {
     m_support = support;
+    m_pack_id = packId;
     m_pack_name = packName;
     m_pack_safe_name = packName.replace(QRegularExpression("[^A-Za-z0-9]"), "");
     m_version_name = version;
     m_install_mode = installMode;
+    m_original_instance_id = original_instance_id;
 }
 
 bool PackInstallTask::abort()
@@ -82,6 +91,7 @@ bool PackInstallTask::abort()
 void PackInstallTask::executeTask()
 {
     qDebug() << "PackInstallTask::executeTask: " << QThread::currentThreadId();
+    chekUpdateInstance();
     NetJob::Ptr netJob{ new NetJob("ATLauncher::VersionFetch", APPLICATION->network()) };
     auto searchUrl =
         QString(BuildConfig.ATL_DOWNLOAD_SERVER_URL + "packs/%1/versions/%2/Configs.json").arg(m_pack_safe_name).arg(m_version_name);
@@ -992,11 +1002,69 @@ void PackInstallTask::install()
 
     instance.setName(name());
     instance.setIconKey(m_instIcon);
-    instance.setManagedPack("atlauncher", m_pack_safe_name, m_pack_name, m_version_name, m_version_name);
+    instance.setManagedPack("atlauncher", m_pack_id, m_pack_name, m_version_name, m_version_name);
     instanceSettings->resumeSave();
+
+    // Update information of the already installed instance, if any.
+    if (m_instance) {
+        auto inst = m_instance.value();
+
+        // Only change the name if it didn't use a custom name, so that the previous custom name
+        // is preserved, but if we're using the original one, we update the version string.
+        // NOTE: This needs to come before the copyManagedPack call!
+        if (inst->name().contains(inst->getManagedPackVersionName())) {
+            if (askForChangingInstanceName(nullptr, inst->name(), instance.name()) == InstanceNameChange::ShouldChange)
+                inst->setName(instance.name());
+        }
+
+        inst->copyManagedPack(instance);
+    }
 
     jarmods.clear();
     emitSucceeded();
+}
+
+void PackInstallTask::chekUpdateInstance()
+{
+    auto instance_list = APPLICATION->instances();
+
+    // FIXME: How to handle situations when there's more than one install already for a given modpack?
+    InstancePtr inst;
+    if (auto original_id = originalInstanceID(); !original_id.isEmpty()) {
+        inst = instance_list->getInstanceById(original_id);
+        Q_ASSERT(inst);
+    } else {
+        inst = instance_list->getInstanceByManagedName(originalName());
+
+        if (!inst) {
+            inst = instance_list->getInstanceById(originalName());
+
+            if (!inst)
+                return;
+        }
+    }
+
+    QString index_path(FS::PathCombine(m_stagingPath, "manifest.json"));
+
+    auto version_id = inst->getManagedPackVersionName();
+    auto version_str = !version_id.isEmpty() ? tr(" (version %1)").arg(version_id) : "";
+
+    if (shouldConfirmUpdate()) {
+        auto should_update = askIfShouldUpdate(nullptr, version_str);
+        if (should_update == ShouldUpdate::SkipUpdating)
+            return;
+        if (should_update == ShouldUpdate::Cancel) {
+            return;
+        }
+    }
+
+    setOverride(true, inst->id());
+    qDebug() << "Will override instance!";
+
+    m_instance = inst;
+    m_install_mode = InstallMode::Update;
+
+    return;
 }
 
 static Meta::Version::Ptr getComponentVersion(const QString& uid, const QString& version)

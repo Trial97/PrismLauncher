@@ -99,5 +99,5 @@ class GenericManagedPackPage final : public ManagedPackPage {
     ~GenericManagedPackPage() override = default;
 
     // TODO: We may want to show this page with some useful info at some point.
-    [[nodiscard]] bool shouldDisplay() const override { return false; };
+    [[nodiscard]] bool shouldDisplay() const override { return true; };
 };
