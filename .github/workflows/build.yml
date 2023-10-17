@@ -389,23 +389,6 @@ jobs:
 
           Get-ChildItem ${{ env.INSTALL_DIR }} -Recurse | ForEach FullName | Resolve-Path -Relative | %{ $_.TrimStart('.\') } | %{ $_.TrimStart('${{ env.INSTALL_DIR }}') } | %{ $_.TrimStart('\') } | Out-File -FilePath ${{ env.INSTALL_DIR }}/manifest.txt
 
-      - name: Fetch codesign certificate (Windows)
-        if: runner.os == 'Windows'
-        shell: bash # yes, we are not using MSYS2 or PowerShell here
-        run: |
-          echo '${{ secrets.WINDOWS_CODESIGN_CERT }}' | base64 --decode > codesign.pfx
-
-      - name: Sign executable (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          if (Get-Content ./codesign.pfx){
-            cd ${{ env.INSTALL_DIR }}
-            # We ship the exact same executable for portable and non-portable editions, so signing just once is fine
-            SignTool sign /fd sha256 /td sha256 /f ../codesign.pfx /p '${{ secrets.WINDOWS_CODESIGN_PASSWORD }}' /tr http://timestamp.digicert.com prismlauncher.exe prismlauncher_updater.exe prismlauncher_filelink.exe 
-          } else {
-            ":warning: Skipped code signing for Windows, as certificate was not present." >> $env:GITHUB_STEP_SUMMARY
-          }
-
       - name: Package (Windows MinGW-w64, portable)
         if: runner.os == 'Windows' && matrix.msystem != ''
         shell: msys2 {0}
@@ -427,15 +410,6 @@ jobs:
         run: |
           cd ${{ env.INSTALL_DIR }}
           makensis -NOCD "${{ github.workspace }}/${{ env.BUILD_DIR }}/program_info/win_install.nsi"
-
-      - name: Sign installer (Windows)
-        if: runner.os == 'Windows'
-        run: |
-          if (Get-Content ./codesign.pfx){
-            SignTool sign /fd sha256 /td sha256 /f codesign.pfx /p '${{ secrets.WINDOWS_CODESIGN_PASSWORD }}' /tr http://timestamp.digicert.com PrismLauncher-Setup.exe
-          } else {
-            ":warning: Skipped code signing for Windows, as certificate was not present." >> $env:GITHUB_STEP_SUMMARY
-          }
 
       - name: Package (Linux)
         if: runner.os == 'Linux'

@@ -81,7 +81,7 @@ jobs:
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.TGITHUB_TOKEN }}
           tag_name: ${{ github.ref }}
           name: Prism Launcher ${{ env.VERSION }}
           draft: true
