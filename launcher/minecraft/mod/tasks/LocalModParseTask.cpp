@@ -1,6 +1,7 @@
 #include "LocalModParseTask.h"
 
 #include <qdcss.h>
+#include <qdebug.h>
 #include <quazip/quazip.h>
 #include <quazip/quazipfile.h>
 #include <toml++/toml.h>
@@ -96,7 +97,7 @@ ModDetails ReadMCModInfo(QByteArray contents)
 }
 
 // https://github.com/MinecraftForge/Documentation/blob/5ab4ba6cf9abc0ac4c0abd96ad187461aefd72af/docs/gettingstarted/structuring.md
-ModDetails ReadMCModTOML(QByteArray contents)
+ModDetails ReadMCModTOML(QByteArray contents, QString filename)
 {
     ModDetails details;
 
@@ -118,19 +119,19 @@ ModDetails ReadMCModTOML(QByteArray contents)
     // array defined by [[mods]]
     auto tomlModsArr = tomlData["mods"].as_array();
     if (!tomlModsArr) {
-        qWarning() << "Corrupted mods.toml? Couldn't find [[mods]] array!";
+        qWarning() << QString("Corrupted %1? Couldn't find [[mods]] array!").arg(filename);
         return {};
     }
 
     // we only really care about the first element, since multiple mods in one file is not supported by us at the moment
     auto tomlModsTable0 = tomlModsArr->get(0);
     if (!tomlModsTable0) {
-        qWarning() << "Corrupted mods.toml? [[mods]] didn't have an element at index 0!";
+        qWarning() << QString("Corrupted %1? [[mods]] didn't have an element at index 0!").arg(filename);
         return {};
     }
     auto modsTable = tomlModsTable0->as_table();
     if (!modsTable) {
-        qWarning() << "Corrupted mods.toml? [[mods]] was not a table!";
+        qWarning() << QString("Corrupted %1? [[mods]] was not a table!").arg(filename);
         return {};
     }
 
@@ -469,13 +470,56 @@ bool processZIP(Mod& mod, [[maybe_unused]] ProcessingLevel level)
 
     QuaZipFile file(&zip);
 
-    if (zip.setCurrentFile("META-INF/mods.toml")) {
+    if (zip.setCurrentFile("META-INF/neoforge.mods.toml")) {
         if (!file.open(QIODevice::ReadOnly)) {
             zip.close();
             return false;
         }
 
-        details = ReadMCModTOML(file.readAll());
+        details = ReadMCModTOML(file.readAll(), "neoforge.mods.toml");
+        file.close();
+
+        // to replace ${file.jarVersion} with the actual version, as needed
+        if (details.version == "${file.jarVersion}") {
+            if (zip.setCurrentFile("META-INF/MANIFEST.MF")) {
+                if (!file.open(QIODevice::ReadOnly)) {
+                    zip.close();
+                    return false;
+                }
+
+                // quick and dirty line-by-line parser
+                auto manifestLines = file.readAll().split('\n');
+                QString manifestVersion = "";
+                for (auto& line : manifestLines) {
+                    if (QString(line).startsWith("Implementation-Version: ")) {
+                        manifestVersion = QString(line).remove("Implementation-Version: ");
+                        break;
+                    }
+                }
+
+                // some mods use ${projectversion} in their build.gradle, causing this mess to show up in MANIFEST.MF
+                // also keep with forge's behavior of setting the version to "NONE" if none is found
+                if (manifestVersion.contains("task ':jar' property 'archiveVersion'") || manifestVersion == "") {
+                    manifestVersion = "NONE";
+                }
+
+                details.version = manifestVersion;
+
+                file.close();
+            }
+        }
+
+        zip.close();
+        mod.setDetails(details);
+
+        return true;
+    } else if (zip.setCurrentFile("META-INF/mods.toml")) {
+        if (!file.open(QIODevice::ReadOnly)) {
+            zip.close();
+            return false;
+        }
+
+        details = ReadMCModTOML(file.readAll(), "mods.toml");
         file.close();
 
         // to replace ${file.jarVersion} with the actual version, as needed
