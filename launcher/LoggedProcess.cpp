@@ -36,7 +36,6 @@
 
 #include "LoggedProcess.h"
 #include <QDebug>
-#include <QTextDecoder>
 #include "MessageLevel.h"
 
 LoggedProcess::LoggedProcess(QObject* parent) : QProcess(parent)
@@ -56,9 +55,9 @@ LoggedProcess::~LoggedProcess()
     }
 }
 
-QStringList LoggedProcess::reprocess(const QByteArray& data, QTextDecoder& decoder)
+QStringList LoggedProcess::reprocess(const QByteArray& data)
 {
-    auto str = decoder.toUnicode(data);
+    auto str = QString(data);
 
     if (!m_leftover_line.isEmpty()) {
         str.prepend(m_leftover_line);
@@ -73,13 +72,13 @@ QStringList LoggedProcess::reprocess(const QByteArray& data, QTextDecoder& decod
 
 void LoggedProcess::on_stdErr()
 {
-    auto lines = reprocess(readAllStandardError(), m_err_decoder);
+    auto lines = reprocess(readAllStandardError());
     emit log(lines, MessageLevel::StdErr);
 }
 
 void LoggedProcess::on_stdOut()
 {
-    auto lines = reprocess(readAllStandardOutput(), m_out_decoder);
+    auto lines = reprocess(readAllStandardOutput());
     emit log(lines, MessageLevel::StdOut);
 }
 

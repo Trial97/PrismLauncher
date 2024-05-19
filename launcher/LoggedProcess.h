@@ -36,7 +36,6 @@
 #pragma once
 
 #include <QProcess>
-#include <QTextDecoder>
 #include "MessageLevel.h"
 
 /*
@@ -77,11 +76,9 @@ class LoggedProcess : public QProcess {
    private:
     void changeState(LoggedProcess::State state);
 
-    QStringList reprocess(const QByteArray& data, QTextDecoder& decoder);
+    QStringList reprocess(const QByteArray& data);
 
    private:
-    QTextDecoder m_err_decoder = QTextDecoder(QTextCodec::codecForLocale());
-    QTextDecoder m_out_decoder = QTextDecoder(QTextCodec::codecForLocale());
     QString m_leftover_line;
     bool m_killed = false;
     State m_state = NotRunning;
