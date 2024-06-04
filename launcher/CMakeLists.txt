@@ -407,6 +407,9 @@ set(SETTINGS_SOURCES
     settings/Setting.h
     settings/SettingsObject.cpp
     settings/SettingsObject.h
+
+    settings/TomlFile.cpp
+    settings/TomlFile.h
 )
 
 set(JAVA_SOURCES

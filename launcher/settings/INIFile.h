@@ -36,22 +36,40 @@
 
 #pragma once
 
-#include <QIODevice>
 #include <QString>
 #include <QVariant>
 
-#include <QJsonArray>
-#include <QJsonDocument>
+class SettingsFile {
+   public:
+    virtual ~SettingsFile() = default;
+    virtual bool loadFile(QString fileName) = 0;
+    virtual bool loadFile(QByteArray data) = 0;
+    virtual bool saveFile(QString fileName) = 0;
+
+    virtual QVariant get(QString key, QVariant def = {}) const = 0;
+    virtual void set(QString key, QVariant val) = 0;
+    virtual void remove(QString key) = 0;
+    virtual bool contains(QString key) const = 0;
+    virtual QVariant operator[](const QString& key) const = 0;
+    virtual QStringList keys() = 0;
+};
 
 // Sectionless INI parser (for instance config files)
-class INIFile : public QMap<QString, QVariant> {
+class INIFile : public SettingsFile {
    public:
-    explicit INIFile();
+    explicit INIFile() = default;
 
     bool loadFile(QString fileName);
     bool loadFile(QByteArray data);
     bool saveFile(QString fileName);
 
-    QVariant get(QString key, QVariant def) const;
+    QVariant get(QString key, QVariant def = {}) const;
     void set(QString key, QVariant val);
+    void remove(QString key);
+    bool contains(QString key) const;
+    QVariant operator[](const QString& key) const;
+    QStringList keys();
+
+   private:
+    QMap<QString, QVariant> m_values;
 };

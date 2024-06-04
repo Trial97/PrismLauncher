@@ -16,10 +16,12 @@
 #pragma once
 
 #include <QObject>
+#include <memory>
 
 #include "settings/INIFile.h"
 
 #include "settings/SettingsObject.h"
+#include "settings/TomlFile.h"
 
 /*!
  * \brief A settings object that stores its settings in an INIFile.
@@ -58,6 +60,6 @@ class INISettingsObject : public SettingsObject {
     void doSave();
 
    protected:
-    INIFile m_ini;
+    std::unique_ptr<SettingsFile> m_ini = std::unique_ptr<SettingsFile>(new TomlFile());
     QString m_filePath;
 };
