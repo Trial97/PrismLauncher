@@ -18,8 +18,6 @@
 #include <QObject>
 #include <memory>
 
-#include "settings/INIFile.h"
-
 #include "settings/SettingsObject.h"
 #include "settings/TomlFile.h"
 

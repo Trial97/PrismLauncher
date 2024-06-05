@@ -39,20 +39,7 @@
 #include <QString>
 #include <QVariant>
 
-class SettingsFile {
-   public:
-    virtual ~SettingsFile() = default;
-    virtual bool loadFile(QString fileName) = 0;
-    virtual bool loadFile(QByteArray data) = 0;
-    virtual bool saveFile(QString fileName) = 0;
-
-    virtual QVariant get(QString key, QVariant def = {}) const = 0;
-    virtual void set(QString key, QVariant val) = 0;
-    virtual void remove(QString key) = 0;
-    virtual bool contains(QString key) const = 0;
-    virtual QVariant operator[](const QString& key) const = 0;
-    virtual QStringList keys() = 0;
-};
+#include "settings/SettingsFile.h"
 
 // Sectionless INI parser (for instance config files)
 class INIFile : public SettingsFile {

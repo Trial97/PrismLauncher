@@ -18,36 +18,20 @@
 
 #pragma once
 
-#include <QMetaType>
 #include <QString>
 #include <QVariant>
 
-#include "settings/SettingsFile.h"
-
-#include <toml++/toml.h>
-
-Q_DECLARE_METATYPE(toml::table)
-Q_DECLARE_METATYPE(toml::array)
-
-class TomlFile : public SettingsFile {
+class SettingsFile {
    public:
-    explicit TomlFile() = default;
+    virtual ~SettingsFile() = default;
+    virtual bool loadFile(QString fileName) = 0;
+    virtual bool loadFile(QByteArray data) = 0;
+    virtual bool saveFile(QString fileName) = 0;
 
-    bool loadFile(QString fileName);
-    bool loadFile(QByteArray data);
-    bool saveFile(QString fileName);
-
-    QVariant get(QString key, QVariant def = {}) const;
-    void set(QString key, QVariant val);
-    void remove(QString key);
-    bool contains(QString key) const;
-    QVariant operator[](const QString& key) const;
-    virtual QStringList keys();
-
-   private:
-    bool migrate(QString fileName);
-
-   private:
-    toml::table m_data;
-    bool m_loaded;
+    virtual QVariant get(QString key, QVariant def = {}) const = 0;
+    virtual void set(QString key, QVariant val) = 0;
+    virtual void remove(QString key) = 0;
+    virtual bool contains(QString key) const = 0;
+    virtual QVariant operator[](const QString& key) const = 0;
+    virtual QStringList keys() = 0;
 };

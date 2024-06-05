@@ -17,6 +17,8 @@
  */
 #include "TomlFile.h"
 
+#include "settings/INIFile.h"
+
 #include <QVariant>
 
 #include <fstream>
