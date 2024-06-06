@@ -21,6 +21,7 @@
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QIODevice>
+#include "Toml.h"
 
 namespace ModPlatform {
 
@@ -106,4 +107,15 @@ auto getModLoaderString(ModLoaderType type) -> const QString
     return "";
 }
 
+Dependency::Dependency(toml::table table)
+{
+    type = DependencyType::REQUIRED;
+    addonId = Toml::getString(table, "id");
+    version = Toml::getString(table, "version");
+}
+
+toml::table Dependency::toToml()
+{
+    return toml::table{ { "id", addonId.toString().toStdString() }, { "version", version.toStdString() } };
+}
 }  // namespace ModPlatform

@@ -17,8 +17,8 @@
  */
 
 #include "ModDetails.h"
-#include <string>
-#include <toml++/impl/table.hpp>
+#include "Toml.h"
+#include "modplatform/helpers/HashUtils.h"
 
 ModLicense::ModLicense(QString license)
 {
@@ -77,37 +77,12 @@ bool ModLicense::isEmpty()
     return this->name.isEmpty() && this->id.isEmpty() && this->url.isEmpty() && this->description.isEmpty();
 }
 
-QString getTomlString(toml::table table, QString key, QString def = {})
-{
-    return QString::fromStdString(table[key.toStdString()].value_or(def.toStdString()));
-}
-
-QStringList getTomlStringList(toml::array* arr)
-{
-    QStringList list;
-    if (arr) {
-        for (auto&& v : *arr) {
-            list.push_back(QString::fromStdString(v.value_or("")));
-        }
-    }
-    return list;
-}
-
-toml::array stringListToToml(QStringList list)
-{
-    toml::array arr;
-    for (auto v : list) {
-        arr.push_back(v.toStdString());
-    }
-    return arr;
-}
-
 ModLicense::ModLicense(toml::table table)
 {
-    name = getTomlString(table, "name");
-    id = getTomlString(table, "id");
-    url = getTomlString(table, "url");
-    description = getTomlString(table, "description");
+    name = Toml::getString(table, "name");
+    id = Toml::getString(table, "id");
+    url = Toml::getString(table, "url");
+    description = Toml::getString(table, "description");
 }
 
 toml::table ModLicense::toToml()
@@ -173,17 +148,17 @@ ModDetails& ModDetails::operator=(const ModDetails&& other)
 
 ModDetails::ModDetails(toml::table table)
 {
-    mod_id = getTomlString(table, "mod_id");
-    name = getTomlString(table, "name");
-    version = getTomlString(table, "version");
-    mcversion = getTomlString(table, "mcversion");
-    homeurl = getTomlString(table, "homeurl");
-    description = getTomlString(table, "description");
-    issue_tracker = getTomlString(table, "issue_tracker");
-    icon_path = getTomlString(table, "icon_path");
+    mod_id = Toml::getString(table, "mod_id");
+    name = Toml::getString(table, "name");
+    version = Toml::getString(table, "version");
+    mcversion = Toml::getString(table, "mcversion");
+    homeurl = Toml::getString(table, "homeurl");
+    description = Toml::getString(table, "description");
+    issue_tracker = Toml::getString(table, "issue_tracker");
+    icon_path = Toml::getString(table, "icon_path");
     new_format_id = table["format_id"].value_or(0);
 
-    authors = getTomlStringList(table["authors"].as_array());
+    authors = Toml::toStringList(table["authors"].as_array());
     if (auto licenseArr = table["licenses"].as_array()) {
         for (auto&& l : *licenseArr) {
             if (auto table = l.as_table()) {
@@ -211,7 +186,18 @@ toml::table ModDetails::toToml()
         { "issue_tracker", issue_tracker.toStdString() },
         { "icon_path", icon_path.toStdString() },
         { "format_id", new_format_id },
-        { "authors", stringListToToml(authors) },
+        { "authors", Toml::fromStringList(authors) },
         { "licenses", licenseArr },
     };
+}
+
+ResourceHash::ResourceHash(toml::table table)
+{
+    alg = Hashing::algorithmFromString(Toml::getString(table, "alg"));
+    hash = Toml::getString(table, "hash");
+}
+
+toml::table ResourceHash::toToml()
+{
+    return toml::table{ { "alg", Hashing::algorithmToString(alg).toStdString() }, { "hash", hash.toStdString() } };
 }

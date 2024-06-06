@@ -44,6 +44,8 @@
 #include <toml++/toml.hpp>
 
 #include "minecraft/mod/MetadataHandler.h"
+#include "modplatform/ModIndex.h"
+#include "modplatform/helpers/HashUtils.h"
 
 enum class ModStatus {
     Installed,     // Both JAR and Metadata are present
@@ -118,3 +120,21 @@ struct ModDetails {
 
     toml::table toToml();
 };
+
+struct ResourceHash {
+    Hashing::Algorithm alg = Hashing::Algorithm::Sha1;
+    QString hash = {};
+
+    ResourceHash(toml::table table);
+    toml::table toToml();
+};
+
+// enum class Side { ClientSide = 1 << 0, ServerSide = 1 << 1, UniversalSide = ClientSide | ServerSide };
+// struct ProviderInfo {
+//     ModPlatform::ResourceProvider name;
+//     QString id = {};
+//     QString version = {};
+//     QString url = {};
+//     Side side = Side::UniversalSide;
+//     loaders = [""] mcVersions = [""] releaseType = ""
+// };

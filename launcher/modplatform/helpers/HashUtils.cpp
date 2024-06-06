@@ -63,6 +63,19 @@ QString algorithmToString(Algorithm alg)
     }
 }
 
+Algorithm algorithmFromString(QString alg)
+{
+    if (alg == "sha512")
+        return Algorithm::Sha512;
+    if (alg == "sha1")
+        return Algorithm::Sha1;
+    if (alg == "md5")
+        return Algorithm::Md5;
+    if (alg == "murmur2")
+        return Algorithm::Murmur2;
+    return Algorithm::Sha1;
+}
+
 Hasher::Hasher(QString file_path, Algorithm algorithm) : m_file_path(file_path), m_algorithm(algorithm)
 {
     setObjectName(QString("%1 Hasher: %2").arg(algorithmToString(m_algorithm), file_path));

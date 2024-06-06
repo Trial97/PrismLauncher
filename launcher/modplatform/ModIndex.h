@@ -25,7 +25,7 @@
 #include <QVariant>
 #include <QVector>
 #include <memory>
-#include <optional>
+#include <toml++/toml.hpp>
 
 class QIODevice;
 
@@ -89,6 +89,10 @@ struct Dependency {
     QVariant addonId;
     DependencyType type;
     QString version;
+
+    Dependency() = default;
+    Dependency(toml::table table);
+    toml::table toToml();
 };
 
 struct IndexedVersion {

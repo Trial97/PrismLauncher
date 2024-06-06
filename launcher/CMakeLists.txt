@@ -57,6 +57,10 @@ set(CORE_SOURCES
     Json.h
     Json.cpp
 
+    # Toml parsing helpers
+    Toml.h
+    Toml.cpp
+
     FileSystem.h
     FileSystem.cpp
 

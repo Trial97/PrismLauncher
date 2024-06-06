@@ -12,6 +12,7 @@ enum class Algorithm { Sha512, Sha1, Md5, Murmur2 };
 QList<Algorithm> hashType(ModPlatform::ResourceProvider);
 QString hash(QString file_path, Algorithm alg);
 QString algorithmToString(Algorithm alg);
+Algorithm algorithmFromString(QString alg);
 
 class Hasher : public Task {
     Q_OBJECT
