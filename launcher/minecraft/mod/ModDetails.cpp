@@ -18,6 +18,7 @@
 
 #include "ModDetails.h"
 #include "Toml.h"
+#include "modplatform/ModIndex.h"
 #include "modplatform/helpers/HashUtils.h"
 
 ModLicense::ModLicense(QString license)
@@ -199,5 +200,83 @@ ResourceHash::ResourceHash(toml::table table)
 
 toml::table ResourceHash::toToml()
 {
-    return toml::table{ { "alg", Hashing::algorithmToString(alg).toStdString() }, { "hash", hash.toStdString() } };
+    return toml::table{
+        { "alg", Hashing::algorithmToString(alg).toStdString() },
+        { "hash", hash.toStdString() },
+    };
+}
+
+ProviderInfo::ProviderInfo(toml::table table)
+{
+    name = ModPlatform::ProviderCapabilities::fromString(Toml::getString(table, "name"));
+    id = Toml::getString(table, "id");
+    version = Toml::getString(table, "version");
+    url = Toml::getString(table, "url");
+    side = stringToSide(Toml::getString(table, "side"));
+    if (auto lds = table["loaders"]; lds && lds.is_array()) {
+        for (auto&& loader : *lds.as_array()) {
+            if (loader.is_string()) {
+                loaders |= ModPlatform::getModLoaderFromString(QString::fromStdString(loader.as_string()->value_or("")));
+            }
+        }
+    }
+    mcVersions = Toml::toStringList(table.get_as<toml::array>("mcVersions"));
+    releaseType = Toml::getString(table, "releaseType");
+    if (auto deps = table.get_as<toml::array>("dependencies")) {
+        for (auto&& d : *deps) {
+            if (auto t = d.as_table()) {
+                dependencies.push_back(ModPlatform::Dependency(*t));
+            }
+        }
+    }
+}
+
+toml::table ProviderInfo::toToml()
+{
+    toml::array deps;
+    for (auto dep : dependencies) {
+        if (dep.type == ModPlatform::DependencyType::REQUIRED) {
+            deps.push_back(dep.toToml());
+        }
+    }
+    toml::array lds;
+    for (auto loader : { ModPlatform::NeoForge, ModPlatform::Forge, ModPlatform::Cauldron, ModPlatform::LiteLoader, ModPlatform::Fabric,
+                         ModPlatform::Quilt }) {
+        if (loaders & loader) {
+            lds.push_back(getModLoaderAsString(loader).toStdString());
+        }
+    }
+    return toml::table{
+        { "name", ModPlatform::ProviderCapabilities::name(name) },
+        { "id", id.toStdString() },
+        { "version", version.toStdString() },
+        { "url", url.toStdString() },
+        { "side", sideToString(side).toStdString() },
+        { "loaders", lds },
+        { "mcVersions", Toml::fromStringList(mcVersions) },
+        { "releaseType", releaseType.toString().toStdString() },
+        { "dependencies", deps },
+    };
+}
+QString sideToString(Side side)
+{
+    switch (side) {
+        case Side::ClientSide:
+            return "client";
+        case Side::ServerSide:
+            return "server";
+        case Side::UniversalSide:
+            return "both";
+    }
+    return {};
+}
+Side stringToSide(QString side)
+{
+    if (side == "client")
+        return Side::ClientSide;
+    if (side == "server")
+        return Side::ServerSide;
+    if (side == "both")
+        return Side::UniversalSide;
+    return Side::UniversalSide;
 }

@@ -40,11 +40,11 @@ enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK };
 
 enum class DependencyType { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
 
-class ProviderCapabilities {
-   public:
-    auto name(ResourceProvider) -> const char*;
-    auto readableName(ResourceProvider) -> QString;
-};
+namespace ProviderCapabilities {
+const char* name(ResourceProvider);
+QString readableName(ResourceProvider);
+ResourceProvider fromString(QString);
+};  // namespace ProviderCapabilities
 
 struct ModpackAuthor {
     QString name;
@@ -86,11 +86,12 @@ struct IndexedVersionType {
 };
 
 struct Dependency {
-    QVariant addonId;
-    DependencyType type;
-    QString version;
+    QVariant addonId = {};
+    DependencyType type = {};
+    QString version = {};
 
     Dependency() = default;
+    Dependency(QVariant addonId_, DependencyType type_ = DependencyType::REQUIRED, QString version_ = {});
     Dependency(toml::table table);
     toml::table toToml();
 };

@@ -96,13 +96,13 @@ bool TomlFile::saveFile(QString fileName)
     if (!m_loaded) {
         auto tmp = m_data;
         m_data = {};
-        if (!loadFile(fileName))
-            return false;
+        loadFile(fileName);
         m_data = merge_tables(m_data, tmp);
     }
     if (!contains("ConfigVersion"))
         set("ConfigVersion", "1.3");
-    std::ofstream outFile(fileName.toStdString());
+    std::ofstream outFile;
+    outFile.open(fileName.toStdString());
     if (!outFile.is_open()) {
         qCritical() << QString("Could not open file %1!").arg(fileName);
         return false;
@@ -303,5 +303,6 @@ bool TomlFile::migrate(QString fileName)
         set(key, f.get(key));
 
     set("ConfigVersion", "1.3");
-    return true;
+    m_loaded = true;
+    return saveFile(fileName);
 }

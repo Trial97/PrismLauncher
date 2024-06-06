@@ -129,12 +129,21 @@ struct ResourceHash {
     toml::table toToml();
 };
 
-// enum class Side { ClientSide = 1 << 0, ServerSide = 1 << 1, UniversalSide = ClientSide | ServerSide };
-// struct ProviderInfo {
-//     ModPlatform::ResourceProvider name;
-//     QString id = {};
-//     QString version = {};
-//     QString url = {};
-//     Side side = Side::UniversalSide;
-//     loaders = [""] mcVersions = [""] releaseType = ""
-// };
+enum class Side { ClientSide = 1 << 0, ServerSide = 1 << 1, UniversalSide = ClientSide | ServerSide };
+QString sideToString(Side side);
+Side stringToSide(QString side);
+
+struct ProviderInfo {
+    ModPlatform::ResourceProvider name;
+    QString id = {};
+    QString version = {};
+    QString url = {};
+    Side side = Side::UniversalSide;
+    ModPlatform::ModLoaderTypes loaders;
+    QStringList mcVersions = {};
+    ModPlatform::IndexedVersionType releaseType;
+    QList<ModPlatform::Dependency> dependencies = {};
+
+    ProviderInfo(toml::table table);
+    toml::table toToml();
+};

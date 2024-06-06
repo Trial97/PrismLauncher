@@ -36,7 +36,8 @@ void ModrinthCheckUpdate::executeTask()
 
     // Create all hashes
     QStringList hashes;
-    auto best_hash_type = Hashing::algorithmToString(Hashing::hashType(ModPlatform::ResourceProvider::MODRINTH).first());
+    auto best_hash_type =
+        Hashing::algorithmToString(ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH).first());
 
     ConcurrentTask hashing_task(this, "MakeModrinthHashesTask", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     for (auto* mod : m_mods) {

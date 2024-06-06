@@ -163,7 +163,7 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool load_changelog) -> 
     auto hash_list = Json::ensureArray(obj, "hashes");
     for (auto h : hash_list) {
         auto hash_entry = Json::ensureObject(h);
-        auto hash_types = Hashing::hashType(ModPlatform::ResourceProvider::FLAME);
+        auto hash_types = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::FLAME);
         auto hash_algo = enumToHash(Json::ensureInteger(hash_entry, "algo", 1, "algorithm"));
         if (hash_types.contains(hash_algo)) {
             file.hash = Json::requireString(hash_entry, "value");

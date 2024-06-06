@@ -81,6 +81,15 @@ auto ProviderCapabilities::readableName(ResourceProvider p) -> QString
     return {};
 }
 
+ResourceProvider ProviderCapabilities::fromString(QString p)
+{
+    if (p == "modrinth")
+        return ResourceProvider::MODRINTH;
+    if (p == "curseforge")
+        return ResourceProvider::FLAME;
+    return {};
+}
+
 QString getMetaURL(ResourceProvider provider, QVariant projectID)
 {
     return ((provider == ModPlatform::ResourceProvider::FLAME) ? "https://www.curseforge.com/projects/" : "https://modrinth.com/mod/") +
@@ -119,6 +128,8 @@ toml::table Dependency::toToml()
 {
     return toml::table{ { "id", addonId.toString().toStdString() }, { "version", version.toStdString() } };
 }
+
+Dependency::Dependency(QVariant addonId_, DependencyType type_, QString version_) : addonId(addonId_), type(type_), version(version_){};
 
 auto getModLoaderFromString(QString type) -> ModLoaderType
 {

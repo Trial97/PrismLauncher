@@ -10,7 +10,7 @@ namespace Hashing {
 
 Hasher::Ptr createHasher(QString file_path, ModPlatform::ResourceProvider provider)
 {
-    return makeShared<Hasher>(file_path, hashType(provider).first());
+    return makeShared<Hasher>(file_path, ModPlatform::ProviderCapabilities::hashType(provider).first());
 }
 
 QString hash(QString file_path, Algorithm alg)
@@ -61,6 +61,7 @@ QString algorithmToString(Algorithm alg)
         case Algorithm::Murmur2:
             return "murmur2";
     }
+    return {};
 }
 
 Algorithm algorithmFromString(QString alg)
@@ -107,13 +108,14 @@ QString Hasher::getPath() const
     return m_file_path;
 }
 
-QList<Algorithm> hashType(ModPlatform::ResourceProvider p)
+}  // namespace Hashing
+QList<Hashing::Algorithm> ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider p)
 {
     switch (p) {
         case ModPlatform::ResourceProvider::MODRINTH:
-            return { Algorithm::Sha512, Algorithm::Sha1 };
+            return { Hashing::Algorithm::Sha512, Hashing::Algorithm::Sha1 };
         case ModPlatform::ResourceProvider::FLAME:
-            return { Algorithm::Sha1, Algorithm::Md5, Algorithm::Murmur2 };
+            return { Hashing::Algorithm::Sha1, Hashing::Algorithm::Md5, Hashing::Algorithm::Murmur2 };
     }
+    return {};
 }
-}  // namespace Hashing
