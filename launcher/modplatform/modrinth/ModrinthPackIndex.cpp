@@ -24,9 +24,9 @@
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
 #include "modplatform/ModIndex.h"
+#include "modplatform/helpers/HashUtils.h"
 
 static ModrinthAPI api;
-static ModPlatform::ProviderCapabilities ProviderCaps;
 
 bool shouldDownloadOnSide(QString side)
 {
@@ -237,8 +237,9 @@ auto Modrinth::loadIndexedPackVersion(QJsonObject& obj, QString preferred_hash_t
             file.hash = Json::requireString(hash_list, preferred_hash_type);
             file.hash_type = preferred_hash_type;
         } else {
-            auto hash_types = ProviderCaps.hashType(ModPlatform::ResourceProvider::MODRINTH);
-            for (auto& hash_type : hash_types) {
+            auto hash_types = Hashing::hashType(ModPlatform::ResourceProvider::MODRINTH);
+            for (auto& alg : hash_types) {
+                auto hash_type = Hashing::algorithmToString(alg);
                 if (hash_list.contains(hash_type)) {
                     file.hash = Json::requireString(hash_list, hash_type);
                     file.hash_type = hash_type;

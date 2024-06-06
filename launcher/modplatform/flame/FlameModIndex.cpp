@@ -5,9 +5,9 @@
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
 #include "modplatform/flame/FlameAPI.h"
+#include "modplatform/helpers/HashUtils.h"
 
 static FlameAPI api;
-static ModPlatform::ProviderCapabilities ProviderCaps;
 
 void FlameMod::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
 {
@@ -63,14 +63,14 @@ void FlameMod::loadBody(ModPlatform::IndexedPack& pack, [[maybe_unused]] QJsonOb
         pack.extraDataLoaded = true;
 }
 
-static QString enumToString(int hash_algorithm)
+static Hashing::Algorithm enumToHash(int hash_algorithm)
 {
     switch (hash_algorithm) {
         default:
         case 1:
-            return "sha1";
+            return Hashing::Algorithm::Sha1;
         case 2:
-            return "md5";
+            return Hashing::Algorithm::Md5;
     }
 }
 
@@ -162,11 +162,11 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool load_changelog) -> 
     auto hash_list = Json::ensureArray(obj, "hashes");
     for (auto h : hash_list) {
         auto hash_entry = Json::ensureObject(h);
-        auto hash_types = ProviderCaps.hashType(ModPlatform::ResourceProvider::FLAME);
-        auto hash_algo = enumToString(Json::ensureInteger(hash_entry, "algo", 1, "algorithm"));
+        auto hash_types = Hashing::hashType(ModPlatform::ResourceProvider::FLAME);
+        auto hash_algo = enumToHash(Json::ensureInteger(hash_entry, "algo", 1, "algorithm"));
         if (hash_types.contains(hash_algo)) {
             file.hash = Json::requireString(hash_entry, "value");
-            file.hash_type = hash_algo;
+            file.hash_type = Hashing::algorithmToString(hash_algo);
             break;
         }
     }

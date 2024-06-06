@@ -78,38 +78,6 @@ auto ProviderCapabilities::readableName(ResourceProvider p) -> QString
     }
     return {};
 }
-auto ProviderCapabilities::hashType(ResourceProvider p) -> QStringList
-{
-    switch (p) {
-        case ResourceProvider::MODRINTH:
-            return { "sha512", "sha1" };
-        case ResourceProvider::FLAME:
-            // Try newer formats first, fall back to old format
-            return { "sha1", "md5", "murmur2" };
-    }
-    return {};
-}
-
-auto ProviderCapabilities::hash(ResourceProvider p, QIODevice* device, QString type) -> QString
-{
-    QCryptographicHash::Algorithm algo = QCryptographicHash::Sha1;
-    switch (p) {
-        case ResourceProvider::MODRINTH: {
-            algo = (type == "sha1") ? QCryptographicHash::Sha1 : QCryptographicHash::Sha512;
-            break;
-        }
-        case ResourceProvider::FLAME:
-            algo = (type == "sha1") ? QCryptographicHash::Sha1 : QCryptographicHash::Md5;
-            break;
-    }
-
-    QCryptographicHash hash(algo);
-    if (!hash.addData(device))
-        qCritical() << "Failed to read JAR to create hash!";
-
-    Q_ASSERT(hash.result().length() == hash.hashLength(algo));
-    return { hash.result().toHex() };
-}
 
 QString getMetaURL(ResourceProvider provider, QVariant projectID)
 {

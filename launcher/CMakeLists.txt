@@ -315,6 +315,7 @@ set(MINECRAFT_SOURCES
     minecraft/mod/Mod.h
     minecraft/mod/Mod.cpp
     minecraft/mod/ModDetails.h
+    minecraft/mod/ModDetails.cpp
     minecraft/mod/ModFolderModel.h
     minecraft/mod/ModFolderModel.cpp
     minecraft/mod/Resource.h

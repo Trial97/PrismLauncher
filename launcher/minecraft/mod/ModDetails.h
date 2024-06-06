@@ -41,6 +41,8 @@
 #include <QStringList>
 #include <QUrl>
 
+#include <toml++/toml.hpp>
+
 #include "minecraft/mod/MetadataHandler.h"
 
 enum class ModStatus {
@@ -56,66 +58,17 @@ struct ModLicense {
     QString url = {};
     QString description = {};
 
-    ModLicense() {}
+    ModLicense() = default;
+    ModLicense(QString license);
+    ModLicense(const QString& name_, const QString& id_, const QString& url_, const QString& description_);
+    ModLicense(const ModLicense& other);
+    ModLicense(toml::table table);
 
-    ModLicense(const QString license)
-    {
-        // FIXME: come up with a better license parsing.
-        // handle SPDX identifiers? https://spdx.org/licenses/
-        auto parts = license.split(' ');
-        QStringList notNameParts = {};
-        for (auto part : parts) {
-            auto _url = QUrl(part);
-            if (part.startsWith("(") && part.endsWith(")"))
-                _url = QUrl(part.mid(1, part.size() - 2));
+    ModLicense& operator=(const ModLicense& other);
+    ModLicense& operator=(const ModLicense&& other);
 
-            if (_url.isValid() && !_url.scheme().isEmpty() && !_url.host().isEmpty()) {
-                this->url = _url.toString();
-                notNameParts.append(part);
-                continue;
-            }
-        }
-
-        for (auto part : notNameParts) {
-            parts.removeOne(part);
-        }
-
-        auto licensePart = parts.join(' ');
-        this->name = licensePart;
-        this->description = licensePart;
-
-        if (parts.size() == 1) {
-            this->id = parts.first();
-        }
-    }
-
-    ModLicense(const QString& name_, const QString& id_, const QString& url_, const QString& description_)
-        : name(name_), id(id_), url(url_), description(description_)
-    {}
-
-    ModLicense(const ModLicense& other) : name(other.name), id(other.id), url(other.url), description(other.description) {}
-
-    ModLicense& operator=(const ModLicense& other)
-    {
-        this->name = other.name;
-        this->id = other.id;
-        this->url = other.url;
-        this->description = other.description;
-
-        return *this;
-    }
-
-    ModLicense& operator=(const ModLicense&& other)
-    {
-        this->name = other.name;
-        this->id = other.id;
-        this->url = other.url;
-        this->description = other.description;
-
-        return *this;
-    }
-
-    bool isEmpty() { return this->name.isEmpty() && this->id.isEmpty() && this->url.isEmpty() && this->description.isEmpty(); }
+    bool isEmpty();
+    toml::table toToml();
 };
 
 struct ModDetails {
@@ -147,7 +100,7 @@ struct ModDetails {
     QList<ModLicense> licenses = {};
 
     /* Path of mod logo */
-    QString icon_file = {};
+    QString icon_path = {};
 
     /* Installation status of the mod */
     ModStatus status = ModStatus::Unknown;
@@ -155,54 +108,13 @@ struct ModDetails {
     /* Metadata information, if any */
     std::shared_ptr<Metadata::ModStruct> metadata = nullptr;
 
+    int new_format_id;  // for resourcepacks
+
     ModDetails() = default;
+    ModDetails(const ModDetails& other);
+    ModDetails& operator=(const ModDetails& other);
+    ModDetails& operator=(const ModDetails&& other);
+    ModDetails(toml::table table);
 
-    /** Metadata should be handled manually to properly set the mod status. */
-    ModDetails(const ModDetails& other)
-        : mod_id(other.mod_id)
-        , name(other.name)
-        , version(other.version)
-        , mcversion(other.mcversion)
-        , homeurl(other.homeurl)
-        , description(other.description)
-        , authors(other.authors)
-        , issue_tracker(other.issue_tracker)
-        , licenses(other.licenses)
-        , icon_file(other.icon_file)
-        , status(other.status)
-    {}
-
-    ModDetails& operator=(const ModDetails& other)
-    {
-        this->mod_id = other.mod_id;
-        this->name = other.name;
-        this->version = other.version;
-        this->mcversion = other.mcversion;
-        this->homeurl = other.homeurl;
-        this->description = other.description;
-        this->authors = other.authors;
-        this->issue_tracker = other.issue_tracker;
-        this->licenses = other.licenses;
-        this->icon_file = other.icon_file;
-        this->status = other.status;
-
-        return *this;
-    }
-
-    ModDetails& operator=(const ModDetails&& other)
-    {
-        this->mod_id = other.mod_id;
-        this->name = other.name;
-        this->version = other.version;
-        this->mcversion = other.mcversion;
-        this->homeurl = other.homeurl;
-        this->description = other.description;
-        this->authors = other.authors;
-        this->issue_tracker = other.issue_tracker;
-        this->licenses = other.licenses;
-        this->icon_file = other.icon_file;
-        this->status = other.status;
-
-        return *this;
-    }
+    toml::table toToml();
 };

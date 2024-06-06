@@ -44,8 +44,6 @@ class ProviderCapabilities {
    public:
     auto name(ResourceProvider) -> const char*;
     auto readableName(ResourceProvider) -> QString;
-    auto hashType(ResourceProvider) -> QStringList;
-    auto hash(ResourceProvider, QIODevice*, QString type = "") -> QString;
 };
 
 struct ModpackAuthor {

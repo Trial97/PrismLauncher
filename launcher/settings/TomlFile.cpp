@@ -156,6 +156,30 @@ QVariant TomlFile::get(QString key, QVariant def) const
     }
 }
 
+bool isEmptyNode(const toml::node& node)
+{
+    return (node.is_string() && node.as_string()->get().empty()) || (node.is_integer() && node.as_integer()->get() == 0) ||
+           (node.is_floating_point() && node.as_floating_point()->get() == 0.0) ||
+           (node.is_boolean() && node.as_boolean()->get() == false) || (node.is_array() && node.as_array()->empty()) ||
+           (node.is_table() && node.as_table()->empty());
+}
+
+// Function to filter out empty fields from a TOML table
+void filterEmptyFields(toml::table& table)
+{
+    for (auto it = table.begin(); it != table.end();) {
+        auto& value = it->second;
+        if (value.is_table()) {
+            filterEmptyFields(*value.as_table());
+        }
+        if (isEmptyNode(value)) {
+            it = table.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
 void TomlFile::set(QString key, QVariant val)
 {
     auto stdKey = key.toStdString();
@@ -206,10 +230,22 @@ void TomlFile::set(QString key, QVariant val)
         // case QVariant::Map:
         // case QVariant::List:
         default:
-            if (val.canConvert<toml::table>())
-                m_data.insert_or_assign(stdKey, val.value<toml::table>());
-            else if (val.canConvert<toml::array>())
-                m_data.insert_or_assign(stdKey, val.value<toml::array>());
+            // minimize the content by removing empty fields
+            if (val.canConvert<toml::table>()) {
+                auto table = val.value<toml::table>();
+                filterEmptyFields(table);
+                m_data.insert_or_assign(stdKey, table);
+            } else if (val.canConvert<toml::array>()) {
+                auto array = val.value<toml::array>();
+                if (array.is_array_of_tables()) {
+                    for (auto& element : array) {
+                        if (element.is_table()) {
+                            filterEmptyFields(*element.as_table());
+                        }
+                    }
+                }
+                m_data.insert_or_assign(stdKey, array);
+            }
             break;
     }
 }
