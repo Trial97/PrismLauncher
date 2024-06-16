@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <qjsonvalue.h>
 #include <QJsonObject>
 #include <QObject>
 #include "QObjectPtr.h"
@@ -43,6 +44,11 @@ class BaseEntity {
     void load(Net::Mode loadType);
     Task::Ptr getCurrentTask();
 
+    QString sha256() const;
+    void setSha256(QString sha256);
+
+    virtual bool validate();
+
    protected: /* methods */
     bool loadLocalFile();
 
@@ -50,5 +56,6 @@ class BaseEntity {
     LoadStatus m_loadStatus = LoadStatus::NotLoaded;
     UpdateStatus m_updateStatus = UpdateStatus::NotDone;
     NetJob::Ptr m_updateTask;
+    QString m_sha256;
 };
 }  // namespace Meta

@@ -71,6 +71,7 @@ void Meta::Version::mergeFromList(const Meta::Version::Ptr& other)
     if (m_volatile != other->m_volatile) {
         setVolatile(other->m_volatile);
     }
+    setSha256(other->sha256());
 }
 
 void Meta::Version::merge(const Version::Ptr& other)

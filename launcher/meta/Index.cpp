@@ -15,6 +15,7 @@
 
 #include "Index.h"
 
+#include "Application.h"
 #include "JsonFormat.h"
 #include "VersionList.h"
 
@@ -51,14 +52,17 @@ QVariant Index::data(const QModelIndex& index, int role) const
     }
     return QVariant();
 }
+
 int Index::rowCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : m_lists.size();
 }
+
 int Index::columnCount(const QModelIndex& parent) const
 {
     return parent.isValid() ? 0 : 1;
 }
+
 QVariant Index::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (orientation == Qt::Horizontal && role == Qt::DisplayRole && section == 0) {
@@ -125,5 +129,20 @@ void Index::connectVersionList(const int row, const VersionList::Ptr& list)
 {
     connect(list.get(), &VersionList::nameChanged, this,
             [this, row]() { emit dataChanged(index(row), index(row), QVector<int>() << Qt::DisplayRole); });
+}
+
+bool Index::validate()
+{
+    load(Net::Mode::Online);
+    auto task = getCurrentTask();
+    connect(task.get(), &Task::succeeded, this, [this] {
+        QDir dir("meta");
+        dir.setFilter(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (auto uid : dir.entryList()) {
+            auto v = get(uid);
+            v->validate();
+        }
+    });
+    return true;
 }
 }  // namespace Meta

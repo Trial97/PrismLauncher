@@ -66,6 +66,8 @@ class ChecksumValidator : public Validator {
     {
         if (m_expected.size() && m_expected != hash()) {
             qWarning() << "Checksum mismatch, download is bad.";
+            qWarning() << m_expected;
+            qWarning() << hash();
             return false;
         }
         return true;

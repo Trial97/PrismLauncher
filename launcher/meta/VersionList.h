@@ -58,6 +58,8 @@ class VersionList : public BaseVersionList, public BaseEntity {
 
     QVector<Version::Ptr> versions() const { return m_versions; }
 
+    bool validate() override;
+
    public:  // for usage only by parsers
     void setName(const QString& name);
     void setVersions(const QVector<Version::Ptr>& versions);

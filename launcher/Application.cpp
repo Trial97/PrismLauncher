@@ -757,8 +757,6 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         // FTBApp instances
         m_settings->registerSetting("FTBAppInstancesPath", "");
 
-        m_settings->registerSetting("MetaVersion", 0);
-
         // Init page provider
         {
             m_globalSettingsProvider = std::make_shared<GenericPageProvider>(tr("Settings"));
@@ -818,13 +816,6 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
     // Themes
     m_themeManager = std::make_unique<ThemeManager>();
 
-    // delete meta for the new release
-    {
-        if (m_settings->get("MetaVersion").toInt() < 1) {
-            FS::deletePath("meta");
-            m_settings->set("MetaVersion", 1);
-        }
-    }
     // initialize and load all instances
     {
         auto InstDirSetting = m_settings->getSetting("InstanceDir");
@@ -877,6 +868,11 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_metacache->addBase("meta", QDir("meta").absolutePath());
         m_metacache->Load();
         qDebug() << "<> Cache initialized.";
+    }
+
+    // delete meta for the new release
+    {
+        metadataIndex()->validate();
     }
 
     // now we have network, download translation updates

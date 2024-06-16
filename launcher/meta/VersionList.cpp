@@ -17,8 +17,10 @@
 
 #include <QDateTime>
 
+#include "FileSystem.h"
 #include "JsonFormat.h"
 #include "Version.h"
+#include "meta/BaseEntity.h"
 
 namespace Meta {
 VersionList::VersionList(const QString& uid, QObject* parent) : BaseVersionList(parent), m_uid(uid)
@@ -190,6 +192,7 @@ void VersionList::mergeFromIndex(const VersionList::Ptr& other)
 {
     if (m_name != other->m_name) {
         setName(other->m_name);
+        setSha256(other->sha256());
     }
 }
 
@@ -237,4 +240,36 @@ BaseVersion::Ptr VersionList::getRecommended() const
     return m_recommended;
 }
 
+bool VersionList::validate()
+{
+    auto validateSubVersions = [this] {
+        QDir dir(FS::PathCombine("meta", m_uid));
+        dir.setFilter(QDir::Files);
+        bool result = true;
+        for (auto version : dir.entryList()) {
+            if (version == "index.json" || !version.endsWith(".json")) {
+                continue;
+            }
+            version.chop(5);
+            qDebug() << "=============" << version;
+            auto v = getVersion(version);
+            if (!v->validate()) {
+                FS::deletePath(dir.absoluteFilePath(version));
+                load(Net::Mode::Online);
+                result = false;
+            }
+        }
+        return result;
+    };
+    const QString fname = QDir("meta").absoluteFilePath(localFilename());
+    if (!QFile::exists(fname) || !BaseEntity::validate()) {
+        load(Net::Mode::Online);
+        auto task = getCurrentTask();
+        connect(task.get(), &Task::succeeded, this, validateSubVersions);
+        return false;
+    } else {
+        load(Net::Mode::Offline);
+        return validateSubVersions();
+    }
+}
 }  // namespace Meta

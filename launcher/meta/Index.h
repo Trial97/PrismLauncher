@@ -46,6 +46,7 @@ class Index : public QAbstractListModel, public BaseEntity {
     bool hasUid(const QString& uid) const;
 
     QVector<VersionList::Ptr> lists() const { return m_lists; }
+    bool validate() override;
 
    public:  // for usage by parsers only
     void merge(const std::shared_ptr<Index>& other);

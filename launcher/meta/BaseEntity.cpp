@@ -14,10 +14,12 @@
  */
 
 #include "BaseEntity.h"
+#include <qstringview.h>
 
 #include "FileSystem.h"
 #include "Json.h"
 #include "net/ApiDownload.h"
+#include "net/ChecksumValidator.h"
 #include "net/HttpMetaCache.h"
 #include "net/NetJob.h"
 
@@ -109,6 +111,8 @@ void Meta::BaseEntity::load(Net::Mode loadType)
      * The validator parses the file and loads it into the object.
      * If that fails, the file is not written to storage.
      */
+    if (!m_sha256.isEmpty())
+        dl->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Sha256, QByteArray::fromHex(m_sha256.toLatin1())));
     dl->addValidator(new ParsingValidator(this));
     m_updateTask->addNetAction(dl);
     m_updateStatus = UpdateStatus::InProgress;
@@ -141,4 +145,36 @@ Task::Ptr Meta::BaseEntity::getCurrentTask()
         return m_updateTask;
     }
     return nullptr;
+}
+
+QString Meta::BaseEntity::sha256() const
+{
+    return m_sha256;
+}
+
+void Meta::BaseEntity::setSha256(QString sha256)
+{
+    m_sha256 = sha256;
+}
+
+bool Meta::BaseEntity::validate()
+{
+    const QString fname = QDir("meta").absoluteFilePath(localFilename());
+    if (m_sha256.isEmpty() || !QFile::exists(fname)) {
+        return true;
+    }
+    QFile file(fname);
+    if (!file.open(QFile::ReadOnly)) {
+        return false;
+    }
+    QCryptographicHash hash(QCryptographicHash::Algorithm::Sha256);
+
+    if (!hash.addData(&file)) {
+        file.close();
+        return false;
+    }
+    file.close();
+
+    Q_ASSERT(hash.result().length() == hash.hashLength(QCryptographicHash::Algorithm::Sha256));
+    return hash.result() == QByteArray::fromHex(m_sha256.toLatin1());
 }
