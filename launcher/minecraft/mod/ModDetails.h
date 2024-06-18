@@ -147,3 +147,18 @@ struct ProviderInfo {
     ProviderInfo(toml::table table);
     toml::table toToml();
 };
+
+enum class ResourceInfoType { Mod, Coremod, Resourcepack, Shaderpack, Datapack, Worlds, Screenshots, Extra };
+struct ResourceInfo {
+    QString path;
+    ResourceInfoType type;
+    ResourceInfoType fileType;
+    bool enabled;
+    bool managedByPack;
+    Side side;
+    bool lockVersion = true;
+    QStringList categories;
+    ModDetails info;
+    QList<ResourceHash> hashes;
+    QList<ProviderInfo> providers;
+};
