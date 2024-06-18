@@ -60,7 +60,7 @@ IndexedVersionType::VersionType IndexedVersionType::enumFromString(const QString
     return s_indexed_version_type_names.value(type, IndexedVersionType::VersionType::Unknown);
 }
 
-auto ProviderCapabilities::name(ResourceProvider p) -> const char*
+const char* ProviderCapabilities::name(ResourceProvider p)
 {
     switch (p) {
         case ResourceProvider::MODRINTH:
@@ -70,7 +70,8 @@ auto ProviderCapabilities::name(ResourceProvider p) -> const char*
     }
     return {};
 }
-auto ProviderCapabilities::readableName(ResourceProvider p) -> QString
+
+QString ProviderCapabilities::readableName(ResourceProvider p)
 {
     switch (p) {
         case ResourceProvider::MODRINTH:
