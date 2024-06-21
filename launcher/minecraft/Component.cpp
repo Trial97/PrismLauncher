@@ -410,3 +410,9 @@ void Component::updateCachedData()
         emit dataChanged();
     }
 }
+
+QDebug operator<<(QDebug d, const Component& comp)
+{
+    d << "Component(" << comp.m_uid << " : " << comp.m_cachedVersion << ")";
+    return d;
+}
