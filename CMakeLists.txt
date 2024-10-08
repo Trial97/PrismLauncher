@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15)  # minimum version required by QuaZip
+cmake_minimum_required(VERSION 3.15)  # minimum version required by QuaZip & Corrosion
 
 project(Launcher)
 
@@ -332,13 +332,17 @@ endif()
 
 if(Launcher_QT_VERSION_MAJOR EQUAL 5)
     include(ECMQueryQt)
+    # ecm_query_qt(QT_BINS_DIR     QT_INSTALL_BINS)
     ecm_query_qt(QT_PLUGINS_DIR  QT_INSTALL_PLUGINS)
     ecm_query_qt(QT_LIBS_DIR     QT_INSTALL_LIBS)
     ecm_query_qt(QT_LIBEXECS_DIR QT_INSTALL_LIBEXECS)
+    # ecm_query_qt(QT_QML_DIR      QT_INSTALL_QML)
 else()
+    # set(QT_BINS_DIR     ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_BINS})
     set(QT_PLUGINS_DIR  ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_PLUGINS})
     set(QT_LIBS_DIR     ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_LIBS})
     set(QT_LIBEXECS_DIR ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_LIBEXECS})
+    # set(QT_QML_DIR      ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_QML})
 endif()
 
 # NOTE: Qt 6 already sets this by default
@@ -384,6 +388,7 @@ if(UNIX AND APPLE)
     set(PLUGIN_DEST_DIR "${Launcher_Name}.app/Contents/MacOS")
     set(FRAMEWORK_DEST_DIR "${Launcher_Name}.app/Contents/Frameworks")
     set(RESOURCES_DEST_DIR "${Launcher_Name}.app/Contents/Resources")
+    # set(QML_DEST_DIR "${RESOURCES_DEST_DIR}/qml")
     set(JARS_DEST_DIR "${Launcher_Name}.app/Contents/MacOS/jars")
 
     # Apps to bundle
@@ -442,7 +447,8 @@ elseif(UNIX)
         set(PLUGIN_DEST_DIR "plugins")
         set(BUNDLE_DEST_DIR ".")
         set(RESOURCES_DEST_DIR ".")
-
+        # set(QML_DEST_DIR "qml")
+    
         # Apps to bundle
         set(APPS "\${CMAKE_INSTALL_PREFIX}/bin/${Launcher_APP_BINARY_NAME}")
 
@@ -463,6 +469,7 @@ elseif(WIN32)
     set(LIBRARY_DEST_DIR ".")
     set(PLUGIN_DEST_DIR ".")
     set(RESOURCES_DEST_DIR ".")
+    # set(QML_DEST_DIR "qml")
     set(JARS_DEST_DIR "jars")
 
     # Apps to bundle

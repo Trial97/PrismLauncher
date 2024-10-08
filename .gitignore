@@ -56,3 +56,6 @@ flatbuild
 
 # Snap
 *.snap
+
+# Rust
+launcher/hematite/target
