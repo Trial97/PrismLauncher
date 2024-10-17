@@ -54,7 +54,7 @@ using InstanceLocator = std::pair<InstancePtr, int>;
 
 struct TrashHistoryItem {
     QString id;
-    QString polyPath;
+    QString path;
     QString trashPath;
     QString groupName;
 };

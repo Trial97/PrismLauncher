@@ -24,6 +24,8 @@ set(CORE_SOURCES
     NullInstance.h
     MMCZip.h
     MMCZip.cpp
+    Untar.h
+    Untar.cpp
     StringUtils.h
     StringUtils.cpp
     QVariantUtils.h
@@ -142,7 +144,6 @@ set(NET_SOURCES
     net/HeaderProxy.h
     net/RawHeaderProxy.h
     net/ApiHeaderProxy.h
-    net/StaticHeaderProxy.h
     net/ApiDownload.h
     net/ApiDownload.cpp
     net/ApiUpload.cpp
@@ -163,16 +164,18 @@ set(LAUNCH_SOURCES
     launch/steps/PreLaunchCommand.h
     launch/steps/TextPrint.cpp
     launch/steps/TextPrint.h
-    launch/steps/Update.cpp
-    launch/steps/Update.h
     launch/steps/QuitAfterGameStop.cpp
     launch/steps/QuitAfterGameStop.h
+    launch/steps/PrintServers.cpp
+    launch/steps/PrintServers.h
     launch/LaunchStep.cpp
     launch/LaunchStep.h
     launch/LaunchTask.cpp
     launch/LaunchTask.h
     launch/LogModel.cpp
     launch/LogModel.h
+    launch/TaskStepWrapper.cpp
+    launch/TaskStepWrapper.h
 )
 
 # Old update system
@@ -208,6 +211,11 @@ set(ICONS_SOURCES
 
 # Support for Minecraft instances and launch
 set(MINECRAFT_SOURCES
+
+    # Logging
+    minecraft/Logging.h
+    minecraft/Logging.cpp
+
     # Minecraft support
     minecraft/auth/AccountData.cpp
     minecraft/auth/AccountData.h
@@ -265,8 +273,8 @@ set(MINECRAFT_SOURCES
     minecraft/launch/ExtractNatives.h
     minecraft/launch/LauncherPartLaunch.cpp
     minecraft/launch/LauncherPartLaunch.h
-    minecraft/launch/MinecraftServerTarget.cpp
-    minecraft/launch/MinecraftServerTarget.h
+    minecraft/launch/MinecraftTarget.cpp
+    minecraft/launch/MinecraftTarget.h
     minecraft/launch/PrintInstanceInfo.cpp
     minecraft/launch/PrintInstanceInfo.h
     minecraft/launch/ReconstructAssets.cpp
@@ -275,6 +283,8 @@ set(MINECRAFT_SOURCES
     minecraft/launch/ScanModFolders.h
     minecraft/launch/VerifyJavaInstall.cpp
     minecraft/launch/VerifyJavaInstall.h
+    minecraft/launch/AutoInstallJava.cpp
+    minecraft/launch/AutoInstallJava.h
 
     minecraft/GradleSpecifier.h
     minecraft/MinecraftInstance.cpp
@@ -289,8 +299,6 @@ set(MINECRAFT_SOURCES
     minecraft/ComponentUpdateTask.h
     minecraft/MinecraftLoadAndCheck.h
     minecraft/MinecraftLoadAndCheck.cpp
-    minecraft/MinecraftUpdate.h
-    minecraft/MinecraftUpdate.cpp
     minecraft/MojangVersionFormat.cpp
     minecraft/MojangVersionFormat.h
     minecraft/Rule.cpp
@@ -424,8 +432,6 @@ set(SETTINGS_SOURCES
 set(JAVA_SOURCES
     java/JavaChecker.h
     java/JavaChecker.cpp
-    java/JavaCheckerJob.h
-    java/JavaCheckerJob.cpp
     java/JavaInstall.h
     java/JavaInstall.cpp
     java/JavaInstallList.h
@@ -434,6 +440,20 @@ set(JAVA_SOURCES
     java/JavaUtils.cpp
     java/JavaVersion.h
     java/JavaVersion.cpp
+
+    java/JavaMetadata.h
+    java/JavaMetadata.cpp
+    java/download/ArchiveDownloadTask.cpp
+    java/download/ArchiveDownloadTask.h
+    java/download/ManifestDownloadTask.cpp
+    java/download/ManifestDownloadTask.h
+    java/download/SymlinkTask.cpp
+    java/download/SymlinkTask.h
+
+    ui/java/InstallJavaDialog.h
+    ui/java/InstallJavaDialog.cpp
+    ui/java/VersionList.h
+    ui/java/VersionList.cpp
 )
 
 set(TRANSLATIONS_SOURCES
@@ -657,6 +677,22 @@ ecm_qt_declare_logging_category(CORE_SOURCES
 )
 
 ecm_qt_export_logging_category(
+    IDENTIFIER instanceProfileC
+    CATEGORY_NAME "launcher.instance.profile"
+    DEFAULT_SEVERITY Debug
+    DESCRIPTION "Profile actions"
+    EXPORT "${Launcher_Name}"
+)
+
+ecm_qt_export_logging_category(
+    IDENTIFIER instanceProfileResolveC
+    CATEGORY_NAME "launcher.instance.profile.resolve"
+    DEFAULT_SEVERITY Debug
+    DESCRIPTION "Profile component resolusion actions"
+    EXPORT "${Launcher_Name}"
+)
+
+ecm_qt_export_logging_category(
     IDENTIFIER taskLogC
     CATEGORY_NAME "launcher.task"
     DEFAULT_SEVERITY Debug
@@ -668,7 +704,7 @@ ecm_qt_export_logging_category(
     IDENTIFIER taskNetLogC
     CATEGORY_NAME "launcher.task.net"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network action"
+    DESCRIPTION "Task network action"
     EXPORT "${Launcher_Name}"
 )
 
@@ -676,14 +712,14 @@ ecm_qt_export_logging_category(
     IDENTIFIER taskDownloadLogC
     CATEGORY_NAME "launcher.task.net.download"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network download actions"
+    DESCRIPTION "Task network download actions"
     EXPORT "${Launcher_Name}"
 )
 ecm_qt_export_logging_category(
     IDENTIFIER taskUploadLogC
     CATEGORY_NAME "launcher.task.net.upload"
     DEFAULT_SEVERITY Debug
-    DESCRIPTION "task network upload actions"
+    DESCRIPTION "Task network upload actions"
     EXPORT "${Launcher_Name}"
 )
 
@@ -753,6 +789,8 @@ SET(LAUNCHER_SOURCES
     DataMigrationTask.cpp
     ApplicationMessage.h
     ApplicationMessage.cpp
+    SysInfo.h
+    SysInfo.cpp
 
     # GUI - general utilities
     DesktopServices.h
@@ -791,8 +829,6 @@ SET(LAUNCHER_SOURCES
     # GUI - windows
     ui/GuiUtil.h
     ui/GuiUtil.cpp
-    ui/ColorCache.h
-    ui/ColorCache.cpp
     ui/MainWindow.h
     ui/MainWindow.cpp
     ui/InstanceWindow.h
@@ -816,6 +852,10 @@ SET(LAUNCHER_SOURCES
     ui/setupwizard/PasteWizardPage.h
     ui/setupwizard/ThemeWizardPage.cpp
     ui/setupwizard/ThemeWizardPage.h
+    ui/setupwizard/AutoJavaWizardPage.cpp
+    ui/setupwizard/AutoJavaWizardPage.h
+    ui/setupwizard/LoginWizardPage.cpp
+    ui/setupwizard/LoginWizardPage.h
 
     # GUI - themes
     ui/themes/FusionTheme.cpp
@@ -932,6 +972,9 @@ SET(LAUNCHER_SOURCES
 
     ui/pages/modplatform/ShaderPackPage.cpp
     ui/pages/modplatform/ShaderPackModel.cpp
+
+
+    ui/pages/modplatform/ModpackProviderBasePage.h
 
     ui/pages/modplatform/atlauncher/AtlFilterModel.cpp
     ui/pages/modplatform/atlauncher/AtlFilterModel.h
@@ -1128,6 +1171,8 @@ endif()
 qt_wrap_ui(LAUNCHER_UI
     ui/MainWindow.ui
     ui/setupwizard/PasteWizardPage.ui
+    ui/setupwizard/AutoJavaWizardPage.ui
+    ui/setupwizard/LoginWizardPage.ui
     ui/setupwizard/ThemeWizardPage.ui
     ui/pages/global/AccountListPage.ui
     ui/pages/global/JavaPage.ui

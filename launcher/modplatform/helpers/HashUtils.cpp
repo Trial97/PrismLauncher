@@ -18,8 +18,7 @@ Hasher::Ptr createHasher(QString file_path, ModPlatform::ResourceProvider provid
         case ModPlatform::ResourceProvider::FLAME:
             return makeShared<Hasher>(file_path, Algorithm::Murmur2);
         default:
-            qCritical() << "[Hashing]"
-                        << "Unrecognized mod platform!";
+            qCritical() << "[Hashing]" << "Unrecognized mod platform!";
             return nullptr;
     }
 }
@@ -30,7 +29,7 @@ class QIODeviceReader : public Murmur2::Reader {
     virtual ~QIODeviceReader() = default;
     virtual int read(char* s, int n) { return m_device->read(s, n); }
     virtual bool eof() { return m_device->atEnd(); }
-    virtual void goToBegining() { m_device->seek(0); }
+    virtual void goToBeginning() { m_device->seek(0); }
     virtual void close() { m_device->close(); }
 
    private:
@@ -133,24 +132,25 @@ QString hash(QByteArray data, Algorithm type)
 
 void Hasher::executeTask()
 {
-    m_zip_future = QtConcurrent::run(QThreadPool::globalInstance(), [this]() { return hash(m_path, m_alg); });
-    connect(&m_zip_watcher, &QFutureWatcher<QString>::finished, this, [this] {
-        if (m_zip_future.isCanceled()) {
+    m_future = QtConcurrent::run(
+        QThreadPool::globalInstance(), [](QString fileName, Algorithm type) { return hash(fileName, type); }, m_path, m_alg);
+    connect(&m_watcher, &QFutureWatcher<QString>::finished, this, [this] {
+        if (m_future.isCanceled()) {
             emitAborted();
-        } else if (m_result = m_zip_future.result(); m_result.isEmpty()) {
+        } else if (m_result = m_future.result(); m_result.isEmpty()) {
             emitFailed("Empty hash!");
         } else {
             emitSucceeded();
             emit resultsReady(m_result);
         }
     });
-    m_zip_watcher.setFuture(m_zip_future);
+    m_watcher.setFuture(m_future);
 }
 
 bool Hasher::abort()
 {
-    if (m_zip_future.isRunning()) {
-        m_zip_future.cancel();
+    if (m_future.isRunning()) {
+        m_future.cancel();
         // NOTE: Here we don't do `emitAborted()` because it will be done when `m_build_zip_future` actually cancels, which may not
         // occur immediately.
         return true;

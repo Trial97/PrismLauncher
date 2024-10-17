@@ -83,11 +83,13 @@ class ResourcePage : public QWidget, public BasePage {
     QList<DownloadTaskPtr> selectedPacks() { return m_model->selectedPacks(); }
     bool hasSelectedPacks() { return !(m_model->selectedPacks().isEmpty()); }
 
+    virtual void openProject(QVariant projectID);
+
    protected slots:
     virtual void triggerSearch() = 0;
 
     void onSelectionChanged(QModelIndex first, QModelIndex second);
-    void onVersionSelectionChanged(QString data);
+    void onVersionSelectionChanged(int index);
     void onResourceSelected();
 
     // NOTE: Can't use [[nodiscard]] here because of https://bugreports.qt.io/browse/QTBUG-58628 on Qt 5.12
@@ -111,6 +113,8 @@ class ResourcePage : public QWidget, public BasePage {
 
     // Used to do instant searching with a delay to cache quick changes
     QTimer m_search_timer;
+
+    bool m_do_not_jump_to_mod = false;
 };
 
 }  // namespace ResourceDownload

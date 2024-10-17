@@ -36,7 +36,7 @@ Q_DECLARE_FLAGS(ModLoaderTypes, ModLoaderType)
 
 enum class ResourceProvider { MODRINTH, FLAME };
 
-enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK };
+enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK, MODPACK };
 
 enum class DependencyType { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
 
@@ -44,7 +44,8 @@ namespace ProviderCapabilities {
 const char* name(ResourceProvider);
 QString readableName(ResourceProvider);
 ResourceProvider fromString(QString);
-};  // namespace ProviderCapabilities
+QStringList hashType(ResourceProvider);
+}  // namespace ProviderCapabilities
 
 struct ModpackAuthor {
     QString name;

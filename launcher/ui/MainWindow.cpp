@@ -233,6 +233,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent), ui(new Ui::MainWi
         if (qgetenv("XDG_CURRENT_DESKTOP") == "gamescope") {
             ui->mainToolBar->addAction(ui->actionCloseWindow);
         }
+
+        ui->actionViewJavaFolder->setEnabled(BuildConfig.JAVA_DOWNLOADER_ENABLED);
     }
 
     // add the toolbar toggles to the view menu
@@ -972,6 +974,14 @@ void MainWindow::processURLs(QList<QUrl> urls)
                     dlUrlDialod.execWithTask(job.get());
                 }
 
+            } else if (url.scheme() == BuildConfig.LAUNCHER_APP_BINARY_NAME) {
+                QVariantMap receivedData;
+                const QUrlQuery query(url.query());
+                const auto items = query.queryItems();
+                for (auto it = items.begin(), end = items.end(); it != end; ++it)
+                    receivedData.insert(it->first, it->second);
+                emit APPLICATION->oauthReplyRecieved(receivedData);
+                continue;
             } else {
                 dl_url = url;
             }
@@ -1213,6 +1223,11 @@ void MainWindow::on_actionViewIconsFolder_triggered()
 void MainWindow::on_actionViewLogsFolder_triggered()
 {
     DesktopServices::openPath("logs", true);
+}
+
+void MainWindow::on_actionViewJavaFolder_triggered()
+{
+    DesktopServices::openPath(APPLICATION->javaPath(), true);
 }
 
 void MainWindow::refreshInstances()
@@ -1560,7 +1575,7 @@ void MainWindow::on_actionCreateInstanceShortcut_triggered()
         QFileDialog fileDialog;
         // workaround to make sure the portal file dialog opens in the desktop directory
         fileDialog.setDirectoryUrl(desktopPath);
-        desktopFilePath = fileDialog.getSaveFileName(this, tr("Create Shortcut"), desktopFilePath, tr("Desktop Entries (*.desktop)"));
+        desktopFilePath = fileDialog.getSaveFileName(this, tr("Create Shortcut"), desktopFilePath, tr("Desktop Entries") + " (*.desktop)");
         if (desktopFilePath.isEmpty())
             return;  // file dialog canceled by user
         appPath = "flatpak";
