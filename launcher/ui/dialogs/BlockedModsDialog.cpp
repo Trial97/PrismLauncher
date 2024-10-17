@@ -24,6 +24,7 @@
  */
 
 #include "BlockedModsDialog.h"
+#include "QObjectPtr.h"
 #include "ui_BlockedModsDialog.h"
 
 #include "Application.h"
@@ -42,7 +43,11 @@
 #include <QStandardPaths>
 #include <QTimer>
 
-BlockedModsDialog::BlockedModsDialog(QWidget* parent, const QString& title, const QString& text, QList<BlockedMod>& mods, QString hash_type)
+BlockedModsDialog::BlockedModsDialog(QWidget* parent,
+                                     const QString& title,
+                                     const QString& text,
+                                     QList<BlockedMod>& mods,
+                                     Hashing::Algorithm hash_type)
     : QDialog(parent), ui(new Ui::BlockedModsDialog), m_mods(mods), m_hash_type(hash_type)
 {
     m_hashing_task = shared_qobject_ptr<ConcurrentTask>(
@@ -266,7 +271,7 @@ void BlockedModsDialog::addHashTask(QString path)
 /// @param path the path to the local file being hashed
 void BlockedModsDialog::buildHashTask(QString path)
 {
-    auto hash_task = Hashing::createHasher(path, m_hash_type);
+    auto hash_task = makeShared<Hashing::Hasher>(path, m_hash_type);
 
     qDebug() << "[Blocked Mods Dialog] Creating Hash task for path: " << path;
 

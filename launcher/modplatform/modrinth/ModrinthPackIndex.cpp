@@ -25,6 +25,7 @@
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
 #include "modplatform/ModIndex.h"
+#include "modplatform/helpers/HashUtils.h"
 
 static ModrinthAPI api;
 
@@ -232,7 +233,8 @@ auto Modrinth::loadIndexedPackVersion(QJsonObject& obj,
             file.hash_type = preferred_hash_type;
         } else {
             auto hash_types = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH);
-            for (auto& hash_type : hash_types) {
+            for (auto& alg : hash_types) {
+                auto hash_type = Hashing::algorithmToString(alg);
                 if (hash_list.contains(hash_type)) {
                     file.hash = Json::requireString(hash_list, hash_type);
                     file.hash_type = hash_type;

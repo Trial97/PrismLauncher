@@ -824,7 +824,7 @@ void PackInstallTask::downloadMods()
         BlockedModsDialog message_dialog(nullptr, tr("Blocked mods found"),
                                          tr("The following files are not available for download in third party launchers.<br/>"
                                             "You will need to manually download them and add them to the instance."),
-                                         mods, "md5");
+                                         mods, Hashing::Algorithm::Md5);
 
         message_dialog.setModal(true);
 

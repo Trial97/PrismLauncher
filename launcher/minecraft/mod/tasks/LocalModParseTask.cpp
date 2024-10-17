@@ -53,7 +53,7 @@ ModDetails ReadMCModInfo(QByteArray contents)
         }
 
         if (firstObj.contains("logoFile")) {
-            details.icon_file = firstObj.value("logoFile").toString();
+            details.icon_path = firstObj.value("logoFile").toString();
         }
 
         for (auto author : authors) {
@@ -194,7 +194,7 @@ ModDetails ReadMCModTOML(QByteArray contents)
     } else if (auto logoFileDatumMods = (*modsTable)["logoFile"].as_string()) {
         logoFile = QString::fromStdString(logoFileDatumMods->get());
     }
-    details.icon_file = logoFile;
+    details.icon_path = logoFile;
 
     return details;
 }
@@ -271,16 +271,16 @@ ModDetails ReadFabricModInfo(QByteArray contents)
                 }
                 if (largest > 0) {
                     auto key = QString::number(largest) + "x" + QString::number(largest);
-                    details.icon_file = obj.value(key).toString();
+                    details.icon_path = obj.value(key).toString();
                 } else {  // parsing the sizes failed
                     // take the first
                     for (auto i : obj) {
-                        details.icon_file = i.toString();
+                        details.icon_path = i.toString();
                         break;
                     }
                 }
             } else if (icon.isString()) {
-                details.icon_file = icon.toString();
+                details.icon_path = icon.toString();
             }
         }
     }
@@ -358,16 +358,16 @@ ModDetails ReadQuiltModInfo(QByteArray contents)
                 }
                 if (largest > 0) {
                     auto key = QString::number(largest) + "x" + QString::number(largest);
-                    details.icon_file = obj.value(key).toString();
+                    details.icon_path = obj.value(key).toString();
                 } else {  // parsing the sizes failed
                     // take the first
                     for (auto i : obj) {
-                        details.icon_file = i.toString();
+                        details.icon_path = i.toString();
                         break;
                     }
                 }
             } else if (icon.isString()) {
-                details.icon_file = icon.toString();
+                details.icon_path = icon.toString();
             }
         }
     }

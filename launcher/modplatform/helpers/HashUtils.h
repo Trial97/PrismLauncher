@@ -30,8 +30,8 @@ class Hasher : public Task {
 
     void executeTask() override;
 
-    QString getResult() const { return m_result; };
-    QString getPath() const { return m_path; };
+    QString getResult() const;
+    QString getPath() const;
 
    signals:
     void resultsReady(QString hash);
@@ -46,6 +46,8 @@ class Hasher : public Task {
 };
 
 Hasher::Ptr createHasher(QString file_path, ModPlatform::ResourceProvider provider);
-Hasher::Ptr createHasher(QString file_path, QString type);
-
 }  // namespace Hashing
+
+namespace ModPlatform::ProviderCapabilities {
+QList<Hashing::Algorithm> hashType(ModPlatform::ResourceProvider);
+};

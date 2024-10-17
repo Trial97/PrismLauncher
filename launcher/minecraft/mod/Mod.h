@@ -78,7 +78,7 @@ class Mod : public Resource {
     auto releaseType() const -> ModPlatform::IndexedVersionType;
 
     /** Get the intneral path to the mod's icon file*/
-    QString iconPath() const { return m_local_details.icon_file; }
+    QString iconPath() const { return m_local_details.icon_path; }
     /** Gets the icon of the mod, converted to a QPixmap for drawing, and scaled to size. */
     [[nodiscard]] QPixmap icon(QSize size, Qt::AspectRatioMode mode = Qt::AspectRatioMode::IgnoreAspectRatio) const;
     /** Thread-safe. */

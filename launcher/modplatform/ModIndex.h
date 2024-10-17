@@ -25,6 +25,7 @@
 #include <QVariant>
 #include <QVector>
 #include <memory>
+#include <toml++/toml.hpp>
 
 class QIODevice;
 
@@ -42,6 +43,7 @@ enum class DependencyType { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, IN
 namespace ProviderCapabilities {
 const char* name(ResourceProvider);
 QString readableName(ResourceProvider);
+ResourceProvider fromString(QString);
 QStringList hashType(ResourceProvider);
 }  // namespace ProviderCapabilities
 
@@ -85,9 +87,14 @@ struct IndexedVersionType {
 };
 
 struct Dependency {
-    QVariant addonId;
-    DependencyType type;
-    QString version;
+    QVariant addonId = {};
+    DependencyType type = {};
+    QString version = {};
+
+    Dependency() = default;
+    Dependency(QVariant addonId_, DependencyType type_ = DependencyType::REQUIRED, QString version_ = {});
+    Dependency(toml::table table);
+    toml::table toToml();
 };
 
 struct IndexedVersion {

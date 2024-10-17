@@ -59,6 +59,10 @@ set(CORE_SOURCES
     Json.h
     Json.cpp
 
+    # Toml parsing helpers
+    Toml.h
+    Toml.cpp
+
     FileSystem.h
     FileSystem.cpp
 
@@ -323,6 +327,7 @@ set(MINECRAFT_SOURCES
     minecraft/mod/Mod.h
     minecraft/mod/Mod.cpp
     minecraft/mod/ModDetails.h
+    minecraft/mod/ModDetails.cpp
     minecraft/mod/ModFolderModel.h
     minecraft/mod/ModFolderModel.cpp
     minecraft/mod/Resource.h
@@ -419,6 +424,9 @@ set(SETTINGS_SOURCES
     settings/Setting.h
     settings/SettingsObject.cpp
     settings/SettingsObject.h
+    settings/TomlFile.cpp
+    settings/TomlFile.h
+    settings/SettingsFile.h
 )
 
 set(JAVA_SOURCES

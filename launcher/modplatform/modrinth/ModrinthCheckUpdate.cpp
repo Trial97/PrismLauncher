@@ -8,6 +8,7 @@
 #include "QObjectPtr.h"
 #include "ResourceDownloadTask.h"
 
+#include "modplatform/ModIndex.h"
 #include "modplatform/helpers/HashUtils.h"
 
 #include "tasks/ConcurrentTask.h"

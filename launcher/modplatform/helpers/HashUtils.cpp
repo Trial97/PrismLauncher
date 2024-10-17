@@ -23,11 +23,6 @@ Hasher::Ptr createHasher(QString file_path, ModPlatform::ResourceProvider provid
     }
 }
 
-Hasher::Ptr createHasher(QString file_path, QString type)
-{
-    return makeShared<Hasher>(file_path, type);
-}
-
 class QIODeviceReader : public Murmur2::Reader {
    public:
     QIODeviceReader(QIODevice* device) : m_device(device) {}
@@ -162,4 +157,25 @@ bool Hasher::abort()
     }
     return false;
 }
+
+QString Hasher::getResult() const
+{
+    return m_result;
+}
+
+QString Hasher::getPath() const
+{
+    return m_path;
+}
+
 }  // namespace Hashing
+QList<Hashing::Algorithm> ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider p)
+{
+    switch (p) {
+        case ModPlatform::ResourceProvider::MODRINTH:
+            return { Hashing::Algorithm::Sha512, Hashing::Algorithm::Sha1 };
+        case ModPlatform::ResourceProvider::FLAME:
+            return { Hashing::Algorithm::Sha1, Hashing::Algorithm::Md5, Hashing::Algorithm::Murmur2 };
+    }
+    return {};
+}

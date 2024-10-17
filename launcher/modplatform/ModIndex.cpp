@@ -22,6 +22,7 @@
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QIODevice>
+#include "Toml.h"
 
 namespace ModPlatform {
 
@@ -81,15 +82,12 @@ QString ProviderCapabilities::readableName(ResourceProvider p)
     return {};
 }
 
-QStringList ProviderCapabilities::hashType(ResourceProvider p)
+ResourceProvider ProviderCapabilities::fromString(QString p)
 {
-    switch (p) {
-        case ResourceProvider::MODRINTH:
-            return { "sha512", "sha1" };
-        case ResourceProvider::FLAME:
-            // Try newer formats first, fall back to old format
-            return { "sha1", "md5", "murmur2" };
-    }
+    if (p == "modrinth")
+        return ResourceProvider::MODRINTH;
+    if (p == "curseforge")
+        return ResourceProvider::FLAME;
     return {};
 }
 
@@ -119,6 +117,20 @@ auto getModLoaderAsString(ModLoaderType type) -> const QString
     }
     return "";
 }
+
+Dependency::Dependency(toml::table table)
+{
+    type = DependencyType::REQUIRED;
+    addonId = Toml::getString(table, "id");
+    version = Toml::getString(table, "version");
+}
+
+toml::table Dependency::toToml()
+{
+    return toml::table{ { "id", addonId.toString().toStdString() }, { "version", version.toStdString() } };
+}
+
+Dependency::Dependency(QVariant addonId_, DependencyType type_, QString version_) : addonId(addonId_), type(type_), version(version_){};
 
 auto getModLoaderFromString(QString type) -> ModLoaderType
 {
