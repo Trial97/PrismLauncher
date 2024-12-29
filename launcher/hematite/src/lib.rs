@@ -85,6 +85,7 @@ pub struct PackwizModSimple {
 
 fn vec_to_qstringlist(vec: Vec<QString>) -> QStringList {
     let mut qstringlist = QList::default();
+    qstringlist.reserve(vec.len().try_into().unwrap());
     for s in vec {
         qstringlist.append(s);
     }
