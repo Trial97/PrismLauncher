@@ -45,6 +45,7 @@
 
 #include "DataMigrationTask.h"
 #include "java/JavaInstallList.h"
+#include "minecraft/PackProfile.h"
 #include "net/PasteUpload.h"
 #include "pathmatcher/MultiMatcher.h"
 #include "pathmatcher/SimplePrefixMatcher.h"
@@ -246,7 +247,8 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
           { { "o", "offline" }, "Launch offline, with given player name (only valid in combination with --launch)", "offline" },
           { "alive", "Write a small '" + liveCheckFile + "' file after the launcher starts" },
           { { "I", "import" }, "Import instance or resource from specified local path or URL", "url" },
-          { "show", "Opens the window for the specified instance (by instance ID)", "show" } });
+          { "show", "Opens the window for the specified instance (by instance ID)", "show" },
+          { "send", "Send IPC json command", "command" } });
     // Has to be positional for some OS to handle that properly
     parser.addPositionalArgument("URL", "Import the resource(s) at the given URL(s) (same as -I / --import)", "[URL...]");
 
@@ -264,6 +266,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         m_offlineName = parser.value("offline");
     }
     m_liveCheck = parser.isSet("alive");
+    auto sendCommand = parser.value("send");
 
     m_instanceIdToShowWindowOf = parser.value("show");
 
@@ -375,6 +378,10 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         // FIXME: you can run the same binaries with multiple data dirs and they won't clash. This could cause issues for updates.
         m_peerInstance = new LocalPeer(this, appID);
         connect(m_peerInstance, &LocalPeer::messageReceived, this, &Application::messageReceived);
+        if (!sendCommand.isNull()) {
+            int timeout = 2000;
+            m_peerInstance->sendMessage(sendCommand.toUtf8(), timeout);
+        }
         if (m_peerInstance->isClient()) {
             int timeout = 2000;
 
@@ -527,7 +534,7 @@ Application::Application(int& argc, char** argv) : QApplication(argc, argv)
         qDebug() << "Compiled for               : " << BuildConfig.systemID();
         qDebug() << "Compiled by                : " << BuildConfig.compilerID();
         qDebug() << "Build Artifact             : " << BuildConfig.BUILD_ARTIFACT;
-        qDebug() << "Updates Enabled           : " << (updaterEnabled() ? "Yes" : "No");
+        qDebug() << "Updates Enabled            : " << (updaterEnabled() ? "Yes" : "No");
         if (adjustedBy.size()) {
             qDebug() << "Work dir before adjustment : " << origcwdPath;
             qDebug() << "Work dir after adjustment  : " << QDir::currentPath();
@@ -1352,6 +1359,12 @@ void Application::messageReceived(const QByteArray& message)
         }
 
         launch(instance, !offline, false, serverObject, accountObject, offlineName);
+    } else if (command == "modify") {
+        auto id = received.args["id"];
+        auto component = received.args["component"];
+        auto version = received.args["version"];
+
+        modifyInstanceCmd(id, component, version);
     } else {
         qWarning() << "Received invalid message" << message;
     }
@@ -1938,4 +1951,49 @@ bool Application::checkQSavePath(QString path)
         }
     }
     return false;
+}
+
+void Application::modifyInstanceCmd(QString id, QString component, QString version)
+{
+    InstancePtr instance;
+    if (!id.isEmpty()) {
+        instance = instances()->getInstanceById(id);
+        if (!instance) {
+            qWarning() << "Modify command requires an valid instance ID. " << id << "resolves to nothing.";
+            return;
+        }
+    } else {
+        qWarning() << "Modify command called without an instance ID...";
+        return;
+    }
+    auto onesix = std::dynamic_pointer_cast<MinecraftInstance>(instance);
+    auto profile = onesix->getPackProfile();
+
+    {
+        auto patch = profile->getComponent(component);
+        auto name = patch->getName();
+        auto list = patch->getVersionList();
+        list->clearExternalRecommends();
+        if (!list) {
+            qWarning() << "Modify command requires an valid componet." << component << "resolves to nothing";
+            return;
+        }
+        auto uid = list->uid();
+        if (version == "@latest") {
+            auto ver = list->getLatest();
+            version = ver->version();
+        }
+
+        bool important = false;
+        if (uid == "net.minecraft") {
+            important = true;
+            if (APPLICATION->settings()->get("AutomaticJavaSwitch").toBool() && onesix->settings()->get("AutomaticJava").toBool() &&
+                onesix->settings()->get("OverrideJavaLocation").toBool()) {
+                onesix->settings()->set("OverrideJavaLocation", false);
+                onesix->settings()->set("JavaPath", "");
+            }
+        }
+        profile->setComponentVersion(uid, version, important);
+        profile->resolve(Net::Mode::Online);
+    }
 }

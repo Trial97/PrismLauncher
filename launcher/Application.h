@@ -236,6 +236,8 @@ class Application : public QApplication {
     void subRunningInstance();
     bool shouldExitNow() const;
 
+    void modifyInstanceCmd(QString id, QString component, QString version);
+
    private:
     QDateTime startTime;
 
