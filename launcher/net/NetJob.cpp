@@ -156,7 +156,7 @@ bool NetJob::isOnline()
         }
     }
     return false;
-};
+}
 
 void NetJob::emitFailed(QString reason)
 {

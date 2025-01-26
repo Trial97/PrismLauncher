@@ -55,39 +55,29 @@
 #include "java/JavaUtils.h"
 
 #include <FileSystem.h>
-#include <qnamespace.h>
 #include <sys.h>
 #include "Application.h"
 #include "settings/SettingsObject.h"
-
-#include <QApplication>
-#include <QLabel>
-#include <QSlider>
-#include <QVBoxLayout>
-#include <QWidget>
 
 JavaPage::JavaPage(QWidget* parent) : QWidget(parent), ui(new Ui::JavaPage)
 {
     ui->setupUi(this);
 
-    // auto rg = new RangeSlider(Qt::Orientation::Horizontal, this);
-    // ui->verticalLayout->addWidget(rg);
-    // rg->blockLowerValue();
-    // if (BuildConfig.JAVA_DOWNLOADER_ENABLED) {
-    //     ui->managedJavaList->initialize(new JavaInstallList(this, true));
-    //     ui->managedJavaList->setResizeOn(2);
-    //     ui->managedJavaList->selectCurrent();
-    //     ui->managedJavaList->setEmptyString(tr("No managed Java versions are installed"));
-    //     ui->managedJavaList->setEmptyErrorString(tr("Couldn't load the managed Java list!"));
-    //     connect(ui->autodetectJavaCheckBox, &QCheckBox::stateChanged, this, [this] {
-    //         ui->autodownloadCheckBox->setEnabled(ui->autodetectJavaCheckBox->isChecked());
-    //         if (!ui->autodetectJavaCheckBox->isChecked())
-    //             ui->autodownloadCheckBox->setChecked(false);
-    //     });
-    // } else {
-    //     ui->autodownloadCheckBox->setHidden(true);
-    //     ui->tabWidget->tabBar()->hide();
-    // }
+    if (BuildConfig.JAVA_DOWNLOADER_ENABLED) {
+        ui->managedJavaList->initialize(new JavaInstallList(this, true));
+        ui->managedJavaList->setResizeOn(2);
+        ui->managedJavaList->selectCurrent();
+        ui->managedJavaList->setEmptyString(tr("No managed Java versions are installed"));
+        ui->managedJavaList->setEmptyErrorString(tr("Couldn't load the managed Java list!"));
+        connect(ui->autodetectJavaCheckBox, &QCheckBox::stateChanged, this, [this] {
+            ui->autodownloadCheckBox->setEnabled(ui->autodetectJavaCheckBox->isChecked());
+            if (!ui->autodetectJavaCheckBox->isChecked())
+                ui->autodownloadCheckBox->setChecked(false);
+        });
+    } else {
+        ui->autodownloadCheckBox->setHidden(true);
+        ui->tabWidget->tabBar()->hide();
+    }
 
     loadSettings();
     updateThresholds();
@@ -123,10 +113,10 @@ void JavaPage::applySettings()
     // Java Settings
     s->set("JavaPath", ui->javaPathTextBox->text());
     s->set("JvmArgs", ui->jvmArgsTextBox->toPlainText().replace("\n", " "));
-    // s->set("IgnoreJavaCompatibility", ui->skipCompatibilityCheckbox->isChecked());
-    // s->set("IgnoreJavaWizard", ui->skipJavaWizardCheckbox->isChecked());
-    // s->set("AutomaticJavaSwitch", ui->autodetectJavaCheckBox->isChecked());
-    // s->set("AutomaticJavaDownload", ui->autodownloadCheckBox->isChecked());
+    s->set("IgnoreJavaCompatibility", ui->skipCompatibilityCheckbox->isChecked());
+    s->set("IgnoreJavaWizard", ui->skipJavaWizardCheckbox->isChecked());
+    s->set("AutomaticJavaSwitch", ui->autodetectJavaCheckBox->isChecked());
+    s->set("AutomaticJavaDownload", ui->autodownloadCheckBox->isChecked());
     JavaCommon::checkJVMArgs(s->get("JvmArgs").toString(), this->parentWidget());
 }
 void JavaPage::loadSettings()
@@ -147,10 +137,10 @@ void JavaPage::loadSettings()
     // Java Settings
     ui->javaPathTextBox->setText(s->get("JavaPath").toString());
     ui->jvmArgsTextBox->setPlainText(s->get("JvmArgs").toString());
-    // ui->skipCompatibilityCheckbox->setChecked(s->get("IgnoreJavaCompatibility").toBool());
-    // ui->skipJavaWizardCheckbox->setChecked(s->get("IgnoreJavaWizard").toBool());
-    // ui->autodetectJavaCheckBox->setChecked(s->get("AutomaticJavaSwitch").toBool());
-    // ui->autodownloadCheckBox->setChecked(s->get("AutomaticJavaSwitch").toBool() && s->get("AutomaticJavaDownload").toBool());
+    ui->skipCompatibilityCheckbox->setChecked(s->get("IgnoreJavaCompatibility").toBool());
+    ui->skipJavaWizardCheckbox->setChecked(s->get("IgnoreJavaWizard").toBool());
+    ui->autodetectJavaCheckBox->setChecked(s->get("AutomaticJavaSwitch").toBool());
+    ui->autodownloadCheckBox->setChecked(s->get("AutomaticJavaSwitch").toBool() && s->get("AutomaticJavaDownload").toBool());
 }
 
 void JavaPage::on_javaDetectBtn_clicked()
@@ -213,7 +203,7 @@ void JavaPage::on_downloadJavaButton_clicked()
 {
     auto jdialog = new Java::InstallDialog({}, nullptr, this);
     jdialog->exec();
-    // ui->managedJavaList->loadList();
+    ui->managedJavaList->loadList();
 }
 
 void JavaPage::on_maxMemSpinBox_valueChanged([[maybe_unused]] int i)
@@ -241,54 +231,54 @@ void JavaPage::updateThresholds()
 
     if (maxMem >= sysMiB) {
         iconName = "status-bad";
-        // ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation exceeds your system memory capacity."));
+        ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation exceeds your system memory capacity."));
     } else if (maxMem > (sysMiB * 0.9)) {
         iconName = "status-yellow";
-        // ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation approaches your system memory capacity."));
+        ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation approaches your system memory capacity."));
     } else if (maxMem < minMem) {
         iconName = "status-yellow";
-        // ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation is smaller than the minimum value"));
+        ui->labelMaxMemIcon->setToolTip(tr("Your maximum memory allocation is smaller than the minimum value"));
     } else {
         iconName = "status-good";
-        // ui->labelMaxMemIcon->setToolTip("");
+        ui->labelMaxMemIcon->setToolTip("");
     }
 
     {
-        // auto height = ui->labelMaxMemIcon->fontInfo().pixelSize();
-        // QIcon icon = APPLICATION->getThemedIcon(iconName);
-        // QPixmap pix = icon.pixmap(height, height);
-        // ui->labelMaxMemIcon->setPixmap(pix);
+        auto height = ui->labelMaxMemIcon->fontInfo().pixelSize();
+        QIcon icon = APPLICATION->getThemedIcon(iconName);
+        QPixmap pix = icon.pixmap(height, height);
+        ui->labelMaxMemIcon->setPixmap(pix);
     }
 }
 
 void JavaPage::on_removeJavaButton_clicked()
 {
-    // auto version = ui->managedJavaList->selectedVersion();
-    // auto dcast = std::dynamic_pointer_cast<JavaInstall>(version);
-    // if (!dcast) {
-    return;
-    // }
-    // QDir dir(APPLICATION->javaPath());
+    auto version = ui->managedJavaList->selectedVersion();
+    auto dcast = std::dynamic_pointer_cast<JavaInstall>(version);
+    if (!dcast) {
+        return;
+    }
+    QDir dir(APPLICATION->javaPath());
 
-    // auto entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
-    // for (auto& entry : entries) {
-    //     if (dcast->path.startsWith(entry.canonicalFilePath())) {
-    //         auto response = CustomMessageBox::selectable(this, tr("Confirm Deletion"),
-    //                                                      tr("You are about to remove  the Java installation named \"%1\".\n"
-    //                                                         "Are you sure?")
-    //                                                          .arg(entry.fileName()),
-    //                                                      QMessageBox::Warning, QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
-    //                             ->exec();
+    auto entries = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (auto& entry : entries) {
+        if (dcast->path.startsWith(entry.canonicalFilePath())) {
+            auto response = CustomMessageBox::selectable(this, tr("Confirm Deletion"),
+                                                         tr("You are about to remove  the Java installation named \"%1\".\n"
+                                                            "Are you sure?")
+                                                             .arg(entry.fileName()),
+                                                         QMessageBox::Warning, QMessageBox::Yes | QMessageBox::No, QMessageBox::No)
+                                ->exec();
 
-    //         if (response == QMessageBox::Yes) {
-    //             FS::deletePath(entry.canonicalFilePath());
-    //             ui->managedJavaList->loadList();
-    //         }
-    //         break;
-    //     }
-    // }
+            if (response == QMessageBox::Yes) {
+                FS::deletePath(entry.canonicalFilePath());
+                ui->managedJavaList->loadList();
+            }
+            break;
+        }
+    }
 }
 void JavaPage::on_refreshJavaButton_clicked()
 {
-    // ui->managedJavaList->loadList();
+    ui->managedJavaList->loadList();
 }

@@ -123,4 +123,4 @@ void ReviewMessageBox::on_toggleDepsButton_clicked()
     auto state = m_deps_checked ? Qt::Checked : Qt::Unchecked;
     for (auto dep : m_deps)
         dep->setCheckState(0, state);
-};
+}

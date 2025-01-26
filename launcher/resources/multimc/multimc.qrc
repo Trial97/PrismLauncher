@@ -359,5 +359,8 @@
         <file>scalable/azul.svg</file>  <!-- Azul, Zulu, Azul Systems, the Azul Systems logo, Azul Zulu are either registered trademarks or trademarks of Azul Systems, registered in the U.S. and elsewhere. -->
         <file>scalable/mojang.svg</file>  <!-- The Mojang Logo is a registered trademark of Mojang AB. -->
 
+        <file>scalable/download.svg</file>
+        <file>scalable/find.svg</file>
+
     </qresource>
 </RCC>

@@ -137,5 +137,5 @@ bool ArchiveDownloadTask::abort()
         aborted = m_task->abort();
     emitAborted();
     return aborted;
-};
+}
 }  // namespace Java

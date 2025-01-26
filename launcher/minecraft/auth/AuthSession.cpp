@@ -39,4 +39,4 @@ void AuthSession::MakeDemo(QString name, QString u)
     access_token = "0";
     player_name = name;
     status = PlayableOnline;  // needs online to download the assets
-};
+}

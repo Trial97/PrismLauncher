@@ -264,7 +264,7 @@ QList<ModPlatform::Category> FlameAPI::loadModCategories(std::shared_ptr<QByteAr
         qDebug() << doc;
     }
     return categories;
-};
+}
 
 std::optional<ModPlatform::IndexedVersion> FlameAPI::getLatestVersion(QList<ModPlatform::IndexedVersion> versions,
                                                                       QList<ModPlatform::ModLoaderType> instanceLoaders,

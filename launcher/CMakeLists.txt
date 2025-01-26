@@ -1125,6 +1125,9 @@ SET(LAUNCHER_SOURCES
     ui/widgets/ThemeCustomizationWidget.h
     ui/widgets/ThemeCustomizationWidget.cpp
 
+    ui/widgets/custom/RangeSlider.h
+    ui/widgets/custom/RangeSlider.cpp
+
     # GUI - instance group view
     ui/instanceview/InstanceProxyModel.cpp
     ui/instanceview/InstanceProxyModel.h

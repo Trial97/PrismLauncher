@@ -194,4 +194,4 @@ void ThemeCustomizationWidget::refresh()
     connect(ui->widgetStyleComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this,
             &ThemeCustomizationWidget::applyWidgetTheme);
     connect(ui->backgroundCatComboBox, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ThemeCustomizationWidget::applyCatTheme);
-};
+}

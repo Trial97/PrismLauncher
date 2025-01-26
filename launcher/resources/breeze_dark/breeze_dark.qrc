@@ -42,6 +42,8 @@
         <file>scalable/export.svg</file>
         <file>scalable/rename.svg</file>
         <file>scalable/launch.svg</file>
-        <file>scalable/server.svg</file>
+        <file>scalable/server.svg</file>    
+        <file>scalable/download.svg</file>
+        <file>scalable/find.svg</file>
     </qresource>
 </RCC>

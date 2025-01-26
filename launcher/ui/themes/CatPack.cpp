@@ -74,7 +74,7 @@ JsonCatPack::PartialDate partialDate(QJsonObject date)
     else if (day <= 0)
         day = 1;
     return { month, day };
-};
+}
 
 JsonCatPack::JsonCatPack(QFileInfo& manifestInfo) : BasicCatPack(manifestInfo.dir().dirName())
 {

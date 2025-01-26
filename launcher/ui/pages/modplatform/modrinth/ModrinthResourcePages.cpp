@@ -156,5 +156,5 @@ void ModrinthModPage::prepareProviderCategories()
         m_filter_widget->setCategories(categories);
     });
     task->start();
-};
+}
 }  // namespace ResourceDownload

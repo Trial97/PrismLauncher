@@ -122,7 +122,7 @@ BaseVersionList::RoleList VersionList::providesRoles() const
 void VersionList::setProvidedRoles(RoleList roles)
 {
     m_provided_roles = roles;
-};
+}
 
 QHash<int, QByteArray> VersionList::roleNames() const
 {

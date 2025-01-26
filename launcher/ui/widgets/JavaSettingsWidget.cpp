@@ -556,4 +556,4 @@ void JavaSettingsWidget::onSpinBoxValueChanged(int)
 JavaSettingsWidget::~JavaSettingsWidget()
 {
     delete m_verticalSpacer;
-};
+}

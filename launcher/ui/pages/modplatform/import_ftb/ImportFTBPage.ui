@@ -47,8 +47,7 @@
         <string/>
        </property>
        <property name="icon">
-        <iconset theme="viewfolder">
-         <normaloff>.</normaloff>.</iconset>
+        <iconset theme="viewfolder"/>
        </property>
        <property name="flat">
         <bool>true</bool>

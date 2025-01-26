@@ -162,4 +162,4 @@ QList<ModPlatform::Category> ModrinthAPI::loadCategories(std::shared_ptr<QByteAr
 QList<ModPlatform::Category> ModrinthAPI::loadModCategories(std::shared_ptr<QByteArray> response)
 {
     return loadCategories(response, "mod");
-};
+}

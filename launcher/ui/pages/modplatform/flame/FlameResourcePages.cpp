@@ -221,5 +221,5 @@ void FlameModPage::prepareProviderCategories()
         m_filter_widget->setCategories(categories);
     });
     m_categoriesTask->start();
-};
+}
 }  // namespace ResourceDownload
