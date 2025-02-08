@@ -4,7 +4,26 @@ use qobject::QStringList;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fs;
 use std::path::Path;
-use toml;
+
+serde_with::serde_conv!(
+    pub QStringAsString,
+    QString,
+    |qstring: &QString| -> String {qstring.into()},
+    |s: String| -> Result<QString, std::convert::Infallible> { Ok(s.into()) }
+);
+
+serde_with::serde_conv!(
+    pub QStringListAsVecString,
+    QStringList,
+    |qstringlist: &QStringList| -> Vec<String> {
+        let qlist: QList<QString> = qstringlist.into();
+        qlist.iter().map(Into::into).collect::<Vec<_>>().into()
+    },
+    |vec: Vec<String>| -> Result<QStringList, std::convert::Infallible> {
+        let qlist: QList<QString> = vec.iter().map(Into::into).collect::<Vec<_>>().into();
+        Ok((&qlist).into())
+    }
+);
 
 /// The bridge definition for our QObject
 #[cxx::bridge]
@@ -18,14 +37,21 @@ pub mod qobject {
         type QStringList = cxx_qt_lib::QStringList;
     }
 
+    #[derive(Serialize, Deserialize)]
     pub struct PackwizMod {
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub name: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub filename: QString,
         pub side: Side,
+        #[serde(with = "serde_with::As::<super::QStringListAsVecString>")]
         pub loaders: QStringList,
 
+        #[serde(with = "serde_with::As::<super::QStringListAsVecString>")]
         pub mc_versions: QStringList,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub release_type: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub version_number: QString,
 
         pub download: Download,
@@ -42,18 +68,25 @@ pub mod qobject {
 
     #[derive(Serialize, Deserialize, Default)]
     struct Download {
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub mode: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub url: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub hash: QString,
 
         #[serde(rename = "hash-format")]
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         pub hash_format: QString,
     }
 
-    #[derive(Default)]
+    #[derive(Serialize, Deserialize, Default)]
     struct Update {
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         platform: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         mod_id: QString,
+        #[serde(with = "serde_with::As::<super::QStringAsString>")]
         version: QString,
     }
 
@@ -62,35 +95,6 @@ pub mod qobject {
     }
 }
 
-#[derive(Serialize, Deserialize, Default)]
-pub struct PackwizModSimple {
-    pub name: QString,
-    pub filename: QString,
-    pub side: qobject::Side,
-    #[serde(rename = "x-prismlauncher-loaders")]
-    pub loaders: Vec<QString>,
-
-    #[serde(rename = "x-prismlauncher-mc-versions")]
-    pub mc_versions: Vec<QString>,
-
-    #[serde(rename = "x-prismlauncher-release-type")]
-    pub release_type: QString,
-
-    #[serde(rename = "x-prismlauncher-version-number")]
-    pub version_number: QString,
-
-    pub download: qobject::Download,
-    pub update: qobject::Update,
-}
-
-fn vec_to_qstringlist(vec: Vec<QString>) -> QStringList {
-    let mut qstringlist = QList::default();
-    qstringlist.reserve(vec.len().try_into().unwrap());
-    for s in vec {
-        qstringlist.append(s);
-    }
-    (&qstringlist).into()
-}
 
 fn load_packwiz_file(qfile_path: &QString) -> Result<qobject::PackwizMod, String> {
     let file_path = qfile_path.to_string();
@@ -103,18 +107,7 @@ fn load_packwiz_file(qfile_path: &QString) -> Result<qobject::PackwizMod, String
     let file_content = fs::read_to_string(path).map_err(|e| e.to_string())?;
 
     // Try parsing the content as JSON or TOML
-    toml::from_str::<PackwizModSimple>(&file_content)
-        .map(|parsed_toml| qobject::PackwizMod {
-            name: parsed_toml.name,
-            filename: parsed_toml.filename,
-            side: parsed_toml.side,
-            loaders: vec_to_qstringlist(parsed_toml.loaders),
-            mc_versions: vec_to_qstringlist(parsed_toml.mc_versions),
-            release_type: parsed_toml.release_type,
-            version_number: parsed_toml.version_number,
-            download: parsed_toml.download,
-            update: parsed_toml.update,
-        })
+    toml::from_str::<qobject::PackwizMod>(&file_content)
         .map_err(|e| e.message().to_string())
 }
 
@@ -126,88 +119,36 @@ impl Default for qobject::Side {
 
 #[derive(Serialize, Deserialize, Default)]
 struct Modrinth {
-    #[serde(rename = "mod-id")]
+    #[serde(rename = "mod-id", with = "serde_with::As::<QStringAsString>")]
     mod_id: QString,
+    #[serde(with = "serde_with::As::<QStringAsString>")]
     version: QString,
 }
 
 #[derive(Serialize, Deserialize, Default)]
 struct CurseForge {
-    #[serde(rename = "project-id")]
+    #[serde(rename = "project-id", with = "serde_with::As::<QStringAsString>")]
     project_id: QString,
-    #[serde(rename = "file-id")]
+    #[serde(rename = "file-id", with = "serde_with::As::<QStringAsString>")]
     file_id: QString,
 }
 
-impl Serialize for qobject::Update {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: Serializer,
-    {
-        match self.platform.to_string().as_str() {
-            "curseforge" => {
-                let curseforge = CurseForge {
-                    project_id: self.mod_id.clone(),
-                    file_id: self.version.clone(),
-                };
-                curseforge.serialize(serializer)
-            }
-            "modrinth" => {
-                let modrinth = Modrinth {
-                    mod_id: self.mod_id.clone(),
-                    version: self.version.clone(),
-                };
-                modrinth.serialize(serializer)
-            }
-            _ => Err(serde::ser::Error::custom(format!(
-                "Unsupported platform: {}",
-                self.platform
-            ))),
-        }
-    }
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(tag = "type", content = "data")]
 enum Platform {
     #[serde(rename = "curseforge")]
     CurseForge {
-        #[serde(rename = "project-id")]
+        #[serde(rename = "project-id", with = "serde_with::As::<QStringAsString>")]
         project_id: QString,
-        #[serde(rename = "file-id")]
+        #[serde(rename = "file-id", with = "serde_with::As::<QStringAsString>")]
         file_id: QString,
     },
     #[serde(rename = "modrinth")]
     Modrinth {
-        #[serde(rename = "mod-id")]
+        #[serde(rename = "mod-id", with = "serde_with::As::<QStringAsString>")]
         mod_id: QString,
+        #[serde(with = "serde_with::As::<QStringAsString>")]
         version: QString,
     },
-}
-
-impl<'de> Deserialize<'de> for qobject::Update {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: Deserializer<'de>,
-    {
-        // Deserialize into the Platform enum
-        let platform: Platform = Platform::deserialize(deserializer)?;
-
-        // Convert Platform enum into Update struct
-        match platform {
-            Platform::CurseForge {
-                project_id,
-                file_id,
-            } => Ok(Self {
-                platform: "curseforge".into(),
-                mod_id: project_id,
-                version: file_id,
-            }),
-            Platform::Modrinth { mod_id, version } => Ok(Self {
-                platform: "modrinth".into(),
-                mod_id,
-                version,
-            }),
-        }
-    }
 }
