@@ -1,24 +1,57 @@
 //Generated build.rs, modify as needed
+use cxx_qt_build::{CxxQtBuilder, Interface};
+use std::path::PathBuf;
 
-use cxx_qt_build::CxxQtBuilder;
+const HEADER_DIR: &str = "hematite_static";
+
+fn header_dir() -> PathBuf {
+    PathBuf::from(std::env::var("OUT_DIR").unwrap())
+        .join("include")
+        .join(HEADER_DIR)
+}
+
+fn write_headers() {
+    println!("cargo::rerun-if-changed=include/");
+    std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
+
+    let headers = ["debug.h"];
+
+    for file_path in headers {
+        println!("cargo::rerun-if-changed=include/{file_path}");
+        std::fs::copy(format!("include/{file_path}"), header_dir().join(file_path))
+            .expect("Failed to copy header file!");
+    }
+}
 
 fn main() {
-    CxxQtBuilder::new()
-        // Link Qt's Network library
-        // - Qt Core is always linked
-        // - Qt Gui is linked by enabling the qt_gui Cargo feature (default).
-        // - Qt Qml is linked by enabling the qt_qml Cargo feature (default).
-        // - Qt Qml requires linking Qt Network on macOS
-        // - use .qt_module("Network") qt link a Qt library e.g. Link Qt's Network library
-        // .qml_module(QmlModule {
-        //     uri: "org.prismlauncher.hematite.hematite_static",
-        //     rust_files: &["src/cxxqt_object.rs"],
-        //     qml_files: &["../qml/main.qml"],
-        //     ..Default::default()
-        // })
-        .file("src/lib.rs")
-        .cc_builder(|cc| {
-            cc.include("../../");
-        })
-        .build();
+    write_headers();
+
+    let interface = Interface::default()
+        .export_include_directory(header_dir(), HEADER_DIR);
+
+    let mut builder = CxxQtBuilder::library(interface);
+
+    let cpp_files = ["src/debug.cpp"];
+    let rust_bridges = ["src/lib.rs", "src/debug.rs"]; // files with cxx::bridge's
+
+    for bridge in &rust_bridges {
+        builder = builder.file(bridge);
+    }
+
+    builder = builder.cc_builder(move |cc| {
+        for cpp_file in &cpp_files {
+            cc.file(cpp_file);
+            println!("cargo::rerun-if-changed={cpp_file}");
+        }
+        // additional includes?
+        // cc.include("../../");
+    });
+
+    // TODO: not yet supported by cxx_qt
+    // builder = builder.initializer(qt_build_utils::Initializer {
+    //     file: Some("src/init.cpp".into()),
+    //     ..qt_build_utils::Initializer::default_signature("init_hematite_core")
+    // });
+
+    builder.build();
 }
