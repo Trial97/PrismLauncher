@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::path::Path;
 
-pub mod debug;
+pub mod log;
 
 serde_with::serde_conv!(
     pub QStringListAsVecQString,

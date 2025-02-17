@@ -271,7 +271,7 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
         if (real_fname.isEmpty())
             return {};
 
-        auto packwizMod = load_packwiz_file(index_dir.absoluteFilePath(real_fname));
+        auto packwizMod = prism::hematite::serde::load_packwiz_file(index_dir.absoluteFilePath(real_fname));
         mod.slug = slug;
         mod.name = packwizMod.name;
         mod.filename = packwizMod.filename;

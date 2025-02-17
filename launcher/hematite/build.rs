@@ -2,7 +2,7 @@
 use cxx_qt_build::{CxxQtBuilder, Interface};
 use std::path::PathBuf;
 
-const HEADER_DIR: &str = "hematite_static";
+const HEADER_DIR: &str = "hematite-static";
 
 fn header_dir() -> PathBuf {
     PathBuf::from(std::env::var("OUT_DIR").unwrap())
@@ -14,7 +14,7 @@ fn write_headers() {
     println!("cargo::rerun-if-changed=include/");
     std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
 
-    let headers = ["debug.h"];
+    let headers = ["log.h"];
 
     for file_path in headers {
         println!("cargo::rerun-if-changed=include/{file_path}");
@@ -31,8 +31,8 @@ fn main() {
 
     let mut builder = CxxQtBuilder::library(interface);
 
-    let cpp_files = ["src/debug.cpp"];
-    let rust_bridges = ["src/lib.rs", "src/debug.rs"]; // files with cxx::bridge's
+    let cpp_files = ["src/log.cpp"];
+    let rust_bridges = ["src/lib.rs", "src/log.rs"]; // files with cxx::bridge's
 
     for bridge in &rust_bridges {
         builder = builder.file(bridge);
