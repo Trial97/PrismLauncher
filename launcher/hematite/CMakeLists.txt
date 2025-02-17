@@ -32,30 +32,18 @@ if(NOT CxxQt_FOUND)
     FetchContent_Declare(
         CxxQt
         GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
-        GIT_TAG main
+        GIT_TAG v0.7.0
     )
 
     FetchContent_MakeAvailable(CxxQt)
 endif()
 
-cxx_qt_import_crate(MANIFEST_PATH "./Cargo.toml" CRATES hematite_static  QT_MODULES Qt::Core)
+cxx_qt_import_crate(
+    MANIFEST_PATH "./Cargo.toml"
+    CRATES hematite_static
+    QT_MODULES Qt::Core
+)
 target_link_libraries(hematite_static INTERFACE Qt::Core)
 
-# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/hematite_static/qml" AND IS_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/hematite_static/qml")
-#
-#   file(GLOB build_cxx_qt_qml_files_list "${CMAKE_CURRENT_SOURCE_DIR}/hematite_static/qml/*")
-#   list(LENGTH build_cxx_qt_qml_files_list build_cxx_qt_qml_files_list_count)
-#   if(build_cxx_qt_qml_files_list_count GREATER 0)
-#
-#     target_link_libraries(hematite_static INTERFACE Qt::Gui Qt::Qml Qt::QuickControls2)
-#
-#     cxx_qt_import_qml_module(hematite_static_qml
-#       URI "org.prismlauncher.hematite.hematite_static"
-#       SOURCE_CRATE hematite_static
-#     )
-#
-#     target_link_libraries(Launcher_logic PRIVATE hematite_static_qml)
-#   endif()
-# endif()
 
 target_link_libraries(Launcher_logic  hematite_static)
