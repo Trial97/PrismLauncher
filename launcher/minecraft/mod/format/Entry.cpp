@@ -1,4 +1,5 @@
 #include "minecraft/mod/format/Entry.h"
+#include "Json.h"
 #include "modplatform/ModIndex.h"
 
 namespace PackwizV2 {
@@ -10,7 +11,7 @@ QJsonObject Entry::toJson() const
     json["type"] = ModPlatform::ResourceTypeUtils::toString(type);
     json["managedByPack"] = managedByPack;
     json["enabled"] = enabled;
-    json["side"] = side;
+    json["side"] = ModPlatform::SideUtils::toString(side);
     json["lockVersion"] = lockVersion;
 
     // Convert categories to JSON array
@@ -43,32 +44,32 @@ QJsonObject Entry::toJson() const
 Entry Entry::fromJson(const QJsonObject& json)
 {
     Entry entry;
-    entry.path = json["path"].toString();
-    entry.type = ModPlatform::ResourceTypeUtils::fromString(json["type"].toString());
-    entry.managedByPack = json["managedByPack"].toBool();
-    entry.enabled = json["enabled"].toBool();
-    entry.side = json["side"].toString();
-    entry.lockVersion = json["lockVersion"].toBool();
+    entry.path = Json::requireString(json["path"], "path");
+    entry.type = ModPlatform::ResourceTypeUtils::fromString(Json::requireString(json["type"], "type"));
+    entry.managedByPack = Json::requireBoolean(json["managedByPack"], "managedByPack");
+    entry.enabled = Json::requireBoolean(json["enabled"], "enabled");
+    entry.side = ModPlatform::SideUtils::fromString(Json::requireString(json["side"], "side"));
+    entry.lockVersion = Json::requireBoolean(json["lockVersion"], "lockVersion");
 
     // Parse categories
-    QJsonArray categoriesArray = json["categories"].toArray();
+    QJsonArray categoriesArray = Json::requireArray(json["categories"], "categories");
     for (const QJsonValue& value : categoriesArray) {
-        entry.categories.append(value.toString());
+        entry.categories.append(Json::requireString(value, "category"));
     }
 
     // Parse info
-    entry.info = Info::fromJson(json["info"].toObject());
+    entry.info = Info::fromJson(Json::requireObject(json["info"], "info"));
 
     // Parse hashes
-    QJsonArray hashesArray = json["hashes"].toArray();
+    QJsonArray hashesArray = Json::requireArray(json["hashes"], "hashes");
     for (const QJsonValue& value : hashesArray) {
-        entry.hashes.append(Hash::fromJson(value.toObject()));
+        entry.hashes.append(Hash::fromJson(Json::requireObject(value, "hash")));
     }
 
     // Parse providers
-    QJsonArray providersArray = json["providers"].toArray();
+    QJsonArray providersArray = Json::requireArray(json["providers"], "providers");
     for (const QJsonValue& value : providersArray) {
-        entry.providers.append(Provider::fromJson(value.toObject()));
+        entry.providers.append(Provider::fromJson(Json::requireObject(value, "provider")));
     }
 
     return entry;

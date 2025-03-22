@@ -2,6 +2,7 @@
 
 #include <QJsonObject>
 #include <QString>
+#include "Json.h"
 
 namespace PackwizV2 {
 
@@ -60,10 +61,10 @@ QJsonObject License::toJson() const
 License License::fromJson(const QJsonObject& json)
 {
     License license;
-    license.name = json["name"].toString();
-    license.id = json["id"].toString();
-    license.url = json["url"].toString();
-    license.description = json["description"].toString();
+    license.name = Json::requireString(json["name"], "info.license.name");
+    license.id = Json::requireString(json["id"], "info.license.id");
+    license.url = Json::requireString(json["url"], "info.license.url");
+    license.description = Json::requireString(json["description"], "info.license.description");
     return license;
 }
 }  // namespace PackwizV2

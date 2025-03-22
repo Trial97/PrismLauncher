@@ -1,5 +1,6 @@
 
 #include "minecraft/mod/format/Info.h"
+#include "Json.h"
 #include "minecraft/mod/format/License.h"
 
 namespace PackwizV2 {
@@ -41,29 +42,29 @@ QJsonObject Info::toJson() const
 Info Info::fromJson(const QJsonObject& json)
 {
     Info fileInfo;
-    fileInfo.imagePath = json["imagePath"].toString();
-    fileInfo.description = json["description"].toString();
-    fileInfo.newFormatId = json["newFormatId"].toString();
-    fileInfo.details = json["details"].toString();
-    fileInfo.name = json["name"].toString();
-    fileInfo.version = json["version"].toString();
-    fileInfo.homeUrl = json["homeUrl"].toString();
-    QJsonArray authorsArray = json["authors"].toArray();
+    fileInfo.imagePath = Json::requireString(json["imagePath"], "info.imagePath");
+    fileInfo.description = Json::requireString(json["description"], "info.description");
+    fileInfo.newFormatId = Json::requireString(json["newFormatId"], "info.newFormatId");
+    fileInfo.details = Json::requireString(json["details"], "info.details");
+    fileInfo.name = Json::requireString(json["name"], "info.name");
+    fileInfo.version = Json::requireString(json["version"], "info.version");
+    fileInfo.homeUrl = Json::requireString(json["homeUrl"], "info.homeUrl");
+    QJsonArray authorsArray = Json::requireArray(json["authors"], "info.authors");
     for (const QJsonValue& value : authorsArray) {
         fileInfo.authors.append(value.toString());
     }
-    fileInfo.status = json["status"].toString();
-    fileInfo.provider = json["provider"].toString();
-    QJsonArray licensesArray = json["licenses"].toArray();
+    fileInfo.status = Json::requireString(json["status"], "info.status");
+    fileInfo.provider = Json::requireString(json["provider"], "info.provider");
+    QJsonArray licensesArray = Json::requireArray(json["licenses"], "info.licenses");
     for (const QJsonValue& value : licensesArray) {
-        fileInfo.licenses.append(License::fromJson(value.toObject()));
+        fileInfo.licenses.append(License::fromJson(Json::requireObject(value, "info.license")));
     }
-    fileInfo.issueTracker = json["issueTracker"].toString();
-    fileInfo.id = json["id"].toString();
+    fileInfo.issueTracker = Json::requireString(json["issueTracker"], "info.issueTracker");
+    fileInfo.id = Json::requireString(json["id"], "info.id");
 
-    QJsonArray depsArray = json["dependencies"].toArray();
+    QJsonArray depsArray = Json::requireArray(json["dependencies"], "info.dependencies");
     for (const QJsonValue& value : depsArray) {
-        fileInfo.dependencies.append(value.toString());
+        fileInfo.dependencies.append(Json::requireString(value, "info.dependency"));
     }
 
     return fileInfo;

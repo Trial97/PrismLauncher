@@ -3,6 +3,7 @@
 #include "minecraft/mod/format/Hash.h"
 #include "minecraft/mod/format/Info.h"
 #include "minecraft/mod/format/Provider.h"
+#include "modplatform/ModIndex.h"
 
 namespace PackwizV2 {
 
@@ -12,7 +13,7 @@ struct Entry {
 
     bool managedByPack;
     bool enabled;
-    QString side;
+    ModPlatform::Side side;
     bool lockVersion;
 
     QStringList categories;

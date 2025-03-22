@@ -1,6 +1,7 @@
 
 #include <QJsonArray>
 #include <QJsonObject>
+#include "Json.h"
 #include "modplatform/ModIndex.h"
 
 #include "minecraft/mod/format/Provider.h"
@@ -42,27 +43,28 @@ QJsonObject Provider::toJson() const
 Provider Provider::fromJson(const QJsonObject& json)
 {
     Provider provider;
-    provider.name = ModPlatform::ProviderCapabilities::fromString(json["name"].toString());
-    provider.id = json["id"].toString();
-    provider.version = json["version"].toString();
-    provider.url = json["url"].toString();
-    provider.side = ModPlatform::SideUtils::fromString(json["side"].toString());
+    provider.name = ModPlatform::ProviderCapabilities::fromString(Json::requireString(json["name"], "provider.name"));
+    provider.id = Json::requireString(json["id"], "provider.id");
+    provider.version = Json::requireString(json["version"], "provider.version");
+    provider.url = Json::requireString(json["url"], "provider.url");
+    provider.side = ModPlatform::SideUtils::fromString(Json::requireString(json["side"], "provider.side"));
 
-    QJsonArray loadersArray = json["loaders"].toArray();
+    QJsonArray loadersArray = Json::requireArray(json["loaders"], "provider.loaders");
     for (const QJsonValue& value : loadersArray) {
-        provider.loaders |= ModPlatform::getModLoaderFromString(value.toString());
+        provider.loaders |= ModPlatform::getModLoaderFromString(Json::requireString(value, "provider.loader"));
     }
 
-    QJsonArray mcVersionsArray = json["mcVersions"].toArray();
+    QJsonArray mcVersionsArray = Json::requireArray(json["mcVersions"], "provider.mcVersions");
     for (const QJsonValue& value : mcVersionsArray) {
-        provider.mcVersions.append(value.toString());
+        provider.mcVersions.append(Json::requireString(value, "provider.mcVersion"));
     }
 
     provider.releaseType = ModPlatform::IndexedVersionType::enumFromString(json["releaseType"].toString());
 
-    QJsonArray dependenciesArray = json["dependencies"].toArray();
+    QJsonArray dependenciesArray = Json::requireArray(json["dependencies"], "provider.dependencies");
     for (const QJsonValue& value : dependenciesArray) {
-        provider.dependencies.append(ModPlatform::Dependency::fromJson(value.toObject()));  // Assuming Dependency has fromJson()
+        provider.dependencies.append(
+            ModPlatform::Dependency::fromJson(Json::requireObject(value, "provider.dependency")));  // Assuming Dependency has fromJson()
     }
 
     return provider;
