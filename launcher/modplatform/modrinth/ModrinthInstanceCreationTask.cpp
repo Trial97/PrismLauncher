@@ -262,8 +262,8 @@ bool ModrinthCreationTask::createInstance()
         }
         if (fileName.startsWith("mods/")) {
             auto mod = new Mod(file_path);
-            ModDetails d;
-            d.mod_id = file_path;
+            PackwizV2::Info d;
+            d.id = file_path;
             mod->setDetails(d);
             resources[file.hash.toHex()] = mod;
         }

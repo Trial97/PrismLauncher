@@ -44,9 +44,9 @@ void Resource::parseFile()
     m_internal_id = file_name;
 
     std::tie(m_size_str, m_size_info) = calculateFileSize(m_file_info);
+    m_name = file_name;
     if (m_file_info.isDir()) {
         m_type = ResourceType::FOLDER;
-        m_name = file_name;
     } else if (m_file_info.isFile()) {
         if (file_name.endsWith(".disabled")) {
             file_name.chop(9);
@@ -65,8 +65,6 @@ void Resource::parseFile()
         } else {
             m_type = ResourceType::SINGLEFILE;
         }
-
-        m_name = file_name;
     }
 
     m_changed_date_time = m_file_info.lastModified();

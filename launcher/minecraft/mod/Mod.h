@@ -44,10 +44,9 @@
 #include <QPixmap>
 #include <QPixmapCache>
 
-#include <optional>
-
-#include "ModDetails.h"
 #include "Resource.h"
+#include "minecraft/mod/format/Info.h"
+#include "minecraft/mod/format/License.h"
 
 class Mod : public Resource {
     Q_OBJECT
@@ -59,31 +58,34 @@ class Mod : public Resource {
     Mod(const QFileInfo& file);
     Mod(QString file_path) : Mod(QFileInfo(file_path)) {}
 
-    auto details() const -> const ModDetails&;
+    auto details() const -> const PackwizV2::Info&;
     auto name() const -> QString override;
     auto version() const -> QString;
     auto homepage() const -> QString override;
     auto description() const -> QString;
     auto authors() const -> QStringList;
-    auto licenses() const -> const QList<ModLicense>&;
+    auto licenses() const -> const QList<PackwizV2::License>&;
     auto issueTracker() const -> QString;
     auto side() const -> QString;
     auto loaders() const -> QString;
     auto mcVersions() const -> QString;
     auto releaseType() const -> QString;
 
+    [[nodiscard]] virtual QStringList dependencies() const override;
+    [[nodiscard]] virtual QString jarId() const override;
+
     /** Get the intneral path to the mod's icon file*/
-    QString iconPath() const { return m_local_details.icon_file; }
+    QString iconPath() const { return m_local_details.imagePath; }
     /** Gets the icon of the mod, converted to a QPixmap for drawing, and scaled to size. */
     [[nodiscard]] QPixmap icon(QSize size, Qt::AspectRatioMode mode = Qt::AspectRatioMode::IgnoreAspectRatio) const;
     /** Thread-safe. */
     QPixmap setIcon(QImage new_image) const;
 
-    void setDetails(const ModDetails& details);
+    void setDetails(const PackwizV2::Info& details);
 
     bool valid() const override;
 
-    [[nodiscard]] int compare(const Resource & other, SortType type) const override;
+    [[nodiscard]] int compare(const Resource& other, SortType type) const override;
     [[nodiscard]] bool applyFilter(QRegularExpression filter) const override;
 
     // Delete all the files of this mod
@@ -91,10 +93,10 @@ class Mod : public Resource {
     // Delete the metadata only
     void destroyMetadata(QDir& index_dir);
 
-    void finishResolvingWithDetails(ModDetails&& details);
+    void finishResolvingWithDetails(PackwizV2::Info&& details);
 
    protected:
-    ModDetails m_local_details;
+    PackwizV2::Info m_local_details;
 
     mutable QMutex m_data_lock;
 

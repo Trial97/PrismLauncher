@@ -19,9 +19,8 @@
 
 #include "modplatform/ModIndex.h"
 
-#include <QCryptographicHash>
-#include <QDebug>
-#include <QIODevice>
+#include <QJsonObject>
+#include <QVariant>
 
 namespace ModPlatform {
 
@@ -106,6 +105,13 @@ QStringList ProviderCapabilities::hashType(ResourceProvider p)
     return {};
 }
 
+ResourceProvider ProviderCapabilities::fromString(QString str)
+{
+    if (str == "modrinth")
+        return ResourceProvider::MODRINTH;
+    return ResourceProvider::FLAME;
+}
+
 QString getMetaURL(ResourceProvider provider, QVariant projectID)
 {
     return ((provider == ModPlatform::ResourceProvider::FLAME) ? "https://www.curseforge.com/projects/" : "https://modrinth.com/mod/") +
@@ -150,4 +156,123 @@ auto getModLoaderFromString(QString type) -> ModLoaderType
     return {};
 }
 
+QString DependencyUtils::toString(DependencyType type)
+{
+    switch (type) {
+        case DependencyType::REQUIRED:
+            return "required";
+        case DependencyType::OPTIONAL:
+            return "optional";
+        case DependencyType::INCOMPATIBLE:
+            return "incompatible";
+        case DependencyType::EMBEDDED:
+            return "embedded";
+        case DependencyType::TOOL:
+            return "tool";
+        case DependencyType::INCLUDE:
+            return "include";
+        case DependencyType::UNKNOWN:
+        default:
+            return "unknown";
+    }
+}
+
+DependencyType DependencyUtils::fromString(const QString& str)
+{
+    if (str == "required")
+        return DependencyType::REQUIRED;
+    if (str == "optional")
+        return DependencyType::OPTIONAL;
+    if (str == "incompatible")
+        return DependencyType::INCOMPATIBLE;
+    if (str == "embedded")
+        return DependencyType::EMBEDDED;
+    if (str == "tool")
+        return DependencyType::TOOL;
+    if (str == "include")
+        return DependencyType::INCLUDE;
+    return DependencyType::UNKNOWN;
+}
+
+QJsonObject Dependency::toJson() const
+{
+    QJsonObject json;
+    json["addonId"] = QJsonValue::fromVariant(addonId);
+    json["type"] = DependencyUtils::toString(type);
+    json["version"] = version;
+    return json;
+}
+
+Dependency Dependency::fromJson(const QJsonObject& json)
+{
+    Dependency dep;
+    dep.addonId = json["addonId"].toVariant();
+    dep.type = DependencyUtils::fromString(json["type"].toString());
+    dep.version = json["version"].toString();
+    return dep;
+}
+
+QString SideUtils::toString(Side side)
+{
+    switch (side) {
+        case Side::ClientSide:
+            return "client";
+        case Side::ServerSide:
+            return "server";
+        case Side::UniversalSide:
+            return "both";
+        default:
+            return "unknown";
+    }
+}
+
+Side SideUtils::fromString(const QString& str)
+{
+    if (str == "client")
+        return Side::ClientSide;
+    if (str == "server")
+        return Side::ServerSide;
+    if (str == "both")
+        return Side::UniversalSide;
+    return Side::UniversalSide;  // Default to universal if unknown
+}
+QString ResourceTypeUtils::toString(ResourceType type)
+{
+    switch (type) {
+        case ResourceType::MOD:
+            return "mod";
+        case ResourceType::RESOURCE_PACK:
+            return "resource_pack";
+        case ResourceType::SHADER_PACK:
+            return "shader_pack";
+        case ResourceType::MODPACK:
+            return "modpack";
+        case ResourceType::DATAPACK:
+            return "datapack";
+        case ResourceType::WORLD:
+            return "world";
+        case ResourceType::SCREENSHOTS:
+            return "screenshots";
+        default:
+            return "unknown";
+    }
+}
+ResourceType ResourceTypeUtils::fromString(const QString& str)
+{
+    if (str == "mod")
+        return ResourceType::MOD;
+    if (str == "resource_pack")
+        return ResourceType::RESOURCE_PACK;
+    if (str == "shader_pack")
+        return ResourceType::SHADER_PACK;
+    if (str == "modpack")
+        return ResourceType::MODPACK;
+    if (str == "datapack")
+        return ResourceType::DATAPACK;
+    if (str == "world")
+        return ResourceType::WORLD;
+    if (str == "screenshots")
+        return ResourceType::SCREENSHOTS;
+    return ResourceType::UNKNOWN;
+}
 }  // namespace ModPlatform

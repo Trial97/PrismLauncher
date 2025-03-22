@@ -51,23 +51,25 @@
 
 #include "Application.h"
 
+#include "minecraft/mod/Resource.h"
 #include "minecraft/mod/tasks/LocalModParseTask.h"
 
 ModFolderModel::ModFolderModel(const QDir& dir, BaseInstance* instance, bool is_indexed, bool create_dir, QObject* parent)
     : ResourceFolderModel(QDir(dir), instance, is_indexed, create_dir, parent)
 {
     m_column_names = QStringList({ "Enable", "Image", "Name", "Version", "Last Modified", "Provider", "Size", "Side", "Loaders",
-                                   "Minecraft Versions", "Release Type" });
-    m_column_names_translated = QStringList({ tr("Enable"), tr("Image"), tr("Name"), tr("Version"), tr("Last Modified"), tr("Provider"),
-                                              tr("Size"), tr("Side"), tr("Loaders"), tr("Minecraft Versions"), tr("Release Type") });
-    m_column_sort_keys = { SortType::ENABLED, SortType::NAME,        SortType::NAME,        SortType::VERSION,
-                           SortType::DATE,    SortType::PROVIDER,    SortType::SIZE,        SortType::SIDE,
-                           SortType::LOADERS, SortType::MC_VERSIONS, SortType::RELEASE_TYPE };
+                                   "Minecraft Versions", "Release Type", "Dependency" });
+    m_column_names_translated =
+        QStringList({ tr("Enable"), tr("Image"), tr("Name"), tr("Version"), tr("Last Modified"), tr("Provider"), tr("Size"), tr("Side"),
+                      tr("Loaders"), tr("Minecraft Versions"), tr("Release Type"), tr("Dependency") });
+    m_column_sort_keys = { SortType::ENABLED, SortType::NAME,        SortType::NAME,         SortType::VERSION,
+                           SortType::DATE,    SortType::PROVIDER,    SortType::SIZE,         SortType::SIDE,
+                           SortType::LOADERS, SortType::MC_VERSIONS, SortType::RELEASE_TYPE, SortType::DEPENDENCY };
     m_column_resize_modes = { QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Stretch,     QHeaderView::Interactive,
                               QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive,
-                              QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive };
-    m_columnsHideable = { false, true, false, true, true, true, true, true, true, true, true };
-    m_columnsHiddenByDefault = { false, false, false, false, false, false, false, true, true, true, true };
+                              QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive, QHeaderView::Interactive };
+    m_columnsHideable = { false, true, false, true, true, true, true, true, true, true, true, true };
+    m_columnsHiddenByDefault = { false, false, false, false, false, false, false, true, true, true, true, true };
 }
 
 QVariant ModFolderModel::data(const QModelIndex& index, int role) const
@@ -110,6 +112,9 @@ QVariant ModFolderModel::data(const QModelIndex& index, int role) const
                 }
                 case ReleaseTypeColumn: {
                     return at(row).releaseType();
+                }
+                case DependencyColumn: {
+                    return at(row).dependencies().join(",");
                 }
                 case SizeColumn:
                     return at(row).sizeStr();
@@ -171,6 +176,7 @@ QVariant ModFolderModel::headerData(int section, [[maybe_unused]] Qt::Orientatio
                 case LoadersColumn:
                 case McVersionsColumn:
                 case ReleaseTypeColumn:
+                case DependencyColumn:
                 case SizeColumn:
                     return columnNames().at(section);
                 default:
@@ -197,6 +203,8 @@ QVariant ModFolderModel::headerData(int section, [[maybe_unused]] Qt::Orientatio
                     return tr("The supported minecraft versions.");
                 case ReleaseTypeColumn:
                     return tr("The release type.");
+                case DependencyColumn:
+                    return tr("The dependency list.");
                 case SizeColumn:
                     return tr("The size of the mod.");
                 default:
@@ -239,8 +247,8 @@ void ModFolderModel::onParseSucceeded(int ticket, QString mod_id)
     auto resource = find(mod_id);
 
     auto result = cast_task->result();
-    if (result && resource)
-        static_cast<Mod*>(resource.get())->finishResolvingWithDetails(std::move(result->details));
+    if (!result.id.isEmpty() && resource)
+        static_cast<Mod*>(resource.get())->finishResolvingWithDetails(std::move(result));
 
     emit dataChanged(index(row), index(row, columnCount(QModelIndex()) - 1));
 }

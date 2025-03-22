@@ -4,24 +4,22 @@
 #include <QObject>
 
 #include "minecraft/mod/Mod.h"
-#include "minecraft/mod/ModDetails.h"
 
+#include "minecraft/mod/format/Info.h"
 #include "tasks/Task.h"
 
 namespace ModUtils {
 
-ModDetails ReadFabricModInfo(QByteArray contents);
-ModDetails ReadQuiltModInfo(QByteArray contents);
-ModDetails ReadForgeInfo(QByteArray contents);
-ModDetails ReadLiteModInfo(QByteArray contents);
+PackwizV2::Info ReadFabricModInfo(QByteArray contents);
+PackwizV2::Info ReadQuiltModInfo(QByteArray contents);
+PackwizV2::Info ReadForgeInfo(QByteArray contents);
+PackwizV2::Info ReadLiteModInfo(QByteArray contents);
 
-enum class ProcessingLevel { Full, BasicInfoOnly };
+bool process(QString path, ResourceType resourceType, PackwizV2::Info& mod);
 
-bool process(Mod& mod, ProcessingLevel level = ProcessingLevel::Full);
-
-bool processZIP(Mod& mod, ProcessingLevel level = ProcessingLevel::Full);
-bool processFolder(Mod& mod, ProcessingLevel level = ProcessingLevel::Full);
-bool processLitemod(Mod& mod, ProcessingLevel level = ProcessingLevel::Full);
+bool processZIP(QString path, PackwizV2::Info& mod);
+bool processFolder(QString path, PackwizV2::Info& mod);
+bool processLitemod(QString path, PackwizV2::Info& mod);
 
 /** Checks whether a file is valid as a mod or not. */
 bool validate(QFileInfo file);
@@ -33,11 +31,7 @@ bool loadIconFile(const Mod& mod, QPixmap* pixmap);
 class LocalModParseTask : public Task {
     Q_OBJECT
    public:
-    struct Result {
-        ModDetails details;
-    };
-    using ResultPtr = std::shared_ptr<Result>;
-    ResultPtr result() const { return m_result; }
+    PackwizV2::Info result() const { return m_result; }
 
     [[nodiscard]] bool canAbort() const override { return true; }
     bool abort() override;
@@ -51,7 +45,7 @@ class LocalModParseTask : public Task {
     int m_token;
     ResourceType m_type;
     QFileInfo m_modFile;
-    ResultPtr m_result;
+    PackwizV2::Info m_result;
 
     std::atomic<bool> m_aborted = false;
 };

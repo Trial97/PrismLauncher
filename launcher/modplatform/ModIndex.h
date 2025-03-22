@@ -36,15 +36,28 @@ QList<ModLoaderType> modLoaderTypesToList(ModLoaderTypes flags);
 
 enum class ResourceProvider { MODRINTH, FLAME };
 
-enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK, MODPACK };
+enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK, MODPACK, DATAPACK, WORLD, SCREENSHOTS, UNKNOWN };
 
 enum class DependencyType { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
+
+enum class Side { ClientSide = 1 << 0, ServerSide = 1 << 1, UniversalSide = ClientSide | ServerSide };
+
+namespace SideUtils {
+QString toString(Side side);
+Side fromString(const QString& str);
+}  // namespace SideUtils
 
 namespace ProviderCapabilities {
 const char* name(ResourceProvider);
 QString readableName(ResourceProvider);
 QStringList hashType(ResourceProvider);
+ResourceProvider fromString(QString);
 }  // namespace ProviderCapabilities
+
+namespace ResourceTypeUtils {
+QString toString(ResourceType type);
+ResourceType fromString(const QString& str);
+}  // namespace ResourceTypeUtils
 
 struct ModpackAuthor {
     QString name;
@@ -85,10 +98,20 @@ struct IndexedVersionType {
     IndexedVersionType::VersionType m_type;
 };
 
+namespace DependencyUtils {
+QString toString(DependencyType type);
+
+DependencyType fromString(const QString& str);
+}  // namespace DependencyUtils
+
 struct Dependency {
     QVariant addonId;
     DependencyType type;
     QString version;
+
+    QJsonObject toJson() const;
+
+    static Dependency fromJson(const QJsonObject& json);
 };
 
 struct IndexedVersion {

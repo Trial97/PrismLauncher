@@ -323,7 +323,6 @@ set(MINECRAFT_SOURCES
     minecraft/mod/MetadataHandler.h
     minecraft/mod/Mod.h
     minecraft/mod/Mod.cpp
-    minecraft/mod/ModDetails.h
     minecraft/mod/ModFolderModel.h
     minecraft/mod/ModFolderModel.cpp
     minecraft/mod/Resource.h
@@ -382,7 +381,20 @@ set(MINECRAFT_SOURCES
     minecraft/skins/SkinList.cpp
     minecraft/skins/SkinList.h
 
-    minecraft/Agent.h)
+    minecraft/Agent.h
+    
+    # PackwizV2
+    minecraft/mod/format/Entry.cpp
+    minecraft/mod/format/Entry.h
+    minecraft/mod/format/Hash.cpp
+    minecraft/mod/format/Hash.h
+    minecraft/mod/format/Info.cpp
+    minecraft/mod/format/Info.h
+    minecraft/mod/format/License.cpp
+    minecraft/mod/format/License.h
+    minecraft/mod/format/Provider.cpp
+    minecraft/mod/format/Provider.h
+)
 
 # the screenshots feature
 set(SCREENSHOTS_SOURCES

@@ -46,7 +46,7 @@
 #include "MetadataHandler.h"
 #include "Resource.h"
 #include "Version.h"
-#include "minecraft/mod/ModDetails.h"
+#include "minecraft/mod/format/License.h"
 #include "minecraft/mod/tasks/LocalModParseTask.h"
 #include "modplatform/ModIndex.h"
 
@@ -55,7 +55,7 @@ Mod::Mod(const QFileInfo& file) : Resource(file), m_local_details()
     m_enabled = (file.suffix() != "disabled");
 }
 
-void Mod::setDetails(const ModDetails& details)
+void Mod::setDetails(const PackwizV2::Info& details)
 {
     m_local_details = details;
 }
@@ -106,6 +106,12 @@ int Mod::compare(const Resource& other, SortType type) const
                 return compare_result;
             break;
         }
+        case SortType::DEPENDENCY: {
+            auto compare_result = QString::compare(dependencies().join(","), cast_other->dependencies().join(","), Qt::CaseInsensitive);
+            if (compare_result != 0)
+                return compare_result;
+            break;
+        }
     }
     return 0;
 }
@@ -124,7 +130,7 @@ bool Mod::applyFilter(QRegularExpression filter) const
     return Resource::applyFilter(filter);
 }
 
-auto Mod::details() const -> const ModDetails&
+auto Mod::details() const -> const PackwizV2::Info&
 {
     return m_local_details;
 }
@@ -148,7 +154,7 @@ auto Mod::homepage() const -> QString
     QString metaUrl = Resource::homepage();
 
     if (metaUrl.isEmpty())
-        return details().homeurl;
+        return details().homeUrl;
     else
         return metaUrl;
 }
@@ -201,7 +207,7 @@ auto Mod::authors() const -> QStringList
     return details().authors;
 }
 
-void Mod::finishResolvingWithDetails(ModDetails&& details)
+void Mod::finishResolvingWithDetails(PackwizV2::Info&& details)
 {
     m_is_resolving = false;
     m_is_resolved = true;
@@ -212,14 +218,14 @@ void Mod::finishResolvingWithDetails(ModDetails&& details)
     }
 }
 
-auto Mod::licenses() const -> const QList<ModLicense>&
+auto Mod::licenses() const -> const QList<PackwizV2::License>&
 {
     return details().licenses;
 }
 
 auto Mod::issueTracker() const -> QString
 {
-    return details().issue_tracker;
+    return details().issueTracker;
 }
 
 QPixmap Mod::setIcon(QImage new_image) const
@@ -273,5 +279,15 @@ QPixmap Mod::icon(QSize size, Qt::AspectRatioMode mode) const
 
 bool Mod::valid() const
 {
-    return !m_local_details.mod_id.isEmpty();
+    return !m_local_details.id.isEmpty();
+}
+
+QStringList Mod::dependencies() const
+{
+    return m_local_details.dependencies;
+}
+
+QString Mod::jarId() const
+{
+    return m_local_details.id;
 }
