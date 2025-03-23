@@ -38,7 +38,6 @@
 
 #include "Application.h"
 #include "FileSystem.h"
-#include "minecraft/mod/MetadataHandler.h"
 
 #include <QThread>
 
@@ -53,7 +52,6 @@ ResourceFolderLoadTask::ResourceFolderLoadTask(const QDir& resource_dir,
     , m_is_indexed(is_indexed)
     , m_clean_orphan(clean_orphan)
     , m_create_func(create_function)
-    , m_result(new Result())
     , m_thread_to_spawn_into(thread())
 {}
 
@@ -83,29 +81,29 @@ void ResourceFolderLoadTask::executeTask()
         Resource* resource = m_create_func(entry);
 
         if (resource->enabled()) {
-            if (m_result->resources.contains(resource->internal_id())) {
-                m_result->resources[resource->internal_id()]->setStatus(ResourceStatus::INSTALLED);
+            if (m_result.contains(resource->internal_id())) {
+                m_result[resource->internal_id()]->setStatus(ResourceStatus::INSTALLED);
                 // Delete the object we just created, since a valid one is already in the mods list.
                 delete resource;
             } else {
-                m_result->resources[resource->internal_id()].reset(resource);
-                m_result->resources[resource->internal_id()]->setStatus(ResourceStatus::NO_METADATA);
+                m_result[resource->internal_id()].reset(resource);
+                m_result[resource->internal_id()]->setStatus(ResourceStatus::NO_METADATA);
             }
         } else {
             QString chopped_id = resource->internal_id().chopped(9);
-            if (m_result->resources.contains(chopped_id)) {
-                m_result->resources[resource->internal_id()].reset(resource);
+            if (m_result.contains(chopped_id)) {
+                m_result[resource->internal_id()].reset(resource);
 
-                auto metadata = m_result->resources[chopped_id]->metadata();
+                auto metadata = m_result[chopped_id]->metadata();
                 if (metadata) {
                     resource->setMetadata(*metadata);
 
-                    m_result->resources[resource->internal_id()]->setStatus(ResourceStatus::INSTALLED);
-                    m_result->resources.remove(chopped_id);
+                    m_result[resource->internal_id()]->setStatus(ResourceStatus::INSTALLED);
+                    m_result.remove(chopped_id);
                 }
             } else {
-                m_result->resources[resource->internal_id()].reset(resource);
-                m_result->resources[resource->internal_id()]->setStatus(ResourceStatus::NO_METADATA);
+                m_result[resource->internal_id()].reset(resource);
+                m_result[resource->internal_id()]->setStatus(ResourceStatus::NO_METADATA);
             }
         }
     }
@@ -113,7 +111,7 @@ void ResourceFolderLoadTask::executeTask()
     // Remove orphan metadata to prevent issues
     // See https://github.com/PolyMC/PolyMC/issues/996
     if (m_clean_orphan) {
-        QMutableMapIterator iter(m_result->resources);
+        QMutableMapIterator iter(m_result);
         while (iter.hasNext()) {
             auto resource = iter.next().value();
             if (resource->status() == ResourceStatus::NOT_INSTALLED) {
@@ -123,7 +121,7 @@ void ResourceFolderLoadTask::executeTask()
         }
     }
 
-    for (auto mod : m_result->resources)
+    for (auto mod : m_result)
         mod->moveToThread(m_thread_to_spawn_into);
 
     if (m_aborted)
@@ -144,6 +142,12 @@ void ResourceFolderLoadTask::getFromMetadata()
         auto* resource = m_create_func(QFileInfo(m_resource_dir.filePath(metadata.filename)));
         resource->setMetadata(metadata);
         resource->setStatus(ResourceStatus::NOT_INSTALLED);
-        m_result->resources[resource->internal_id()].reset(resource);
+        m_result[resource->internal_id()].reset(resource);
     }
+}
+
+bool ResourceFolderLoadTask::abort()
+{
+    m_aborted.store(true);
+    return true;
 }

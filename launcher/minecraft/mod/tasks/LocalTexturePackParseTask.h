@@ -48,18 +48,14 @@ bool validate(QFileInfo file);
 class LocalTexturePackParseTask : public Task {
     Q_OBJECT
    public:
-    LocalTexturePackParseTask(int token, TexturePack& rp);
+    LocalTexturePackParseTask(TexturePack& rp);
 
     [[nodiscard]] bool canAbort() const override { return true; }
     bool abort() override;
 
     void executeTask() override;
 
-    [[nodiscard]] int token() const { return m_token; }
-
    private:
-    int m_token;
-
     TexturePack& m_texture_pack;
 
     bool m_aborted = false;

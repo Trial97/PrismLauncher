@@ -47,11 +47,7 @@
 class ResourceFolderLoadTask : public Task {
     Q_OBJECT
    public:
-    struct Result {
-        QMap<QString, Resource::Ptr> resources;
-    };
-    using ResultPtr = std::shared_ptr<Result>;
-    ResultPtr result() const { return m_result; }
+    QMap<QString, Resource::Ptr> result() const { return m_result; }
 
    public:
     ResourceFolderLoadTask(const QDir& resource_dir,
@@ -61,11 +57,7 @@ class ResourceFolderLoadTask : public Task {
                            std::function<Resource*(const QFileInfo&)> create_function);
 
     [[nodiscard]] bool canAbort() const override { return true; }
-    bool abort() override
-    {
-        m_aborted.store(true);
-        return true;
-    }
+    bool abort() override;
 
     void executeTask() override;
 
@@ -77,7 +69,7 @@ class ResourceFolderLoadTask : public Task {
     bool m_is_indexed;
     bool m_clean_orphan;
     std::function<Resource*(QFileInfo const&)> m_create_func;
-    ResultPtr m_result;
+    QMap<QString, Resource::Ptr> m_result = {};
 
     std::atomic<bool> m_aborted = false;
 

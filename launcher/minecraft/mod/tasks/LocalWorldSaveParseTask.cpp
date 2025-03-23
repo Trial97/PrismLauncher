@@ -33,13 +33,13 @@
 
 namespace WorldSaveUtils {
 
-bool process(WorldSave& pack, ProcessingLevel level)
+bool process(WorldSave& pack)
 {
     switch (pack.type()) {
         case ResourceType::FOLDER:
-            return WorldSaveUtils::processFolder(pack, level);
+            return WorldSaveUtils::processFolder(pack);
         case ResourceType::ZIPFILE:
-            return WorldSaveUtils::processZIP(pack, level);
+            return WorldSaveUtils::processZIP(pack);
         default:
             qWarning() << "Invalid type for world save parse task!";
             return false;
@@ -71,7 +71,7 @@ static std::tuple<bool, QString, bool> contains_level_dat(QDir dir, bool saves =
     return std::make_tuple(false, "", saves);
 }
 
-bool processFolder(WorldSave& save, ProcessingLevel level)
+bool processFolder(WorldSave& save)
 {
     Q_ASSERT(save.type() == ResourceType::FOLDER);
 
@@ -88,12 +88,6 @@ bool processFolder(WorldSave& save, ProcessingLevel level)
     } else {
         save.setSaveFormat(WorldSaveFormat::SINGLE);
     }
-
-    if (level == ProcessingLevel::BasicInfoOnly) {
-        return true;  // only need basic info already checked
-    }
-
-    // reserved for more intensive processing
 
     return true;  // all tests passed
 }
@@ -124,7 +118,7 @@ static std::tuple<bool, QString, bool> contains_level_dat(QuaZip& zip)
     return std::make_tuple(false, "", saves);
 }
 
-bool processZIP(WorldSave& save, ProcessingLevel level)
+bool processZIP(WorldSave& save)
 {
     Q_ASSERT(save.type() == ResourceType::ZIPFILE);
 
@@ -150,13 +144,6 @@ bool processZIP(WorldSave& save, ProcessingLevel level)
         save.setSaveFormat(WorldSaveFormat::SINGLE);
     }
 
-    if (level == ProcessingLevel::BasicInfoOnly) {
-        zip.close();
-        return true;  // only need basic info already checked
-    }
-
-    // reserved for more intensive processing
-
     zip.close();
 
     return true;
@@ -165,12 +152,12 @@ bool processZIP(WorldSave& save, ProcessingLevel level)
 bool validate(QFileInfo file)
 {
     WorldSave sp{ file };
-    return WorldSaveUtils::process(sp, ProcessingLevel::BasicInfoOnly) && sp.valid();
+    return WorldSaveUtils::process(sp) && sp.valid();
 }
 
 }  // namespace WorldSaveUtils
 
-LocalWorldSaveParseTask::LocalWorldSaveParseTask(int token, WorldSave& save) : Task(false), m_token(token), m_save(save) {}
+LocalWorldSaveParseTask::LocalWorldSaveParseTask(WorldSave& save) : Task(false), m_save(save) {}
 
 bool LocalWorldSaveParseTask::abort()
 {

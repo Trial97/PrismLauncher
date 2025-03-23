@@ -30,8 +30,8 @@ class LocalResourceUpdateTask : public Task {
 
     explicit LocalResourceUpdateTask(QDir index_dir, ModPlatform::IndexedPack& project, ModPlatform::IndexedVersion& version);
 
-    auto canAbort() const -> bool override { return true; }
-    auto abort() -> bool override;
+    bool canAbort() const override { return true; }
+    bool abort() override;
 
    protected slots:
     //! Entry point for tasks.

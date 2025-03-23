@@ -30,12 +30,10 @@
 
 namespace WorldSaveUtils {
 
-enum class ProcessingLevel { Full, BasicInfoOnly };
+bool process(WorldSave& save);
 
-bool process(WorldSave& save, ProcessingLevel level = ProcessingLevel::Full);
-
-bool processZIP(WorldSave& pack, ProcessingLevel level = ProcessingLevel::Full);
-bool processFolder(WorldSave& pack, ProcessingLevel level = ProcessingLevel::Full);
+bool processZIP(WorldSave& pack);
+bool processFolder(WorldSave& pack);
 
 bool validate(QFileInfo file);
 
@@ -44,18 +42,14 @@ bool validate(QFileInfo file);
 class LocalWorldSaveParseTask : public Task {
     Q_OBJECT
    public:
-    LocalWorldSaveParseTask(int token, WorldSave& save);
+    LocalWorldSaveParseTask(WorldSave& save);
 
     [[nodiscard]] bool canAbort() const override { return true; }
     bool abort() override;
 
     void executeTask() override;
 
-    [[nodiscard]] int token() const { return m_token; }
-
    private:
-    int m_token;
-
     WorldSave& m_save;
 
     bool m_aborted = false;

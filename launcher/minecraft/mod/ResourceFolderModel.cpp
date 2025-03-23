@@ -359,9 +359,7 @@ void ResourceFolderModel::resolveResource(Resource::Ptr res)
 
 void ResourceFolderModel::onUpdateSucceeded()
 {
-    auto update_results = static_cast<ResourceFolderLoadTask*>(m_current_update_task.get())->result();
-
-    auto& new_resources = update_results->resources;
+    auto new_resources = static_cast<ResourceFolderLoadTask*>(m_current_update_task.get())->result();
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     auto current_list = m_resources_index.keys();
