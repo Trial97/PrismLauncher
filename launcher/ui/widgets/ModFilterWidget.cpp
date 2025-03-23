@@ -108,9 +108,9 @@ class AllVersionProxyModel : public QSortFilterProxyModel {
 };
 
 ModFilterWidget::ModFilterWidget(MinecraftInstance* instance, bool extended, QWidget* parent)
-    : QTabWidget(parent), ui(new Ui::ModFilterWidget), m_instance(instance), m_filter(new Filter())
+    : QTabWidget(parent), m_ui(new Ui::ModFilterWidget), m_instance(instance), m_filter(new Filter())
 {
-    ui->setupUi(this);
+    m_ui->setupUi(this);
 
     m_versions_proxy = new VersionProxyModel(this);
     m_versions_proxy->setFilter(BaseVersionList::TypeRole, new ExactFilter("release"));
@@ -120,52 +120,52 @@ ModFilterWidget::ModFilterWidget(MinecraftInstance* instance, bool extended, QWi
 
     if (extended) {
         if (!m_instance) {
-            ui->environmentGroup->hide();
+            m_ui->environmentGroup->hide();
         }
-        ui->versions->setSourceModel(proxy);
-        ui->versions->setSeparator(", ");
-        ui->versions->setDefaultText(tr("All Versions"));
-        ui->version->hide();
+        m_ui->versions->setSourceModel(proxy);
+        m_ui->versions->setSeparator(", ");
+        m_ui->versions->setDefaultText(tr("All Versions"));
+        m_ui->version->hide();
     } else {
         auto allVersions = new AllVersionProxyModel(this);
         allVersions->setSourceModel(proxy);
         proxy = allVersions;
-        ui->version->setModel(proxy);
-        ui->versions->hide();
-        ui->showAllVersions->hide();
-        ui->environmentGroup->hide();
-        ui->openSource->hide();
+        m_ui->version->setModel(proxy);
+        m_ui->versions->hide();
+        m_ui->showAllVersions->hide();
+        m_ui->environmentGroup->hide();
+        m_ui->openSource->hide();
     }
 
-    ui->versions->setStyleSheet("combobox-popup: 0;");
-    ui->version->setStyleSheet("combobox-popup: 0;");
-    connect(ui->showAllVersions, &QCheckBox::stateChanged, this, &ModFilterWidget::onShowAllVersionsChanged);
-    connect(ui->versions, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ModFilterWidget::onVersionFilterChanged);
-    connect(ui->versions, &CheckComboBox::checkedItemsChanged, this, [this] { onVersionFilterChanged(0); });
-    connect(ui->version, &QComboBox::currentTextChanged, this, &ModFilterWidget::onVersionFilterTextChanged);
+    m_ui->versions->setStyleSheet("combobox-popup: 0;");
+    m_ui->version->setStyleSheet("combobox-popup: 0;");
+    connect(m_ui->showAllVersions, &QCheckBox::stateChanged, this, &ModFilterWidget::onShowAllVersionsChanged);
+    connect(m_ui->versions, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &ModFilterWidget::onVersionFilterChanged);
+    connect(m_ui->versions, &CheckComboBox::checkedItemsChanged, this, [this] { onVersionFilterChanged(0); });
+    connect(m_ui->version, &QComboBox::currentTextChanged, this, &ModFilterWidget::onVersionFilterTextChanged);
 
-    connect(ui->neoForge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->forge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->fabric, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->quilt, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->neoForge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->forge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->fabric, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->quilt, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
 
-    connect(ui->neoForge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->forge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->fabric, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
-    connect(ui->quilt, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->neoForge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->forge, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->fabric, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
+    connect(m_ui->quilt, &QCheckBox::stateChanged, this, &ModFilterWidget::onLoadersFilterChanged);
 
     if (extended) {
-        connect(ui->clientSide, &QCheckBox::stateChanged, this, &ModFilterWidget::onSideFilterChanged);
-        connect(ui->serverSide, &QCheckBox::stateChanged, this, &ModFilterWidget::onSideFilterChanged);
+        connect(m_ui->clientSide, &QCheckBox::stateChanged, this, &ModFilterWidget::onSideFilterChanged);
+        connect(m_ui->serverSide, &QCheckBox::stateChanged, this, &ModFilterWidget::onSideFilterChanged);
     }
 
-    connect(ui->hideInstalled, &QCheckBox::stateChanged, this, &ModFilterWidget::onHideInstalledFilterChanged);
-    connect(ui->openSource, &QCheckBox::stateChanged, this, &ModFilterWidget::onOpenSourceFilterChanged);
+    connect(m_ui->hideInstalled, &QCheckBox::stateChanged, this, &ModFilterWidget::onHideInstalledFilterChanged);
+    connect(m_ui->openSource, &QCheckBox::stateChanged, this, &ModFilterWidget::onOpenSourceFilterChanged);
 
-    connect(ui->releaseCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
-    connect(ui->betaCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
-    connect(ui->alphaCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
-    connect(ui->unknownCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
+    connect(m_ui->releaseCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
+    connect(m_ui->betaCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
+    connect(m_ui->alphaCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
+    connect(m_ui->unknownCb, &QCheckBox::stateChanged, this, &ModFilterWidget::onReleaseFilterChanged);
 
     setHidden(true);
     loadVersionList();
@@ -180,7 +180,7 @@ auto ModFilterWidget::getFilter() -> std::shared_ptr<Filter>
 
 ModFilterWidget::~ModFilterWidget()
 {
-    delete ui;
+    delete m_ui;
 }
 
 void ModFilterWidget::loadVersionList()
@@ -198,8 +198,8 @@ void ModFilterWidget::loadVersionList()
         auto task = m_version_list->getLoadTask();
 
         connect(task.get(), &Task::failed, [this] {
-            ui->versions->setEnabled(false);
-            ui->showAllVersions->setEnabled(false);
+            m_ui->versions->setEnabled(false);
+            m_ui->showAllVersions->setEnabled(false);
         });
         connect(task.get(), &Task::finished, &load_version_list_loop, &QEventLoop::quit);
 
@@ -218,25 +218,25 @@ void ModFilterWidget::prepareBasicFilter()
     m_filter->openSource = false;
     if (m_instance) {
         m_filter->hideInstalled = false;
-        m_filter->side = "";  // or "both"
+        m_filter->side = ModPlatform::Side::NoSide;  // or "both"
         auto loaders = m_instance->getPackProfile()->getSupportedModLoaders().value();
-        ui->neoForge->setChecked(loaders & ModPlatform::NeoForge);
-        ui->forge->setChecked(loaders & ModPlatform::Forge);
-        ui->fabric->setChecked(loaders & ModPlatform::Fabric);
-        ui->quilt->setChecked(loaders & ModPlatform::Quilt);
+        m_ui->neoForge->setChecked(loaders & ModPlatform::NeoForge);
+        m_ui->forge->setChecked(loaders & ModPlatform::Forge);
+        m_ui->fabric->setChecked(loaders & ModPlatform::Fabric);
+        m_ui->quilt->setChecked(loaders & ModPlatform::Quilt);
         m_filter->loaders = loaders;
         auto def = m_instance->getPackProfile()->getComponentVersion("net.minecraft");
         m_filter->versions.emplace_front(def);
-        ui->versions->setCheckedItems({ def });
-        ui->version->setCurrentIndex(ui->version->findText(def));
+        m_ui->versions->setCheckedItems({ def });
+        m_ui->version->setCurrentIndex(m_ui->version->findText(def));
     } else {
-        ui->hideInstalled->hide();
+        m_ui->hideInstalled->hide();
     }
 }
 
 void ModFilterWidget::onShowAllVersionsChanged()
 {
-    if (ui->showAllVersions->isChecked())
+    if (m_ui->showAllVersions->isChecked())
         m_versions_proxy->clearFilters();
     else
         m_versions_proxy->setFilter(BaseVersionList::TypeRole, new ExactFilter("release"));
@@ -244,7 +244,7 @@ void ModFilterWidget::onShowAllVersionsChanged()
 
 void ModFilterWidget::onVersionFilterChanged(int)
 {
-    auto versions = ui->versions->checkedItems();
+    auto versions = m_ui->versions->checkedItems();
     versions.sort();
     std::list<Version> current_list;
 
@@ -261,13 +261,13 @@ void ModFilterWidget::onVersionFilterChanged(int)
 void ModFilterWidget::onLoadersFilterChanged()
 {
     ModPlatform::ModLoaderTypes loaders;
-    if (ui->neoForge->isChecked())
+    if (m_ui->neoForge->isChecked())
         loaders |= ModPlatform::NeoForge;
-    if (ui->forge->isChecked())
+    if (m_ui->forge->isChecked())
         loaders |= ModPlatform::Forge;
-    if (ui->fabric->isChecked())
+    if (m_ui->fabric->isChecked())
         loaders |= ModPlatform::Fabric;
-    if (ui->quilt->isChecked())
+    if (m_ui->quilt->isChecked())
         loaders |= ModPlatform::Quilt;
     m_filter_changed = loaders != m_filter->loaders;
     m_filter->loaders = loaders;
@@ -277,18 +277,17 @@ void ModFilterWidget::onLoadersFilterChanged()
 
 void ModFilterWidget::onSideFilterChanged()
 {
-    QString side;
+    ModPlatform::Side side;
 
-    if (ui->clientSide->isChecked() && !ui->serverSide->isChecked()) {
-        side = "client";
-    } else if (!ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = "server";
-    } else if (ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = "both";
+    if (m_ui->clientSide->isChecked() && !m_ui->serverSide->isChecked()) {
+        side = ModPlatform::Side::ClientSide;
+    } else if (!m_ui->clientSide->isChecked() && m_ui->serverSide->isChecked()) {
+        side = ModPlatform::Side::ServerSide;
+    } else if (m_ui->clientSide->isChecked() && m_ui->serverSide->isChecked()) {
+        side = ModPlatform::Side::UniversalSide;
     } else {
-        side = "";
+        side = ModPlatform::Side::NoSide;
     }
-
 
     m_filter_changed = side != m_filter->side;
     m_filter->side = side;
@@ -298,7 +297,7 @@ void ModFilterWidget::onSideFilterChanged()
 
 void ModFilterWidget::onHideInstalledFilterChanged()
 {
-    auto hide = ui->hideInstalled->isChecked();
+    auto hide = m_ui->hideInstalled->isChecked();
     m_filter_changed = hide != m_filter->hideInstalled;
     m_filter->hideInstalled = hide;
     if (m_filter_changed)
@@ -308,7 +307,7 @@ void ModFilterWidget::onHideInstalledFilterChanged()
 void ModFilterWidget::onVersionFilterTextChanged(const QString& version)
 {
     m_filter->versions.clear();
-    if (ui->version->currentData(Qt::UserRole) != "all") {
+    if (m_ui->version->currentData(Qt::UserRole) != "all") {
         m_filter->versions.emplace_back(version);
     }
     m_filter_changed = true;
@@ -319,8 +318,8 @@ void ModFilterWidget::setCategories(const QList<ModPlatform::Category>& categori
 {
     m_categories = categories;
 
-    delete ui->categoryGroup->layout();
-    auto layout = new QVBoxLayout(ui->categoryGroup);
+    delete m_ui->categoryGroup->layout();
+    auto layout = new QVBoxLayout(m_ui->categoryGroup);
 
     for (const auto& category : categories) {
         auto name = category.name;
@@ -348,7 +347,7 @@ void ModFilterWidget::setCategories(const QList<ModPlatform::Category>& categori
 
 void ModFilterWidget::onOpenSourceFilterChanged()
 {
-    auto open = ui->openSource->isChecked();
+    auto open = m_ui->openSource->isChecked();
     m_filter_changed = open != m_filter->openSource;
     m_filter->openSource = open;
     if (m_filter_changed)
@@ -358,13 +357,13 @@ void ModFilterWidget::onOpenSourceFilterChanged()
 void ModFilterWidget::onReleaseFilterChanged()
 {
     std::list<ModPlatform::IndexedVersionType> releases;
-    if (ui->releaseCb->isChecked())
+    if (m_ui->releaseCb->isChecked())
         releases.push_back(ModPlatform::IndexedVersionType(ModPlatform::IndexedVersionType::VersionType::Release));
-    if (ui->betaCb->isChecked())
+    if (m_ui->betaCb->isChecked())
         releases.push_back(ModPlatform::IndexedVersionType(ModPlatform::IndexedVersionType::VersionType::Beta));
-    if (ui->alphaCb->isChecked())
+    if (m_ui->alphaCb->isChecked())
         releases.push_back(ModPlatform::IndexedVersionType(ModPlatform::IndexedVersionType::VersionType::Alpha));
-    if (ui->unknownCb->isChecked())
+    if (m_ui->unknownCb->isChecked())
         releases.push_back(ModPlatform::IndexedVersionType(ModPlatform::IndexedVersionType::VersionType::Unknown));
     m_filter_changed = releases != m_filter->releases;
     m_filter->releases = releases;

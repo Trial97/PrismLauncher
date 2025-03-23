@@ -38,6 +38,7 @@
 
 #include "BuildConfig.h"
 #include "Json.h"
+#include "modplatform/ModIndex.h"
 #include "modplatform/modrinth/ModrinthAPI.h"
 #include "net/NetJob.h"
 #include "ui/widgets/ProjectItem.h"
@@ -154,8 +155,9 @@ void ModpackListModel::performPaginatedSearch()
     }  // TODO: Move to standalone API
     ResourceAPI::SortingMethod sort{};
     sort.name = currentSort;
-    auto searchUrl = ModrinthAPI().getSearchURL({ ModPlatform::ResourceType::MODPACK, nextSearchOffset, currentSearchTerm, sort,
-                                                  m_filter->loaders, m_filter->versions, "", m_filter->categoryIds, m_filter->openSource });
+    auto searchUrl =
+        ModrinthAPI().getSearchURL({ ModPlatform::ResourceType::MODPACK, nextSearchOffset, currentSearchTerm, sort, m_filter->loaders,
+                                     m_filter->versions, ModPlatform::Side::NoSide, m_filter->categoryIds, m_filter->openSource });
 
     auto netJob = makeShared<NetJob>("Modrinth::SearchModpack", APPLICATION->network());
     netJob->addNetAction(Net::ApiDownload::makeByteArray(QUrl(searchUrl.value()), m_allResponse));

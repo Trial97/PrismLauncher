@@ -61,7 +61,7 @@ class ModFilterWidget : public QTabWidget {
         std::list<Version> versions;
         std::list<ModPlatform::IndexedVersionType> releases;
         ModPlatform::ModLoaderTypes loaders;
-        QString side;
+        ModPlatform::Side side;
         bool hideInstalled;
         QStringList categoryIds;
         bool openSource;
@@ -112,7 +112,7 @@ class ModFilterWidget : public QTabWidget {
     void onReleaseFilterChanged();
 
    private:
-    Ui::ModFilterWidget* ui;
+    Ui::ModFilterWidget* m_ui;
 
     MinecraftInstance* m_instance = nullptr;
     std::shared_ptr<Filter> m_filter;
