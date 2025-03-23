@@ -223,7 +223,7 @@ int ModFolderModel::columnCount(const QModelIndex& parent) const
 
 Task* ModFolderModel::createParseTask(Resource& resource)
 {
-    return new LocalModParseTask(m_next_resolution_ticket, resource.type(), resource.fileinfo());
+    return new LocalModParseTask(resource.type(), resource.fileinfo());
 }
 
 bool ModFolderModel::isValid()
@@ -241,8 +241,6 @@ void ModFolderModel::onParseSucceeded(int ticket, QString mod_id)
 
     auto parse_task = *iter;
     auto cast_task = static_cast<LocalModParseTask*>(parse_task.get());
-
-    Q_ASSERT(cast_task->token() == ticket);
 
     auto resource = find(mod_id);
 

@@ -26,12 +26,13 @@
 #include <QDebug>
 #include <QFileInfo>
 #include <QObject>
+#include "modplatform/ModIndex.h"
 
-enum class PackedResourceType { DataPack, ResourcePack, TexturePack, ShaderPack, WorldSave, Mod, UNKNOWN };
 namespace ResourceUtils {
-static const std::set<PackedResourceType> ValidResourceTypes = { PackedResourceType::DataPack,    PackedResourceType::ResourcePack,
-                                                                 PackedResourceType::TexturePack, PackedResourceType::ShaderPack,
-                                                                 PackedResourceType::WorldSave,   PackedResourceType::Mod };
-PackedResourceType identify(QFileInfo file);
-QString getPackedTypeName(PackedResourceType type);
+static const std::set<ModPlatform::ResourceType> ValidResourceTypes = {
+    ModPlatform::ResourceType::DATAPACK,    ModPlatform::ResourceType::RESOURCE_PACK, ModPlatform::ResourceType::TEXTURE_PACK,
+    ModPlatform::ResourceType::SHADER_PACK, ModPlatform::ResourceType::WORLD,         ModPlatform::ResourceType::MOD
+};
+ModPlatform::ResourceType identify(QFileInfo file);
+QString getPackedTypeName(ModPlatform::ResourceType type);
 }  // namespace ResourceUtils

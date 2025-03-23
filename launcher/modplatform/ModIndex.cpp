@@ -253,6 +253,10 @@ QString ResourceTypeUtils::toString(ResourceType type)
             return "world";
         case ResourceType::SCREENSHOTS:
             return "screenshots";
+        case ResourceType::TEXTURE_PACK:
+            return "texture_pack";
+        case ResourceType::UNKNOWN:
+        // fallthrough
         default:
             return "unknown";
     }
@@ -273,6 +277,8 @@ ResourceType ResourceTypeUtils::fromString(const QString& str)
         return ResourceType::WORLD;
     if (str == "screenshots")
         return ResourceType::SCREENSHOTS;
+    if (str == "texture_pack")
+        return ResourceType::TEXTURE_PACK;
     return ResourceType::UNKNOWN;
 }
 }  // namespace ModPlatform

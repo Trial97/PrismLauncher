@@ -30,12 +30,10 @@
 
 namespace DataPackUtils {
 
-enum class ProcessingLevel { Full, BasicInfoOnly };
+bool process(DataPack& pack);
 
-bool process(DataPack& pack, ProcessingLevel level = ProcessingLevel::Full);
-
-bool processZIP(DataPack& pack, ProcessingLevel level = ProcessingLevel::Full);
-bool processFolder(DataPack& pack, ProcessingLevel level = ProcessingLevel::Full);
+bool processZIP(DataPack& pack);
+bool processFolder(DataPack& pack);
 
 bool processMCMeta(DataPack& pack, QByteArray&& raw_data);
 
@@ -47,18 +45,14 @@ bool validate(QFileInfo file);
 class LocalDataPackParseTask : public Task {
     Q_OBJECT
    public:
-    LocalDataPackParseTask(int token, DataPack& dp);
+    LocalDataPackParseTask(DataPack& dp);
 
     [[nodiscard]] bool canAbort() const override { return true; }
     bool abort() override;
 
     void executeTask() override;
 
-    [[nodiscard]] int token() const { return m_token; }
-
    private:
-    int m_token;
-
     DataPack& m_data_pack;
 
     bool m_aborted = false;

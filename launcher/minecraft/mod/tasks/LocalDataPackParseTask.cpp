@@ -32,20 +32,20 @@
 
 namespace DataPackUtils {
 
-bool process(DataPack& pack, ProcessingLevel level)
+bool process(DataPack& pack)
 {
     switch (pack.type()) {
         case ResourceType::FOLDER:
-            return DataPackUtils::processFolder(pack, level);
+            return DataPackUtils::processFolder(pack);
         case ResourceType::ZIPFILE:
-            return DataPackUtils::processZIP(pack, level);
+            return DataPackUtils::processZIP(pack);
         default:
             qWarning() << "Invalid type for data pack parse task!";
             return false;
     }
 }
 
-bool processFolder(DataPack& pack, ProcessingLevel level)
+bool processFolder(DataPack& pack)
 {
     Q_ASSERT(pack.type() == ResourceType::FOLDER);
 
@@ -73,18 +73,10 @@ bool processFolder(DataPack& pack, ProcessingLevel level)
     }
 
     QFileInfo data_dir_info(FS::PathCombine(pack.fileinfo().filePath(), "data"));
-    if (!data_dir_info.exists() || !data_dir_info.isDir()) {
-        return false;  // data dir does not exists or isn't valid
-    }
-
-    if (level == ProcessingLevel::BasicInfoOnly) {
-        return true;  // only need basic info already checked
-    }
-
-    return true;  // all tests passed
+    return data_dir_info.exists() && data_dir_info.isDir();  // data dir does not exists or isn't valid
 }
 
-bool processZIP(DataPack& pack, ProcessingLevel level)
+bool processZIP(DataPack& pack)
 {
     Q_ASSERT(pack.type() == ResourceType::ZIPFILE);
 
@@ -123,13 +115,7 @@ bool processZIP(DataPack& pack, ProcessingLevel level)
         return false;  // data dir does not exists at zip root
     }
 
-    if (level == ProcessingLevel::BasicInfoOnly) {
-        zip.close();
-        return true;  // only need basic info already checked
-    }
-
     zip.close();
-
     return true;
 }
 
@@ -152,12 +138,12 @@ bool processMCMeta(DataPack& pack, QByteArray&& raw_data)
 bool validate(QFileInfo file)
 {
     DataPack dp{ file };
-    return DataPackUtils::process(dp, ProcessingLevel::BasicInfoOnly) && dp.valid();
+    return DataPackUtils::process(dp) && dp.valid();
 }
 
 }  // namespace DataPackUtils
 
-LocalDataPackParseTask::LocalDataPackParseTask(int token, DataPack& dp) : Task(false), m_token(token), m_data_pack(dp) {}
+LocalDataPackParseTask::LocalDataPackParseTask(DataPack& dp) : Task(false), m_data_pack(dp) {}
 
 bool LocalDataPackParseTask::abort()
 {

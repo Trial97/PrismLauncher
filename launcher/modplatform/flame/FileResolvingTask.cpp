@@ -84,18 +84,18 @@ void Flame::FileResolvingTask::executeTask()
     m_task->start();
 }
 
-PackedResourceType getResourceType(int classId)
+ModPlatform::ResourceType getResourceType(int classId)
 {
     switch (classId) {
         case 17:  // Worlds
-            return PackedResourceType::WorldSave;
+            return ModPlatform::ResourceType::WORLD;
         case 6:  // Mods
-            return PackedResourceType::Mod;
+            return ModPlatform::ResourceType::MOD;
         case 12:  // Resource Packs
-                  // return PackedResourceType::ResourcePack; // not really a resourcepack
+                  // return ModPlatform::ResourceType::RESOURCE_PACK;  // not really a resourcepack
             /* fallthrough */
         case 4546:  // Customization
-                    // return PackedResourceType::ShaderPack; // not really a shaderPack
+                    // return ModPlatform::ResourceType::SHADER_PACK; // not really a shaderPack
             /* fallthrough */
         case 4471:  // Modpacks
             /* fallthrough */
@@ -104,7 +104,7 @@ PackedResourceType getResourceType(int classId)
         case 4559:  // Addons
             /* fallthrough */
         default:
-            return PackedResourceType::UNKNOWN;
+            return ModPlatform::ResourceType::UNKNOWN;
     }
 }
 
@@ -200,7 +200,7 @@ void Flame::FileResolvingTask::netJobFinished()
         }
         getFlameProjects();
     });
-    connect(m_task.get(), &Task::failed, this, [this, step_progress](QString reason) {
+    connect(m_task.get(), &Task::failed, this, [this, step_progress] {
         step_progress->state = TaskStepState::Failed;
         stepProgress(*step_progress);
     });
@@ -256,7 +256,7 @@ void Flame::FileResolvingTask::getFlameProjects()
                 setStatus(tr("Parsing API response from CurseForge for '%1'...").arg(file->version.fileName));
                 FlameMod::loadIndexedPack(file->pack, entry_obj);
                 file->resourceType = getResourceType(Json::requireInteger(entry_obj, "classId", "modClassId"));
-                if (file->resourceType == PackedResourceType::WorldSave) {
+                if (file->resourceType == ModPlatform::ResourceType::WORLD) {
                     file->targetFolder = "saves";
                 }
             }

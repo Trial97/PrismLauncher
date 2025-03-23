@@ -358,7 +358,7 @@ bool validate(QFileInfo file)
 
 }  // namespace ResourcePackUtils
 
-LocalResourcePackParseTask::LocalResourcePackParseTask(int token, ResourcePack& rp) : Task(false), m_token(token), m_resource_pack(rp) {}
+LocalResourcePackParseTask::LocalResourcePackParseTask(ResourcePack& rp) : Task(false), m_resource_pack(rp) {}
 
 bool LocalResourcePackParseTask::abort()
 {

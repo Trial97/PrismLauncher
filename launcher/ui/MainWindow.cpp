@@ -1046,25 +1046,25 @@ void MainWindow::processURLs(QList<QUrl> urls)
         auto minecraftInst = std::dynamic_pointer_cast<MinecraftInstance>(inst);
 
         switch (type) {
-            case PackedResourceType::ResourcePack:
+            case ModPlatform::ResourceType::RESOURCE_PACK:
                 minecraftInst->resourcePackList()->installResourceWithFlameMetadata(localFileName, version);
                 break;
-            case PackedResourceType::TexturePack:
+            case ModPlatform::ResourceType::TEXTURE_PACK:
                 minecraftInst->texturePackList()->installResourceWithFlameMetadata(localFileName, version);
                 break;
-            case PackedResourceType::DataPack:
+            case ModPlatform::ResourceType::DATAPACK:
                 qWarning() << "Importing of Data Packs not supported at this time. Ignoring" << localFileName;
                 break;
-            case PackedResourceType::Mod:
+            case ModPlatform::ResourceType::MOD:
                 minecraftInst->loaderModList()->installResourceWithFlameMetadata(localFileName, version);
                 break;
-            case PackedResourceType::ShaderPack:
+            case ModPlatform::ResourceType::SHADER_PACK:
                 minecraftInst->shaderPackList()->installResourceWithFlameMetadata(localFileName, version);
                 break;
-            case PackedResourceType::WorldSave:
+            case ModPlatform::ResourceType::WORLD:
                 minecraftInst->worldList()->installWorld(localFileInfo);
                 break;
-            case PackedResourceType::UNKNOWN:
+            case ModPlatform::ResourceType::UNKNOWN:
             default:
                 qDebug() << "Can't Identify" << localFileName << "Ignoring it.";
                 break;

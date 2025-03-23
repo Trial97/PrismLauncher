@@ -36,7 +36,7 @@ QList<ModLoaderType> modLoaderTypesToList(ModLoaderTypes flags);
 
 enum class ResourceProvider { MODRINTH, FLAME };
 
-enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK, MODPACK, DATAPACK, WORLD, SCREENSHOTS, UNKNOWN };
+enum class ResourceType { MOD, RESOURCE_PACK, SHADER_PACK, MODPACK, DATAPACK, WORLD, SCREENSHOTS, TEXTURE_PACK, UNKNOWN };
 
 enum class DependencyType { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
 

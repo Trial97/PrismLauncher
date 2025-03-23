@@ -191,5 +191,5 @@ int ResourcePackFolderModel::columnCount(const QModelIndex& parent) const
 
 Task* ResourcePackFolderModel::createParseTask(Resource& resource)
 {
-    return new LocalResourcePackParseTask(m_next_resolution_ticket, static_cast<ResourcePack&>(resource));
+    return new LocalResourcePackParseTask(static_cast<ResourcePack&>(resource));
 }

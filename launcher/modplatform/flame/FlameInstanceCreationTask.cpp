@@ -479,7 +479,7 @@ void FlameCreationTask::idResolverSucceeded(QEventLoop& loop)
     QList<BlockedMod> blocked_mods;
     auto anyBlocked = false;
     for (const auto& result : results.files.values()) {
-        if (result.resourceType != PackedResourceType::Mod) {
+        if (result.resourceType != ModPlatform::ResourceType::MOD) {
             m_otherResources.append(std::make_pair(result.version.fileName, result.targetFolder));
         }
 
@@ -660,29 +660,29 @@ void FlameCreationTask::validateOtherResources(QEventLoop& loop)
         QString worldPath;
 
         switch (type) {
-            case PackedResourceType::Mod:
+            case ModPlatform::ResourceType::MOD:
                 validatePath(fileName, targetFolder, "mods");
                 zipMods.push_back(fileName);
                 break;
-            case PackedResourceType::ResourcePack:
+            case ModPlatform::ResourceType::RESOURCE_PACK:
                 validatePath(fileName, targetFolder, "resourcepacks");
                 break;
-            case PackedResourceType::TexturePack:
+            case ModPlatform::ResourceType::TEXTURE_PACK:
                 validatePath(fileName, targetFolder, "texturepacks");
                 break;
-            case PackedResourceType::DataPack:
+            case ModPlatform::ResourceType::DATAPACK:
                 validatePath(fileName, targetFolder, "datapacks");
                 break;
-            case PackedResourceType::ShaderPack:
+            case ModPlatform::ResourceType::SHADER_PACK:
                 // in theory flame API can't do this but who knows, that *may* change ?
                 // better to handle it if it *does* occur in the future
                 validatePath(fileName, targetFolder, "shaderpacks");
                 break;
-            case PackedResourceType::WorldSave:
+            case ModPlatform::ResourceType::WORLD:
                 worldPath = validatePath(fileName, targetFolder, "saves");
                 installWorld(worldPath);
                 break;
-            case PackedResourceType::UNKNOWN:
+            case ModPlatform::ResourceType::UNKNOWN:
             /* fallthrough */
             default:
                 qDebug() << "Can't Identify" << fileName << "at" << localPath << ", leaving it where it is.";

@@ -36,13 +36,10 @@ class LocalModParseTask : public Task {
     [[nodiscard]] bool canAbort() const override { return true; }
     bool abort() override;
 
-    LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile);
+    LocalModParseTask(ResourceType type, const QFileInfo& modFile);
     void executeTask() override;
 
-    [[nodiscard]] int token() const { return m_token; }
-
    private:
-    int m_token;
     ResourceType m_type;
     QFileInfo m_modFile;
     PackwizV2::Info m_result;
