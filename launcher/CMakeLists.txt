@@ -97,7 +97,7 @@ set(CORE_SOURCES
     MTPixmapCache.h
 )
 if (UNIX AND NOT CYGWIN AND NOT APPLE)
-set(CORE_SOURCES
+    set(CORE_SOURCES
     ${CORE_SOURCES}
 
     # MangoHud
@@ -1152,7 +1152,7 @@ SET(LAUNCHER_SOURCES
 )
 
 if (NOT Apple)
-set(LAUNCHER_SOURCES
+    set(LAUNCHER_SOURCES
     ${LAUNCHER_SOURCES}
 
     ui/dialogs/UpdateAvailableDialog.h
@@ -1323,11 +1323,11 @@ if(APPLE)
     set(CMAKE_INSTALL_RPATH "@loader_path/../Frameworks/")
 
     if(Launcher_ENABLE_UPDATER)
-      file(DOWNLOAD ${MACOSX_SPARKLE_DOWNLOAD_URL} ${CMAKE_BINARY_DIR}/Sparkle.tar.xz EXPECTED_HASH SHA256=${MACOSX_SPARKLE_SHA256})
-      file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/Sparkle.tar.xz DESTINATION ${CMAKE_BINARY_DIR}/frameworks/Sparkle)
+        file(DOWNLOAD ${MACOSX_SPARKLE_DOWNLOAD_URL} ${CMAKE_BINARY_DIR}/Sparkle.tar.xz EXPECTED_HASH SHA256=${MACOSX_SPARKLE_SHA256})
+        file(ARCHIVE_EXTRACT INPUT ${CMAKE_BINARY_DIR}/Sparkle.tar.xz DESTINATION ${CMAKE_BINARY_DIR}/frameworks/Sparkle)
 
-      find_library(SPARKLE_FRAMEWORK Sparkle "${CMAKE_BINARY_DIR}/frameworks/Sparkle")
-      add_compile_definitions(SPARKLE_ENABLED)
+        find_library(SPARKLE_FRAMEWORK Sparkle "${CMAKE_BINARY_DIR}/frameworks/Sparkle")
+        add_compile_definitions(SPARKLE_ENABLED)
     endif()
 
     target_link_libraries(Launcher_logic
@@ -1337,7 +1337,7 @@ if(APPLE)
         "-framework ApplicationServices"
     )
     if(Launcher_ENABLE_UPDATER)
-      target_link_libraries(Launcher_logic ${SPARKLE_FRAMEWORK})
+        target_link_libraries(Launcher_logic ${SPARKLE_FRAMEWORK})
     endif()
 endif()
 
@@ -1357,6 +1357,8 @@ if(DEFINED Launcher_APP_BINARY_DEFS)
     target_compile_definitions(${Launcher_Name} PRIVATE ${Launcher_APP_BINARY_DEFS})
     target_compile_definitions(Launcher_logic PRIVATE ${Launcher_APP_BINARY_DEFS})
 endif()
+
+add_subdirectory(hematite)
 
 install(TARGETS ${Launcher_Name}
     BUNDLE DESTINATION "." COMPONENT Runtime
@@ -1557,6 +1559,38 @@ if(INSTALL_BUNDLE STREQUAL "full")
             PATTERN "*qcertonlybackend*" EXCLUDE
         )
     endif()
+    # # QML plugins
+    # install(
+    #     DIRECTORY "${QT_QML_DIR}/QtQml"
+    #     CONFIGURATIONS Debug RelWithDebInfo ""
+    #     DESTINATION ${QML_DEST_DIR}
+    #     COMPONENT Runtime
+    # )
+    # install(
+    #     DIRECTORY "${QT_QML_DIR}/QtQml"
+    #     CONFIGURATIONS Release MinSizeRel
+    #     DESTINATION ${QML_DEST_DIR}
+    #     COMPONENT Runtime
+    #     REGEX "d\\." EXCLUDE
+    #     REGEX "_debug\\." EXCLUDE
+    #     REGEX "\\.dSYM" EXCLUDE
+    # )
+    # # QtQuick plugins
+    # install(
+    #     DIRECTORY "${QT_QML_DIR}/QtQuick"
+    #     CONFIGURATIONS Debug RelWithDebInfo ""
+    #     DESTINATION ${QML_DEST_DIR}
+    #     COMPONENT Runtime
+    # )
+    # install(
+    #     DIRECTORY "${QT_QML_DIR}/QtQuick"
+    #     CONFIGURATIONS Release MinSizeRel
+    #     DESTINATION ${QML_DEST_DIR}
+    #     COMPONENT Runtime
+    #     REGEX "d\\." EXCLUDE
+    #     REGEX "_debug\\." EXCLUDE
+    #     REGEX "\\.dSYM" EXCLUDE
+    # )
     # Wayland support
     if(EXISTS "${QT_PLUGINS_DIR}/wayland-graphics-integration-client")
         install(
