@@ -36,6 +36,7 @@
  */
 
 #include "MinecraftSettingsWidget.h"
+#include "modplatform/ModIndex.h"
 #include "ui_MinecraftSettingsWidget.h"
 
 #include <QFileDialog>
@@ -251,7 +252,7 @@ void MinecraftSettingsWidget::loadSettings()
         m_ui->fabric->blockSignals(true);
         m_ui->quilt->blockSignals(true);
         m_ui->liteLoader->blockSignals(true);
-        auto instLoaders = m_instance->getPackProfile()->getSupportedModLoaders().value();
+        auto instLoaders = m_instance->getPackProfile()->getSupportedModLoaders().value_or(ModPlatform::ModLoaderType(0));
         m_ui->loaderGroup->setChecked(settings->get("OverrideModDownloadLoaders").toBool());
         auto loaders = Json::toStringList(settings->get("ModDownloadLoaders").toString());
         if (loaders.isEmpty()) {
