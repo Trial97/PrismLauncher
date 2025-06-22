@@ -38,6 +38,7 @@
 #include "ui_ExternalResourcesPage.h"
 
 #include "DesktopServices.h"
+#include "FileSystem.h"
 #include "Version.h"
 #include "minecraft/mod/ResourceFolderModel.h"
 #include "ui/GuiUtil.h"
@@ -149,6 +150,9 @@ void ExternalResourcesPage::openedImpl()
     m_wide_bar_setting = APPLICATION->settings()->getOrRegisterSetting(setting_name);
 
     ui->actionsToolbar->setVisibilityState(QByteArray::fromBase64(m_wide_bar_setting->get().toString().toUtf8()));
+
+    // Enable the symbolic link warning when the folder is a symbolic link
+    ui->isSymlinkWarning->setVisible(FS::isSymLink(m_model->dir().absolutePath()));
 }
 
 void ExternalResourcesPage::closedImpl()

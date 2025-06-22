@@ -413,6 +413,11 @@ QString MinecraftInstance::dataPacksDir()
     return QDir(gameRoot()).filePath(relativePath);
 }
 
+QString MinecraftInstance::screenshotsDir() const
+{
+    return FS::PathCombine(gameRoot(), "screenshots");
+}
+
 QString MinecraftInstance::resourcePacksDir() const
 {
     return FS::PathCombine(gameRoot(), "resourcepacks");
@@ -1306,6 +1311,41 @@ QList<Mod*> MinecraftInstance::getJarMods() const
         mods.push_back(new Mod(QFileInfo(jar[0])));
     }
     return mods;
+}
+
+void MinecraftInstance::applySettings()
+{
+    // Shared directories
+    updateSharedDirectories();
+}
+
+bool MinecraftInstance::updateSharedDirectories()
+{
+    const std::vector<std::tuple<QString, QString, QString>> sharedDirectories = {
+        { "UseSharedScreenshotsFolder", m_settings->get("SharedScreenshotsPath").toString(), screenshotsDir() },
+        { "UseSharedSavesFolder", m_settings->get("SharedSavesPath").toString(), worldDir() },
+        { "UseSharedResourcePacksFolder", m_settings->get("SharedResourcePacksPath").toString(), resourcePacksDir() },
+        { "UseSharedResourcePacksFolder", m_settings->get("SharedResourcePacksPath").toString(), texturePacksDir() }
+    };
+
+    bool success = true;
+    for (const auto& [useSetting, source, destination] : sharedDirectories) {
+        // Create symlink if useSetting is true, remove symlink if false.
+        if (m_settings->get(useSetting).toBool()) {
+            // Try to create symlink, set setting to false if failed.
+            if (!FS::tryCreateSymlink(source, destination, tr("shared folder"))) {
+                m_settings->set(useSetting, false);
+                success = false;
+            }
+        } else {
+            // Safety check
+            if (FS::isSymLink(destination)) {
+                success = FS::deletePath(destination) && success;
+            }
+        }
+    }
+
+    return success;
 }
 
 #include "MinecraftInstance.moc"

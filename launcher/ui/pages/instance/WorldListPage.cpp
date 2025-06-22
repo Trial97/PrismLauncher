@@ -48,10 +48,10 @@
 #include <QKeyEvent>
 #include <QMenu>
 #include <QMessageBox>
+#include <QPushButton>
 #include <QSortFilterProxyModel>
 #include <QTreeView>
 #include <Qt>
-#include <QPushButton>
 
 #include "FileSystem.h"
 #include "tools/MCEditTool.h"
@@ -126,6 +126,9 @@ void WorldListPage::openedImpl()
     m_wide_bar_setting = APPLICATION->settings()->getOrRegisterSetting(setting_name);
 
     ui->toolBar->setVisibilityState(QByteArray::fromBase64(m_wide_bar_setting->get().toString().toUtf8()));
+
+    // Enable the symbolic link warning when the saves folder is a symbolic link
+    ui->sharedSavesFolderWarninglabel->setVisible(FS::isSymLink(FS::PathCombine(m_inst->gameRoot(), "saves")));
 }
 
 void WorldListPage::closedImpl()

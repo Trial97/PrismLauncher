@@ -100,6 +100,13 @@ bool ensureFolderPathExists(const QFileInfo folderPath);
 bool ensureFolderPathExists(const QString folderPathName);
 
 /**
+ * @brief Check if the given folder is empty or doesn't exist
+ * @param folderPathName The path to a folder to check
+ * @return True if the given folder is empty or doesn't exist
+ */
+bool checkFolderPathEmpty(const QString& folderPathName);
+
+/**
  * @brief Copies a directory and it's contents from src to dest
  */
 class copy : public QObject {
@@ -285,6 +292,17 @@ class create_link : public QObject {
  *
  */
 bool move(const QString& source, const QString& dest);
+
+/**
+ * @brief Move a file or folder, and ask the user what to do in case of a conflict.
+ * @param source      What to move.
+ * @param destination Where to move it to.
+ * @param recursive   If true, all direct children will be moved 1 by 1.
+ *                    If false, the source will be directly moved to the destination.
+ * @param parent      The parent of the dialog.
+ * @return True if everything could be moved.
+ */
+bool interactiveMove(const QString& source, const QString& destination, bool recursive = false, QWidget* parent = nullptr);
 
 /**
  * Delete a folder recursively
@@ -565,5 +583,21 @@ QString getPathNameInLocal8bit(const QString& file);
 #endif
 
 QString getUniqueResourceName(const QString& filePath);
+
+/**
+ * @brief Check if a file or folder is a symbolic link
+ * @param path The path to check
+ * @return True if the object exists and is an symbolic link
+ */
+bool isSymLink(const QString& path);
+
+/**
+ * @brief Get the target of a symbolic link
+ * @param path The path to check
+ * @return The target of a symbolic link. Empty if path is not a symbolic link.
+ */
+QString getSymLinkTarget(const QString& path);
+
+bool tryCreateSymlink(const QString& source, const QString& destination, const QString& symlinkName = "symbolic link");
 
 }  // namespace FS

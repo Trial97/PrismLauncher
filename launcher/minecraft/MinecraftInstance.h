@@ -75,6 +75,7 @@ class MinecraftInstance : public BaseInstance {
 
     ////// Directories and files //////
     QString jarModsDir() const;
+    QString screenshotsDir() const;
     QString resourcePacksDir() const;
     QString texturePacksDir() const;
     QString shaderPacksDir() const;
@@ -158,8 +159,12 @@ class MinecraftInstance : public BaseInstance {
 
     virtual JavaVersion getJavaVersion();
 
+    virtual void applySettings() override;
+
    protected:
     QMap<QString, QString> createCensorFilterFromSession(AuthSessionPtr session);
+
+    bool updateSharedDirectories();
 
    protected:  // data
     std::shared_ptr<PackProfile> m_components;

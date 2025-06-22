@@ -284,6 +284,11 @@ class BaseInstance : public QObject, public std::enable_shared_from_this<BaseIns
 
     bool isLegacy();
 
+    /**
+     * \brief Should be called whenever settings have changed that need to be re-applied.
+     */
+    virtual void applySettings() {}
+
    protected:
     void changeStatus(Status newStatus);
 
