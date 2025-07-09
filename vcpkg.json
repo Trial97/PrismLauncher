@@ -2,9 +2,16 @@
   "dependencies": [
     "bzip2",
     "cmark",
-    { "name": "ecm", "host": true },
-    { "name": "pkgconf", "host": true },
+    {
+      "name": "ecm",
+      "host": true
+    },
+    {
+      "name": "pkgconf",
+      "host": true
+    },
     "tomlplusplus",
-    "zlib"
+    "zlib",
+    "libarchive"
   ]
 }
