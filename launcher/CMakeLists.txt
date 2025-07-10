@@ -26,6 +26,8 @@ set(CORE_SOURCES
     NullInstance.h
     MMCZip.h
     MMCZip.cpp
+    archive/ArchiveReader.cpp  
+    archive/ArchiveReader.h  
     archive/ArchiveWriter.cpp  
     archive/ArchiveWriter.h  
     archive/ExportToZipTask.cpp  
@@ -1302,17 +1304,12 @@ target_link_libraries(Launcher_logic
     BuildConfig
     Qt${QT_VERSION_MAJOR}::Widgets
     qrcodegenerator
+    PkgConfig::libarchive
 )
 if(TARGET PkgConfig::tomlplusplus)
     target_link_libraries(Launcher_logic PkgConfig::tomlplusplus)
 else()
     target_link_libraries(Launcher_logic tomlplusplus::tomlplusplus)
-endif()
-
-if(TARGET PkgConfig::LibArchive)
-    target_link_libraries(Launcher_logic PkgConfig::LibArchive)
-else()
-    target_link_libraries(Launcher_logic LibArchive::LibArchive)
 endif()
 
 if (UNIX AND NOT CYGWIN AND NOT APPLE)
