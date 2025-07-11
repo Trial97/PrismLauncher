@@ -80,7 +80,6 @@ runs:
           qt6-networkauth:p
           cmark:p
           tomlplusplus:p
-          quazip-qt6:p
           libarchive:p
 
     - name: List pacman packages (MinGW)

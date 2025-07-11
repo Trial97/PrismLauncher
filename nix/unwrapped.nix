@@ -82,7 +82,6 @@ stdenv.mkDerivation {
       cmark
       kdePackages.qtbase
       kdePackages.qtnetworkauth
-      kdePackages.quazip
       libarchive
       tomlplusplus
       zlib
