@@ -337,12 +337,13 @@ if(Launcher_QT_VERSION_MAJOR EQUAL 6)
     set(QT_LIBEXECS_DIR ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_LIBEXECS})
 endif()
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(libarchive REQUIRED IMPORTED_TARGET libarchive)
+
 if(NOT Launcher_FORCE_BUNDLED_LIBS)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(libarchive IMPORTED_TARGET libarchive)
     # Find toml++
     find_package(tomlplusplus 3.2.0 QUIET)
-    # Fallback to pkg-config (if available) if CMake files aren't found
+    # Fallback to pkg-config if CMake files aren't found
     if(NOT tomlplusplus_FOUND)
         pkg_check_modules(tomlplusplus IMPORTED_TARGET tomlplusplus>=3.2.0)
     endif()
