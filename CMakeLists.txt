@@ -338,7 +338,15 @@ if(Launcher_QT_VERSION_MAJOR EQUAL 6)
 endif()
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(libarchive REQUIRED IMPORTED_TARGET libarchive)
+# Find libqrencode
+## NOTE(@getchoo): Never use pkg-config with MSVC since the vcpkg port makes our install bundle fail to find the dll
+if(PkgConfig_FOUND AND NOT MSVC)
+    pkg_check_modules(libarchive REQUIRED IMPORTED_TARGET libarchive)
+    set(LIBARCHIVE_LIBRARY PkgConfig::libarchive)
+else()
+    find_library(LibArchive REQUIRED)
+    set(LIBARCHIVE_LIBRARY LibArchive::LibArchive)
+endif()
 
 if(NOT Launcher_FORCE_BUNDLED_LIBS)
     # Find toml++
