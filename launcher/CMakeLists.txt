@@ -1308,7 +1308,7 @@ target_link_libraries(Launcher_logic
     BuildConfig
     Qt${QT_VERSION_MAJOR}::Widgets
     qrcodegenerator
-    ${LIBARCHIVE_LIBRARY}
+    ${LIBARCHIVE_LIBRARIES}
 )
 if(TARGET PkgConfig::tomlplusplus)
     target_link_libraries(Launcher_logic PkgConfig::tomlplusplus)
@@ -1409,7 +1409,7 @@ if(Launcher_BUILD_UPDATER)
         Qt${QT_VERSION_MAJOR}::Network
         ${Launcher_QT_LIBS}
         cmark::cmark
-        ${LIBARCHIVE_LIBRARY}
+        ${LIBARCHIVE_LIBRARIES}
     )
 
     add_executable("${Launcher_Name}_updater" WIN32 updater/prismupdater/updater_main.cpp)

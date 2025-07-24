@@ -337,23 +337,27 @@ if(Launcher_QT_VERSION_MAJOR EQUAL 6)
     set(QT_LIBEXECS_DIR ${QT${QT_VERSION_MAJOR}_INSTALL_PREFIX}/${QT${QT_VERSION_MAJOR}_INSTALL_LIBEXECS})
 endif()
 
-find_package(PkgConfig REQUIRED)
-# Find libqrencode
+find_package(PkgConfig)
+# Find libarchive
 ## NOTE(@getchoo): Never use pkg-config with MSVC since the vcpkg port makes our install bundle fail to find the dll
 if(PkgConfig_FOUND AND NOT MSVC)
     pkg_check_modules(libarchive REQUIRED IMPORTED_TARGET libarchive)
-    set(LIBARCHIVE_LIBRARY PkgConfig::libarchive)
+    set(LIBARCHIVE_LIBRARIES PkgConfig::libarchive)
 else()
-    find_library(LibArchive REQUIRED)
-    set(LIBARCHIVE_LIBRARY LibArchive::LibArchive)
+    find_path(LIBARCHIVE_INCLUDE_DIR archive.h REQUIRED)
+    find_library(LIBARCHIVE_LIBRARY_RELEASE archive REQUIRED)
+    find_library(LIBARCHIE_LIBRARY_DEBUG archived)
+    set(LIBARCHIVE_LIBRARIES optimized ${LIBARCHIVE_LIBRARY_RELEASE} debug ${LIBARCHIVE_LIBRARY_DEBUG})
 endif()
 
 if(NOT Launcher_FORCE_BUNDLED_LIBS)
     # Find toml++
     find_package(tomlplusplus 3.2.0 QUIET)
-    # Fallback to pkg-config if CMake files aren't found
+    # Fallback to pkg-config (if available) if CMake files aren't found
     if(NOT tomlplusplus_FOUND)
-        pkg_check_modules(tomlplusplus IMPORTED_TARGET tomlplusplus>=3.2.0)
+        if(PkgConfig_FOUND)
+            pkg_check_modules(tomlplusplus IMPORTED_TARGET tomlplusplus>=3.2.0)
+        endif()
     endif()
 
 
