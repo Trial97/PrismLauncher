@@ -338,15 +338,12 @@ if(Launcher_QT_VERSION_MAJOR EQUAL 6)
 endif()
 
 find_package(PkgConfig)
-# Find libarchive
-## NOTE(@getchoo): Never use pkg-config with MSVC since the vcpkg port makes our install bundle fail to find the dll
-if(PkgConfig_FOUND AND NOT MSVC)
+
+# Find libarchive through CMake packages, mainly for vcpkg
+find_package(LibArchive QUIET)
+# CMake packages aren't available in most distributions of libarchive, use pkg-config
+if(NOT LibArchive_FOUND)
     pkg_check_modules(libarchive REQUIRED IMPORTED_TARGET libarchive)
-    set(LIBARCHIVE_LIBRARIES PkgConfig::libarchive)
-else()
-    find_path(LIBARCHIVE_INCLUDE_DIR archive.h REQUIRED)
-    find_library(LIBARCHIVE_LIBRARY_RELEASE archive REQUIRED)
-    set(LIBARCHIVE_LIBRARIES optimized ${LIBARCHIVE_LIBRARY_RELEASE})
 endif()
 
 if(NOT Launcher_FORCE_BUNDLED_LIBS)

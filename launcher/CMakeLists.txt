@@ -1308,12 +1308,16 @@ target_link_libraries(Launcher_logic
     BuildConfig
     Qt${QT_VERSION_MAJOR}::Widgets
     qrcodegenerator
-    ${LIBARCHIVE_LIBRARIES}
 )
 if(TARGET PkgConfig::tomlplusplus)
     target_link_libraries(Launcher_logic PkgConfig::tomlplusplus)
 else()
     target_link_libraries(Launcher_logic tomlplusplus::tomlplusplus)
+endif()
+if(TARGET PkgConfig::libarchive)
+    target_link_libraries(Launcher_logic PkgConfig::libarchive)
+else()
+    target_link_libraries(Launcher_logic LibArchive::LibArchive)
 endif()
 
 if (UNIX AND NOT CYGWIN AND NOT APPLE)
@@ -1409,8 +1413,12 @@ if(Launcher_BUILD_UPDATER)
         Qt${QT_VERSION_MAJOR}::Network
         ${Launcher_QT_LIBS}
         cmark::cmark
-        ${LIBARCHIVE_LIBRARIES}
     )
+    if(TARGET PkgConfig::libarchive)
+        target_link_libraries(prism_updater_logic PkgConfig::libarchive)
+    else()
+        target_link_libraries(prism_updater_logic LibArchive::LibArchive)
+    endif()
 
     add_executable("${Launcher_Name}_updater" WIN32 updater/prismupdater/updater_main.cpp)
     target_sources("${Launcher_Name}_updater" PRIVATE updater/prismupdater/updater.exe.manifest)
