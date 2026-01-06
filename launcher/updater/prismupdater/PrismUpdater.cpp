@@ -565,7 +565,7 @@ void PrismUpdaterApp::moveAndFinishUpdate(QDir target)
         auto install_path = FS::PathCombine(target.absolutePath(), rel_path);
         logUpdate(tr("Installing %1 from %2").arg(install_path).arg(to_install_file));
         FS::ensureFilePathExists(install_path);
-        auto result = FS::copy(to_install_file, install_path).overwrite(true)();
+        auto result = FS::copy(to_install_file, install_path).overwrite(true).followSymlinks(true)();
         if (!result) {
             logUpdate(tr("Failed copy %1 to %2").arg(to_install_file).arg(install_path));
             return true;
@@ -1039,7 +1039,7 @@ void PrismUpdaterApp::backupAppDir()
         auto bak_path = FS::PathCombine(backup_dir, rel_path);
         logUpdate(tr("Backing up and then removing %1").arg(to_bak_file));
         FS::ensureFilePathExists(bak_path);
-        auto result = FS::copy(to_bak_file, bak_path).overwrite(true)();
+        auto result = FS::copy(to_bak_file, bak_path).overwrite(true).followSymlinks(true)();
         if (!result) {
             logUpdate(tr("Failed to backup %1 to %2").arg(to_bak_file).arg(bak_path));
         } else {
