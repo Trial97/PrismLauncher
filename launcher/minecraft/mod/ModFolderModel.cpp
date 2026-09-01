@@ -55,7 +55,9 @@
 #include <algorithm>
 #include <set>
 
+#include "Application.h"
 #include "Version.h"
+#include "VersionRange.h"
 #include "minecraft/Component.h"
 #include "minecraft/MinecraftInstance.h"
 #include "minecraft/PackProfile.h"
@@ -85,87 +87,28 @@ ModFolderModel::ModFolderModel(const QDir& dir, MinecraftInstance* instance, boo
     connect(this, &ModFolderModel::parseFinished, this, &ModFolderModel::onParseFinished);
 }
 
-enum class Op { EQ, GT, GE, LT, LE, TILDE, CARET };
-
-static Op processVersionString(QString& versionStr)
-{
-    auto consumePrefix = [&versionStr](const QString& prefix) {
-        if (versionStr.startsWith(prefix)) {
-            versionStr.remove(0, prefix.size());
-            return true;
-        } else {
-            return false;
-        }
-    };
-
-    if (consumePrefix(">=")) {
-        return Op::GE;
-    } else if (consumePrefix("<=")) {
-        return Op::LE;
-    } else if (consumePrefix(">")) {
-        return Op::GT;
-    } else if (consumePrefix("<")) {
-        return Op::LT;
-    } else if (consumePrefix("=")) {
-        return Op::EQ;
-    } else if (consumePrefix("~")) {
-        return Op::TILDE;
-    } else if (consumePrefix("^")) {
-        return Op::CARET;
-    }
-
-    return Op::EQ;  // default when operator omitted
-}
-
-static bool checkVersionConstraint(const QString& constraint, const Version& instanceVersion)
+static bool checkVersionConstraint(const QString& constraint, const Version& instanceVersion, ModPlatform::ModLoaderTypes loaders)
 {
     if (constraint == "*" || constraint == "ANY" || constraint.isEmpty()) {
         return true;
     }
 
-    // // Fabric/Quilt often use || for multiple ranges
-    // if (constraint.contains("||")) {
-    //     auto parts = constraint.split("||");
-    //     for (const auto& part : parts) {
-    //         if (checkVersionConstraint(part.trimmed(), instanceVersion)) {
-    //             return true;
-    //         }
-    //     }
-    //     return false;
-    // }
-    //
-    // // Handle space as AND (e.g., ">=1.16.5 <1.17")
-    // if (constraint.trimmed().contains(' ')) {
-    //     auto parts = constraint.trimmed().split(QRegularExpression("\\s+"));
-    //     for (const auto& part : parts) {
-    //         if (!checkVersionConstraint(part.trimmed(), instanceVersion)) {
-    //             return false;
-    //         }
-    //     }
-    //     return true;
-    // }
-
-    QString versionStr = constraint;
-    const Op op = processVersionString(versionStr);
-    Version constraintVersion(versionStr);
-
-    switch (op) {
-        case Op::EQ:
-            return instanceVersion == constraintVersion;
-        case Op::GE:
-            return instanceVersion >= constraintVersion;
-        case Op::LE:
-            return instanceVersion <= constraintVersion;
-        case Op::GT:
-            return instanceVersion > constraintVersion;
-        case Op::LT:
-            return instanceVersion < constraintVersion;
-        case Op::TILDE:
-            return instanceVersion >= constraintVersion;  // simplified
-        case Op::CARET:
-            return instanceVersion >= constraintVersion;  // simplified
+    // Forge/NeoForge use Maven version range syntax, e.g. "[1.0,2.0)".
+    if (loaders & (ModPlatform::Forge | ModPlatform::NeoForge | ModPlatform::Cauldron)) {
+        return VersionRange::fromMaven(constraint).contains(instanceVersion);
     }
-    return false;
+
+    // Fabric/Quilt use the semantic-versioning superset, e.g. ">=1.20.1",
+    // "^1.20.1", "1.20.x".
+    if (loaders & (ModPlatform::Fabric | ModPlatform::Quilt | ModPlatform::LegacyFabric | ModPlatform::Babric | ModPlatform::Ornithe)) {
+        return VersionRange::fromSemver(constraint).contains(instanceVersion);
+    }
+
+    // Unknown loader, fall back to a syntax heuristic.
+    if (constraint.startsWith('[') || constraint.startsWith('(')) {
+        return VersionRange::fromMaven(constraint).contains(instanceVersion);
+    }
+    return VersionRange::fromSemver(constraint).contains(instanceVersion);
 }
 
 bool ModFolderModel::isCompatible(int row) const
@@ -178,27 +121,30 @@ bool ModFolderModel::isCompatible(int row) const
         return true;
     }
     const Version instanceMcVersion(instanceMcVersionStr);
+    const auto instanceLoaders =
+        qobject_cast<MinecraftInstance*>(m_instance)->getPackProfile()->getSupportedModLoaders().value_or(ModPlatform::ModLoaderTypes(0));
+    const auto metadata = mod.metadata();
+    const auto loaders = (metadata && metadata->loaders) ? metadata->loaders : instanceLoaders;
 
     // 1. Check dependencies first
     for (auto details = mod.details(); const auto& dep : details.dependencies) {
         if (dep.startsWith("minecraft", Qt::CaseInsensitive)) {
             // Extract constraint from "minecraft (>=1.21.11)"
-            QRegularExpression re("minecraft\\s*\\((.*)\\)", QRegularExpression::CaseInsensitiveOption);
-            auto match = re.match(dep);
+            static QRegularExpression s_re(R"(minecraft\s*\((.*)\))", QRegularExpression::CaseInsensitiveOption);
+            auto match = s_re.match(dep);
             if (match.hasMatch()) {
                 QString constraint = match.captured(1);
-                return checkVersionConstraint(constraint, Version(instanceMcVersionStr));
+                return checkVersionConstraint(constraint, instanceMcVersion, loaders);
             }
         }
     }
 
     // 2. Fallback to mcVersions
-    auto mcVersions = mod.metadata()->mcVersions;
-    if (mcVersions.isEmpty()) {
+    if (!metadata || metadata->mcVersions.isEmpty()) {
         return true;
     }
 
-    return std::ranges::any_of(mcVersions, [&](const auto& versionStr) { return Version(versionStr) == instanceMcVersion; });
+    return std::ranges::any_of(metadata->mcVersions, [&](const auto& versionStr) { return Version(versionStr) == instanceMcVersion; });
 }
 
 QVariant ModFolderModel::data(const QModelIndex& index, int role) const
@@ -214,6 +160,9 @@ QVariant ModFolderModel::data(const QModelIndex& index, int role) const
 
     switch (role) {
         case Qt::BackgroundRole:
+            if (APPLICATION->settings()->get("ShowModIncompat").toBool() && !compatible) {
+                return { QColor(255, 0, 0, 40) };
+            }
             return rowBackground(row);
         case Qt::DisplayRole:
             switch (column) {
@@ -249,34 +198,10 @@ QVariant ModFolderModel::data(const QModelIndex& index, int role) const
                     break;
             }
             break;
-        case Qt::BackgroundRole: {
-            if (!compatible) {
-                return QBrush(QColor::fromRgb(255, 0, 0, 40));
-            }
-            return QVariant();
-        }
-        case Qt::ToolTipRole: {
-            QString tooltip = m_resources[row]->internal_id();
-            if (!compatible) {
-                tooltip += tr("\nThis mod is incompatible with the current Minecraft version.");
-            }
-            if (column == NameColumn) {
-                if (at(row).isSymLinkUnder(instDirPath())) {
-                    tooltip +=
-                        tr("\nWarning: This resource is symbolically linked from elsewhere. Editing it will also change the original."
-                           "\nCanonical Path: %1")
-                            .arg(at(row).fileinfo().canonicalFilePath());
-                } else if (at(row).isMoreThanOneHardLink()) {
-                    tooltip +=
-                        tr("\nWarning: This resource has more than one hard link. Editing it will also change the other files "
-                           "linked to the same inode.");
-                }
-            }
-            return tooltip;
-        }
         case Qt::DecorationRole: {
-            if (column == NameColumn && (at(row).isSymLinkUnder(instDirPath()) || at(row).isMoreThanOneHardLink() || !compatible))
+            if (column == NameColumn && (at(row).isSymLinkUnder(instDirPath()) || at(row).isMoreThanOneHardLink() || !compatible)) {
                 return QIcon::fromTheme("status-yellow");
+            }
             if (column == ImageColumn) {
                 return at(row).icon({ 32, 32 }, Qt::AspectRatioMode::KeepAspectRatioByExpanding);
             }
@@ -304,7 +229,23 @@ QVariant ModFolderModel::data(const QModelIndex& index, int role) const
                     break;
                 }
                 default:
-                    break;
+                    QString tooltip = m_resources[row]->internalId();
+                    if (!compatible) {
+                        tooltip += tr("\nThis mod is incompatible with the current Minecraft version.");
+                    }
+                    if (column == NameColumn) {
+                        if (at(row).isSymLinkUnder(instDirPath())) {
+                            tooltip += tr("\nWarning: This resource is symbolically linked from elsewhere. Editing it will also change the "
+                                          "original."
+                                          "\nCanonical Path: %1")
+                                           .arg(at(row).fileinfo().canonicalFilePath());
+                        } else if (at(row).isMoreThanOneHardLink()) {
+                            tooltip +=
+                                tr("\nWarning: This resource has more than one hard link. Editing it will also change the other files "
+                                   "linked to the same inode.");
+                        }
+                    }
+                    return tooltip;
             }
             break;
         default:

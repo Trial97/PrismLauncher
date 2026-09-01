@@ -89,6 +89,10 @@ set(CORE_SOURCES
     Version.h
     Version.cpp
 
+    # Version range specifications (Maven and Fabric/Quilt)
+    VersionRange.h
+    VersionRange.cpp
+
     # A Recursive file system watcher
     RecursiveFileSystemWatcher.h
     RecursiveFileSystemWatcher.cpp

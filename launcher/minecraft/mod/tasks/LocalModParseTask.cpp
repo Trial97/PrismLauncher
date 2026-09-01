@@ -234,7 +234,7 @@ ModDetails ReadMCModTOML(QByteArray contents)
         }
         auto isNeoForgeDep = [](toml::table* t) {
             auto type = (*t)["type"].as_string();
-            return type && type->get() == "required";
+            return type && (type->get() == "required" || type->get() == "incompatible");
         };
         auto isForgeDep = [](toml::table* t) {
             auto mandatory = (*t)["mandatory"].as_boolean();
@@ -367,18 +367,43 @@ ModDetails ReadFabricModInfo(QByteArray contents)
             }
         }
 
+        auto parseDependencyObject = [&details](QJsonObject obj) {
+            for (auto key : obj.keys()) {
+                QString dep = key;
+                auto value = obj.value(key);
+                QString version;
+                if (value.isString()) {
+                    version = value.toString();
+                } else if (value.isArray()) {
+                    QStringList vList;
+                    for (auto v : value.toArray()) {
+                        vList.append(v.toString());
+                    }
+                    version = vList.join(" || ");
+                }
+                if (!version.isEmpty()) {
+                    dep += " (" + version + ")";
+                }
+                details.dependencies.append(dep);
+            }
+        };
+
         if (object.contains("depends")) {
             auto depends = object.value("depends");
             if (depends.isObject()) {
-                auto obj = depends.toObject();
-                for (auto key : obj.keys()) {
-                    QString dep = key;
-                    auto version = obj.value(key).toString();
-                    if (!version.isEmpty()) {
-                        dep += " (" + version + ")";
-                    }
-                    details.dependencies.append(dep);
-                }
+                parseDependencyObject(depends.toObject());
+            }
+        }
+        if (object.contains("breaks")) {
+            auto breaks = object.value("breaks");
+            if (breaks.isObject()) {
+                parseDependencyObject(breaks.toObject());
+            }
+        }
+        if (object.contains("conflicts")) {
+            auto conflicts = object.value("conflicts");
+            if (conflicts.isObject()) {
+                parseDependencyObject(conflicts.toObject());
             }
         }
     }
@@ -467,39 +492,84 @@ ModDetails ReadQuiltModInfo(QByteArray contents)
                     details.icon_file = icon.toString();
                 }
             }
-            if (object.contains("depends")) {
-                auto depends = object.value("depends");
-                if (depends.isArray()) {
-                    auto array = depends.toArray();
-                    for (auto obj : array) {
-                        QString dep;
-                        if (obj.isString()) {
-                            dep = obj.toString();
-                        } else if (obj.isObject()) {
-                            auto objValue = obj.toObject();
-                            auto modId = objValue.value("id").toString();
-                            if (objValue.contains("optional") && objValue.value("optional").toBool()) {
-                                continue;
-                            }
-                            dep = modId;
-                            auto versions = objValue.value("versions");
-                            if (versions.isString()) {
-                                dep += " (" + versions.toString() + ")";
-                            } else if (versions.isArray()) {
-                                QStringList vList;
-                                for (auto v : versions.toArray()) {
-                                    vList.append(v.toString());
-                                }
-                                if (!vList.isEmpty()) {
-                                    dep += " (" + vList.join(" || ") + ")";
-                                }
-                            }
-                        } else {
+            auto parseDependencyArray = [&details](QJsonValue deps) {
+                if (!deps.isArray()) {
+                    return;
+                }
+                auto array = deps.toArray();
+                for (auto obj : array) {
+                    QString dep;
+                    if (obj.isString()) {
+                        dep = obj.toString();
+                    } else if (obj.isObject()) {
+                        auto objValue = obj.toObject();
+                        auto modId = objValue.value("id").toString();
+                        if (objValue.contains("optional") && objValue.value("optional").toBool()) {
                             continue;
                         }
-                        details.dependencies.append(dep);
+                        dep = modId;
+                        auto versions = objValue.value("versions");
+                        if (versions.isString()) {
+                            dep += " (" + versions.toString() + ")";
+                        } else if (versions.isArray()) {
+                            QStringList vList;
+                            for (auto v : versions.toArray()) {
+                                vList.append(v.toString());
+                            }
+                            if (!vList.isEmpty()) {
+                                dep += " (" + vList.join(" || ") + ")";
+                            }
+                        } else if (versions.isObject()) {
+                            auto versionsObj = versions.toObject();
+                            QString separator;
+                            QJsonArray versionArray;
+                            if (versionsObj.contains("any")) {
+                                versionArray = versionsObj.value("any").toArray();
+                                separator = " || ";
+                            } else if (versionsObj.contains("all")) {
+                                versionArray = versionsObj.value("all").toArray();
+                                separator = " && ";
+                            }
+                            QStringList vList;
+                            for (auto v : versionArray) {
+                                if (v.isString()) {
+                                    vList.append(v.toString());
+                                } else if (v.isObject()) {
+                                    auto nestedObj = v.toObject();
+                                    if (nestedObj.contains("any")) {
+                                        QStringList nested;
+                                        for (auto n : nestedObj.value("any").toArray()) {
+                                            nested.append(n.toString());
+                                        }
+                                        if (!nested.isEmpty()) {
+                                            vList.append("(" + nested.join(" || ") + ")");
+                                        }
+                                    } else if (nestedObj.contains("all")) {
+                                        QStringList nested;
+                                        for (auto n : nestedObj.value("all").toArray()) {
+                                            nested.append(n.toString());
+                                        }
+                                        if (!nested.isEmpty()) {
+                                            vList.append("(" + nested.join(" && ") + ")");
+                                        }
+                                    }
+                                }
+                            }
+                            if (!vList.isEmpty()) {
+                                dep += " (" + vList.join(separator) + ")";
+                            }
+                        }
+                    } else {
+                        continue;
                     }
+                    details.dependencies.append(dep);
                 }
+            };
+            if (object.contains("depends")) {
+                parseDependencyArray(object.value("depends"));
+            }
+            if (object.contains("breaks")) {
+                parseDependencyArray(object.value("breaks"));
             }
         }
 
