@@ -30,6 +30,7 @@
 #include "minecraft/mod/ResourceFolderModel.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
+#include "resourcesmeta/DependencyType.h"
 #include "tasks/SequentialTask.h"
 #include "ui/pages/modplatform/ModModel.h"
 
@@ -145,7 +146,7 @@ QList<ModPlatform::Dependency> GetModDependenciesTask::getDependenciesForVersion
 {
     QList<ModPlatform::Dependency> cDependencies;
     for (auto verDep : version.dependencies) {
-        if (verDep.type != ModPlatform::DependencyType::REQUIRED) {
+        if (verDep.type != Resources::DependencyType::Required) {
             continue;
         }
         verDep = getOverride(verDep, providerName);
@@ -323,7 +324,7 @@ auto GetModDependenciesTask::getExtraInfo() -> QHash<QString, PackDependencyExtr
             }
             auto deps = smod->version.dependencies;
             auto isRequiredByOther = [addonId, provider, version](const ModPlatform::Dependency& d) {
-                return d.type == ModPlatform::DependencyType::REQUIRED &&
+                return d.type == Resources::DependencyType::Required &&
                        (provider == ModPlatform::ResourceProvider::MODRINTH && d.addonId.toString().isEmpty() ? version == d.version
                                                                                                               : d.addonId == addonId);
             };

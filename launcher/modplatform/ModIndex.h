@@ -29,6 +29,7 @@
 #include <utility>
 #include "EnumWrapper.h"
 #include "modplatform/ResourceType.h"
+#include "resourcesmeta/DependencyType.h"
 
 class QIODevice;
 
@@ -58,28 +59,6 @@ Q_DECLARE_FLAGS(ModLoaderTypes, ModLoaderType)
 QList<ModLoaderType> modLoaderTypesToList(ModLoaderTypes flags);
 
 enum class ResourceProvider : std::uint8_t { MODRINTH, FLAME };
-
-enum class DependencyTypeValue : std::uint8_t { REQUIRED, OPTIONAL, INCOMPATIBLE, EMBEDDED, TOOL, INCLUDE, UNKNOWN };
-struct DependencyType : EnumWrapper<DependencyType, DependencyTypeValue> {
-    static constexpr auto invalid() { return UNKNOWN; };
-
-    static constexpr auto mapping()
-    {
-        return std::array{
-            std::pair{ REQUIRED, "REQUIRED" }, std::pair{ OPTIONAL, "OPTIONAL" }, std::pair{ INCOMPATIBLE, "INCOMPATIBLE" },
-            std::pair{ EMBEDDED, "EMBEDDED" }, std::pair{ TOOL, "TOOL" },         std::pair{ INCLUDE, "INCLUDE" },
-            std::pair{ UNKNOWN, "UNKNOWN" },
-        };
-    };
-    static DependencyType fromString(const QString& str)
-    {
-        return EnumWrapper<DependencyType, DependencyTypeValue>::fromString(str.toUpper());
-    }
-
-    using enum DependencyTypeValue;
-    using Base = EnumWrapper<DependencyType, DependencyTypeValue>;
-    using Base::Base; /* inherit ctor */
-};
 
 enum class SideTypeValue : std::uint8_t {
     NoSide = 0,
@@ -136,7 +115,7 @@ struct IndexedVersionType : EnumWrapper<IndexedVersionType, IndexedVersionTypeVa
 
 struct Dependency {
     QVariant addonId;
-    DependencyType type;
+    Resources::DependencyType type;
     QString version;
 };
 

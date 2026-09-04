@@ -210,7 +210,8 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
 
     toml::array deps;
     for (auto dep : mod.dependencies) {
-        auto tbl = toml::table{ { "addonId", dep.addonId.toString().toStdString() }, { "type", dep.type.toString().toStdString() } };
+        auto tbl =
+            toml::table{ { "addonId", dep.addonId.toString().toStdString() }, { "type", dep.type.toString().toUpper().toStdString() } };
         if (!dep.version.isEmpty()) {
             tbl.emplace("version", dep.version.toStdString());
         }
@@ -370,7 +371,7 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
                     if (dep->contains("version")) {
                         d.version = stringEntry(*dep, "version");
                     }
-                    d.type = ModPlatform::DependencyType::fromString(stringEntry(*dep, "type"));
+                    d.type = Resources::DependencyType::fromString(stringEntry(*dep, "type").toLower());
                     mod.dependencies << d;
                 }
             }

@@ -23,11 +23,29 @@
 
 #include "Json.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/DependencyType.h"
 
 namespace {
 bool shouldDownloadOnSide(const QString& side)
 {
     return side == "required" || side == "optional";
+}
+
+Resources::DependencyType mapDependency(const QString& value)
+{
+    if (value == QStringLiteral("required")) {
+        return Resources::DependencyType::Required;
+    }
+    if (value == QStringLiteral("optional")) {
+        return Resources::DependencyType::Optional;
+    }
+    if (value == QStringLiteral("incompatible")) {
+        return Resources::DependencyType::Incompatible;
+    }
+    if (value == QStringLiteral("embedded")) {
+        return Resources::DependencyType::Embedded;
+    }
+    return Resources::DependencyType::Unknown;
 }
 }  // namespace
 
@@ -166,20 +184,7 @@ ModPlatform::IndexedVersion Modrinth::loadIndexedPackVersion(QJsonObject& obj,
         ModPlatform::Dependency dependency;
         dependency.addonId = dep["project_id"].toString();
         dependency.version = dep["version_id"].toString();
-        auto depType = Json::requireString(dep, "dependency_type");
-
-        if (depType == "required") {
-            dependency.type = ModPlatform::DependencyType::REQUIRED;
-        } else if (depType == "optional") {
-            dependency.type = ModPlatform::DependencyType::OPTIONAL;
-        } else if (depType == "incompatible") {
-            dependency.type = ModPlatform::DependencyType::INCOMPATIBLE;
-        } else if (depType == "embedded") {
-            dependency.type = ModPlatform::DependencyType::EMBEDDED;
-        } else {
-            dependency.type = ModPlatform::DependencyType::UNKNOWN;
-        }
-
+        dependency.type = mapDependency(Json::requireString(dep, "dependency_type"));
         file.dependencies.append(dependency);
     }
 

@@ -6,6 +6,7 @@
 #include "Json.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/flame/FlameAPI.h"
+#include "resourcesmeta/DependencyType.h"
 
 void FlameMod::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
 {
@@ -82,6 +83,26 @@ QString enumToString(int hashAlgorithm)
             return "sha1";
         case 2:
             return "md5";
+    }
+}
+
+Resources::DependencyType mapDependency(int value)
+{
+    switch (value) {
+        case 1:  // EmbeddedLibrary
+            return Resources::DependencyType::Embedded;
+        case 2:  // OptionalDependency
+            return Resources::DependencyType::Optional;
+        case 3:  // RequiredDependency
+            return Resources::DependencyType::Required;
+        case 4:  // Tool
+            return Resources::DependencyType::Tool;
+        case 5:  // Incompatible
+            return Resources::DependencyType::Incompatible;
+        case 6:  // Include
+            return Resources::DependencyType::Include;
+        default:
+            return Resources::DependencyType::Unknown;
     }
 }
 }  // namespace
@@ -187,29 +208,7 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
         auto dep = d.toObject();
         ModPlatform::Dependency dependency;
         dependency.addonId = Json::requireInteger(dep, "modId");
-        switch (Json::requireInteger(dep, "relationType")) {
-            case 1:  // EmbeddedLibrary
-                dependency.type = ModPlatform::DependencyType::EMBEDDED;
-                break;
-            case 2:  // OptionalDependency
-                dependency.type = ModPlatform::DependencyType::OPTIONAL;
-                break;
-            case 3:  // RequiredDependency
-                dependency.type = ModPlatform::DependencyType::REQUIRED;
-                break;
-            case 4:  // Tool
-                dependency.type = ModPlatform::DependencyType::TOOL;
-                break;
-            case 5:  // Incompatible
-                dependency.type = ModPlatform::DependencyType::INCOMPATIBLE;
-                break;
-            case 6:  // Include
-                dependency.type = ModPlatform::DependencyType::INCLUDE;
-                break;
-            default:
-                dependency.type = ModPlatform::DependencyType::UNKNOWN;
-                break;
-        }
+        dependency.type = mapDependency(Json::requireInteger(dep, "relationType"));
         file.dependencies.append(dependency);
     }
 

@@ -57,6 +57,7 @@
 #include "minecraft/mod/ResourceFolderModel.h"
 #include "minecraft/mod/tasks/LocalModParseTask.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/DependencyType.h"
 #include "ui/dialogs/CustomMessageBox.h"
 
 ModFolderModel::ModFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent)
@@ -327,7 +328,7 @@ void ModFolderModel::onParseFinished()
         }
         if (mod->metadata()) {
             for (const auto& dep : mod->metadata()->dependencies) {
-                if (dep.type == ModPlatform::DependencyType::REQUIRED) {
+                if (dep.type == Resources::DependencyType::Required) {
                     auto* d = findByProjectID(dep.addonId, mod->metadata()->provider);
                     if (d) {
                         m_requires[id] << d;
