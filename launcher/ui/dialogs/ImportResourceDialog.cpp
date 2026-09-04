@@ -8,11 +8,10 @@
 #include "InstanceList.h"
 
 #include <InstanceList.h>
-#include "modplatform/ResourceType.h"
 #include "ui/instanceview/InstanceDelegate.h"
 #include "ui/instanceview/InstanceProxyModel.h"
 
-ImportResourceDialog::ImportResourceDialog(QString file_path, ModPlatform::ResourceType type, QWidget* parent)
+ImportResourceDialog::ImportResourceDialog(QString file_path, Resources::Type type, QWidget* parent)
     : QDialog(parent), ui(new Ui::ImportResourceDialog), m_resource_type(type), m_file_path(file_path)
 {
     ui->setupUi(this);
@@ -43,7 +42,7 @@ ImportResourceDialog::ImportResourceDialog(QString file_path, ModPlatform::Resou
     connect(contentsWidget->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ImportResourceDialog::selectionChanged);
 
     ui->label->setText(
-        tr("Choose the instance you would like to import this %1 to.").arg(ModPlatform::ResourceTypeUtils::getName(m_resource_type)));
+        tr("Choose the instance you would like to import this %1 to.").arg(m_resource_type.getName()));
     ui->label_file_path->setText(tr("File: %1").arg(m_file_path));
 
     ui->buttonBox->button(QDialogButtonBox::Cancel)->setText(tr("Cancel"));

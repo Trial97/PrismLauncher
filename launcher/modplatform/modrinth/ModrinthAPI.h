@@ -109,10 +109,10 @@ class ModrinthAPI final : public ResourceAPI {
         }
         return v;
     }
-    static ModPlatform::ResourceType getResourceType(const QString& param);
+    static Resources::Type getResourceType(const QString& param);
 
    private:
-    static QString resourceTypeParameter(ModPlatform::ResourceType type);
+    static QString resourceTypeParameter(Resources::Type type);
 
     QString createFacets(const SearchArgs& args) const
     {
@@ -223,7 +223,7 @@ class ModrinthAPI final : public ResourceAPI {
 
     QJsonArray documentToArray(QJsonDocument& obj) const override { return obj.object().value("hits").toArray(); }
     void loadIndexedPack(ModPlatform::IndexedPack& m, QJsonObject& obj) const override { Modrinth::loadIndexedPack(m, obj); }
-    ModPlatform::IndexedVersion loadIndexedPackVersion(QJsonObject& obj, ModPlatform::ResourceType /*unused*/) const override
+    ModPlatform::IndexedVersion loadIndexedPackVersion(QJsonObject& obj, Resources::Type /*unused*/) const override
     {
         return Modrinth::loadIndexedPackVersion(obj);
     };

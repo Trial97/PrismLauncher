@@ -10,7 +10,6 @@
 #include "minecraft/mod/ModFolderModel.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
-#include "modplatform/ResourceType.h"
 #include "ui/pages/modplatform/ResourceModel.h"
 
 #include <QMessageBox>
@@ -52,7 +51,7 @@ ResourceAPI::SearchArgs ModModel::createSearchArguments()
 
     auto sort = getCurrentSortingMethodByIndex();
 
-    return { .type = ModPlatform::ResourceType::Mod,
+    return { .type = Resources::Type::Mod,
              .offset = m_next_search_offset,
              .search = m_search_term,
              .sorting = sort,
@@ -80,7 +79,7 @@ ResourceAPI::VersionSearchArgs ModModel::createVersionsArguments(const QModelInd
         loaders = m_filter->loaders;
     }
 
-    return { .pack = pack, .mcVersions = versions, .loaders = loaders, .resourceType = ModPlatform::ResourceType::Mod };
+    return { .pack = pack, .mcVersions = versions, .loaders = loaders, .resourceType = Resources::Type::Mod };
 }
 
 ResourceAPI::ProjectInfoArgs ModModel::createInfoArguments(const QModelIndex& index)

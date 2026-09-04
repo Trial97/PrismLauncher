@@ -22,7 +22,7 @@ ResourceAPI::SearchArgs ResourcePackResourceModel::createSearchArguments()
 {
     auto sort = getCurrentSortingMethodByIndex();
     return {
-        .type = ModPlatform::ResourceType::ResourcePack,
+        .type = Resources::Type::ResourcePack,
         .offset = m_next_search_offset,
         .search = m_search_term,
         .sorting = sort,
@@ -37,7 +37,7 @@ ResourceAPI::SearchArgs ResourcePackResourceModel::createSearchArguments()
 ResourceAPI::VersionSearchArgs ResourcePackResourceModel::createVersionsArguments(const QModelIndex& entry)
 {
     auto pack = m_packs[entry.row()];
-    return { .pack = pack, .mcVersions = {}, .loaders = {}, .resourceType = ModPlatform::ResourceType::ResourcePack };
+    return { .pack = pack, .mcVersions = {}, .loaders = {}, .resourceType = Resources::Type::ResourcePack };
 }
 
 ResourceAPI::ProjectInfoArgs ResourcePackResourceModel::createInfoArguments(const QModelIndex& entry)

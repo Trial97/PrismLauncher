@@ -205,7 +205,7 @@ void ListModel::performPaginatedSearch()
 
     auto netJob = FlameAPI::get().searchProjects(
         {
-            .type = ModPlatform::ResourceType::Modpack,
+            .type = Resources::Type::Modpack,
             .offset = m_nextSearchOffset,
             .search = m_currentSearchTerm,
             .sorting = sort,

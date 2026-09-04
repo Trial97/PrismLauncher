@@ -223,7 +223,7 @@ void ModrinthPage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelI
         };
 
         auto netJob = ModrinthAPI::get().getProjectVersions(
-            { .pack = m_current, .mcVersions = {}, .loaders = {}, .resourceType = ModPlatform::ResourceType::Modpack }, callbacks);
+            { .pack = m_current, .mcVersions = {}, .loaders = {}, .resourceType = Resources::Type::Modpack }, callbacks);
 
         m_job2 = netJob;
         m_job2->start();

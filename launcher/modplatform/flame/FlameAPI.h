@@ -37,7 +37,7 @@ class FlameAPI final : public ResourceAPI {
     static std::pair<Task::Ptr, QByteArray*> getFiles(const QStringList& fileIds);
     static std::pair<Task::Ptr, QByteArray*> getFile(const QString& addonId, const QString& fileId);
 
-    static std::pair<Task::Ptr, QByteArray*> getCategories(ModPlatform::ResourceType type);
+    static std::pair<Task::Ptr, QByteArray*> getCategories(Resources::Type type);
     std::pair<Task::Ptr, QByteArray*> getModCategories() const override;
     QList<ModPlatform::Category> loadModCategories(const QByteArray& response) const override;
 
@@ -49,10 +49,10 @@ class FlameAPI final : public ResourceAPI {
                            Resources::ModLoader::Quilt)) != 0;
     }
 
-    static ModPlatform::ResourceType getResourceType(int classId);
+    static Resources::Type getResourceType(int classId);
 
    private:
-    static int getClassId(ModPlatform::ResourceType type);
+    static int getClassId(Resources::Type type);
 
     static int getMappedModLoader(Resources::ModLoader loaders)
     {
@@ -146,10 +146,10 @@ class FlameAPI final : public ResourceAPI {
 
     QJsonArray documentToArray(QJsonDocument& obj) const override { return obj.object()["data"].toArray(); }
     void loadIndexedPack(ModPlatform::IndexedPack& m, QJsonObject& obj) const override { FlameMod::loadIndexedPack(m, obj); }
-    ModPlatform::IndexedVersion loadIndexedPackVersion(QJsonObject& obj, ModPlatform::ResourceType resourceType) const override
+    ModPlatform::IndexedVersion loadIndexedPackVersion(QJsonObject& obj, Resources::Type resourceType) const override
     {
         auto arr = FlameMod::loadIndexedPackVersion(obj);
-        if (resourceType != ModPlatform::ResourceType::TexturePack) {
+        if (resourceType != Resources::Type::TexturePack) {
             return arr;
         }
         // FIXME: Client-side version filtering. This won't take into account any user-selected filtering.

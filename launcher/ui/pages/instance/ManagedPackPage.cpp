@@ -243,7 +243,7 @@ void ModrinthManagedPackPage::parseManagedPack()
     m_fetchJob = ModrinthAPI::get().getProjectVersions({ .pack = std::make_shared<ModPlatform::IndexedPack>(m_pack),
                                                          .mcVersions = {},
                                                          .loaders = {},
-                                                         .resourceType = ModPlatform::ResourceType::Modpack,
+                                                         .resourceType = Resources::Type::Modpack,
                                                          .includeChangelog = true },
                                                        callbacks);
 
@@ -398,7 +398,7 @@ void FlameManagedPackPage::parseManagedPack()
     m_fetchJob = FlameAPI::get().getProjectVersions({ .pack = std::make_shared<ModPlatform::IndexedPack>(m_pack),
                                                       .mcVersions = {},
                                                       .loaders = {},
-                                                      .resourceType = ModPlatform::ResourceType::Modpack,
+                                                      .resourceType = Resources::Type::Modpack,
                                                       .includeChangelog = true },
                                                     callbacks);
 

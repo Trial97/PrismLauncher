@@ -256,22 +256,22 @@ void ResourceDownloadDialog::addResource(const ModPlatform::IndexedPack::Ptr& pa
     auto* model = getBaseModel();
     auto* instance = dynamic_cast<MinecraftInstance*>(m_instance);
     if (instance) {
-        switch (pack->resourceType) {
-            case ModPlatform::ResourceType::Mod:
+        switch (pack->resourceType.value()) {
+            case Resources::Type::Mod:
                 model = instance->loaderModList();
                 break;
-            case ModPlatform::ResourceType::ResourcePack:
+            case Resources::Type::ResourcePack:
                 model = instance->resourcePackList();
                 break;
-            case ModPlatform::ResourceType::ShaderPack:
+            case Resources::Type::ShaderPack:
                 model = instance->shaderPackList();
                 break;
-            case ModPlatform::ResourceType::DataPack:
+            case Resources::Type::DataPack:
                 model = instance->dataPackList();
                 break;
-                // case ModPlatform::ResourceType::World:
+                // case Resources::Type::World:
                 // model = instance->worldList();
-            case ModPlatform::ResourceType::TexturePack:
+            case Resources::Type::TexturePack:
                 model = instance->texturePackList();
                 break;
             default:

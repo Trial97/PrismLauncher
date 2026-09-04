@@ -7,7 +7,6 @@
 
 #include "Application.h"
 #include "Json.h"
-#include "modplatform/ResourceType.h"
 #include "net/ApiRequest.h"
 #include "net/NetJob.h"
 
@@ -125,13 +124,13 @@ QList<ResourceAPI::SortingMethod> ModrinthAPI::getSortingMethods() const
 }
 namespace {
 const auto g_resourceTypeMap = std::array{
-    std::pair{ ModPlatform::ResourceType::Mod, "mod" },           std::pair{ ModPlatform::ResourceType::ResourcePack, "resourcepack" },
-    std::pair{ ModPlatform::ResourceType::ShaderPack, "shader" }, std::pair{ ModPlatform::ResourceType::DataPack, "datapack" },
-    std::pair{ ModPlatform::ResourceType::Modpack, "modpack" },
+    std::pair{ Resources::Type::Mod, "mod" },           std::pair{ Resources::Type::ResourcePack, "resourcepack" },
+    std::pair{ Resources::Type::ShaderPack, "shader" }, std::pair{ Resources::Type::DataPack, "datapack" },
+    std::pair{ Resources::Type::Modpack, "modpack" },
 };
 }
 
-ModPlatform::ResourceType ModrinthAPI::getResourceType(const QString& param)
+Resources::Type ModrinthAPI::getResourceType(const QString& param)
 {
     for (const auto& [key, value] : g_resourceTypeMap) {
         if (value == param) {
@@ -140,10 +139,10 @@ ModPlatform::ResourceType ModrinthAPI::getResourceType(const QString& param)
     }
 
     qWarning() << "Invalid resource type for Modrinth API!" << param;
-    return ModPlatform::ResourceType::Unknown;
+    return Resources::Type::Unknown;
 }
 
-QString ModrinthAPI::resourceTypeParameter(ModPlatform::ResourceType type)
+QString ModrinthAPI::resourceTypeParameter(Resources::Type type)
 {
     for (const auto& [key, value] : g_resourceTypeMap) {
         if (key == type) {

@@ -241,7 +241,7 @@ Task::Ptr ResourceAPI::getDependencyVersion(const DependencySearchArgs& args, co
         for (auto versionIter : arr) {
             auto obj = versionIter.toObject();
 
-            auto file = loadIndexedPackVersion(obj, ModPlatform::ResourceType::Mod);
+            auto file = loadIndexedPackVersion(obj, Resources::Type::Mod);
             if (!file.addonId.isValid()) {
                 file.addonId = args.dependency.addonId;
             }

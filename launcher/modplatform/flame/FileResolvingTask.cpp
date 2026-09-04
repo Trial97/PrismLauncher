@@ -228,7 +228,7 @@ void Flame::FileResolvingTask::getFlameProjects()
 
                 setStatus(tr("Parsing API response from CurseForge for '%1'...").arg(file->version.fileName));
                 FlameMod::loadIndexedPack(file->pack, entryObj);
-                if (file->pack.resourceType == ModPlatform::ResourceType::World) {
+                if (file->pack.resourceType == Resources::Type::World) {
                     file->targetFolder = "saves";
                 }
             }

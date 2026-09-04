@@ -22,7 +22,7 @@ ResourceAPI::SearchArgs ShaderPackResourceModel::createSearchArguments()
 {
     auto sort = getCurrentSortingMethodByIndex();
     return {
-        .type = ModPlatform::ResourceType::ShaderPack,
+        .type = Resources::Type::ShaderPack,
         .offset = m_next_search_offset,
         .search = m_search_term,
         .sorting = sort,
@@ -37,7 +37,7 @@ ResourceAPI::SearchArgs ShaderPackResourceModel::createSearchArguments()
 ResourceAPI::VersionSearchArgs ShaderPackResourceModel::createVersionsArguments(const QModelIndex& entry)
 {
     auto pack = m_packs[entry.row()];
-    return { .pack = pack, .mcVersions = {}, .loaders = {}, .resourceType = ModPlatform::ResourceType::ShaderPack };
+    return { .pack = pack, .mcVersions = {}, .loaders = {}, .resourceType = Resources::Type::ShaderPack };
 }
 
 ResourceAPI::ProjectInfoArgs ShaderPackResourceModel::createInfoArguments(const QModelIndex& entry)

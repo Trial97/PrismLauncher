@@ -12,6 +12,7 @@
 #include "net/ApiRequest.h"
 #include "net/NetJob.h"
 #include "resourcesmeta/ModLoader.h"
+#include "resourcesmeta/Type.h"
 
 std::pair<Task::Ptr, QByteArray*> FlameAPI::matchFingerprints(const QList<uint>& fingerprints)
 {
@@ -173,13 +174,13 @@ QList<ResourceAPI::SortingMethod> FlameAPI::getSortingMethods() const
 
 namespace {
 const auto g_classIDMappings = std::array{
-    std::pair{ ModPlatform::ResourceType::Mod, 6 },        std::pair{ ModPlatform::ResourceType::ResourcePack, 12 },
-    std::pair{ ModPlatform::ResourceType::World, 17 },     std::pair{ ModPlatform::ResourceType::ShaderPack, 6552 },
-    std::pair{ ModPlatform::ResourceType::Modpack, 4471 }, std::pair{ ModPlatform::ResourceType::DataPack, 6945 },
+    std::pair{ Resources::Type::Mod, 6 },        std::pair{ Resources::Type::ResourcePack, 12 },
+    std::pair{ Resources::Type::World, 17 },     std::pair{ Resources::Type::ShaderPack, 6552 },
+    std::pair{ Resources::Type::Modpack, 4471 }, std::pair{ Resources::Type::DataPack, 6945 },
 };
 }
 
-int FlameAPI::getClassId(ModPlatform::ResourceType type)
+int FlameAPI::getClassId(Resources::Type type)
 {
     for (auto&& [e, classId] : g_classIDMappings) {
         if (e == type) {
@@ -188,17 +189,17 @@ int FlameAPI::getClassId(ModPlatform::ResourceType type)
     }
     return 0;
 }
-ModPlatform::ResourceType FlameAPI::getResourceType(int classId)
+Resources::Type FlameAPI::getResourceType(int classId)
 {
     for (auto&& [type, c] : g_classIDMappings) {
         if (c == classId) {
             return type;
         }
     }
-    return ModPlatform::ResourceType::Unknown;
+    return Resources::Type::Unknown;
 }
 
-std::pair<Task::Ptr, QByteArray*> FlameAPI::getCategories(ModPlatform::ResourceType type)
+std::pair<Task::Ptr, QByteArray*> FlameAPI::getCategories(Resources::Type type)
 {
     auto netJob = makeShared<NetJob>(QString("Flame::GetCategories"), APPLICATION->network());
     auto [action, response] = Net::ApiRequest::makeByteArray(
@@ -211,7 +212,7 @@ std::pair<Task::Ptr, QByteArray*> FlameAPI::getCategories(ModPlatform::ResourceT
 
 std::pair<Task::Ptr, QByteArray*> FlameAPI::getModCategories() const
 {
-    return getCategories(ModPlatform::ResourceType::Mod);
+    return getCategories(Resources::Type::Mod);
 }
 
 QList<ModPlatform::Category> FlameAPI::loadModCategories(const QByteArray& response) const
@@ -233,7 +234,7 @@ QList<ModPlatform::Category> FlameAPI::loadModCategories(const QByteArray& respo
             auto cat = Json::requireObject(val);
             auto id = Json::requireInteger(cat, "id");
             auto name = Json::requireString(cat, "name");
-            categories.push_back({ name, QString::number(id) });
+            categories.push_back({ .name = name, .id = QString::number(id) });
         }
 
     } catch (Json::JsonException& e) {

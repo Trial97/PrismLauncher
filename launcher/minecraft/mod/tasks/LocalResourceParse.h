@@ -22,8 +22,8 @@
 #pragma once
 
 #include <QFileInfo>
-#include "modplatform/ResourceType.h"
+#include "resourcesmeta/Type.h"
 
 namespace ResourceUtils {
-ModPlatform::ResourceType identify(QFileInfo file);
+Resources::Type identify(const QFileInfo& file);
 }  // namespace ResourceUtils

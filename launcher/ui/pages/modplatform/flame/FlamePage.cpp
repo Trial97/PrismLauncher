@@ -204,7 +204,7 @@ void FlamePage::onSelectionChanged(QModelIndex curr, [[maybe_unused]] QModelInde
         };
 
         auto netJob = FlameAPI::get().getProjectVersions(
-            { .pack = m_current, .mcVersions = {}, .loaders = {}, .resourceType = ModPlatform::ResourceType::Modpack }, callbacks);
+            { .pack = m_current, .mcVersions = {}, .loaders = {}, .resourceType = Resources::Type::Modpack }, callbacks);
 
         m_job = netJob;
         netJob->start();
@@ -334,7 +334,7 @@ void FlamePage::createFilterWidget()
     connect(m_ui->filterButton, &QPushButton::clicked, this, [this] { m_filterWidget->setHidden(!m_filterWidget->isHidden()); });
 
     connect(m_filterWidget.get(), &ModFilterWidget::filterChanged, this, &FlamePage::triggerSearch);
-    auto [task, response] = FlameAPI::getCategories(ModPlatform::ResourceType::Modpack);
+    auto [task, response] = FlameAPI::getCategories(Resources::Type::Modpack);
     m_categoriesTask = task;
     connect(m_categoriesTask.get(), &Task::succeeded, this, [this, response]() {
         auto categories = FlameAPI::get().loadModCategories(*response);

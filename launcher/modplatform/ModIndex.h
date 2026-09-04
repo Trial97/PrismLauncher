@@ -28,12 +28,12 @@
 #include <memory>
 #include <utility>
 #include "EnumWrapper.h"
-#include "modplatform/ResourceType.h"
 #include "resourcesmeta/Dependency.h"
 #include "resourcesmeta/ModLoader.h"
 #include "resourcesmeta/Platform.h"
 #include "resourcesmeta/ReleaseType.h"
 #include "resourcesmeta/Side.h"
+#include "resourcesmeta/Type.h"
 
 class QIODevice;
 
@@ -123,7 +123,7 @@ struct IndexedPack {
     bool extraDataLoaded = true;
     ExtraPackData extraData;
 
-    ResourceType resourceType = ResourceType::Unknown;
+    Resources::Type resourceType = Resources::Type::Unknown;
 
     // For internal use, not provided by APIs
     bool isVersionSelected(int index) const
@@ -153,13 +153,11 @@ struct OverrideDep {
 
 inline auto getOverrideDeps() -> QList<OverrideDep>
 {
-    return {
-        { .quilt = "634179", .fabric = "306612", .slug = "API", .provider = Resources::Platform::Curseforge },
-        { .quilt = "720410", .fabric = "308769", .slug = "KotlinLibraries", .provider = Resources::Platform::Curseforge },
+    return { { .quilt = "634179", .fabric = "306612", .slug = "API", .provider = Resources::Platform::Curseforge },
+             { .quilt = "720410", .fabric = "308769", .slug = "KotlinLibraries", .provider = Resources::Platform::Curseforge },
 
-        { .quilt = "qvIfYCYJ", .fabric = "P7dR8mSH", .slug = "API", .provider = Resources::Platform::Modrinth },
-        { .quilt = "lwVhp9o5", .fabric = "Ha28R6CL", .slug = "KotlinLibraries", .provider = Resources::Platform::Modrinth }
-    };
+             { .quilt = "qvIfYCYJ", .fabric = "P7dR8mSH", .slug = "API", .provider = Resources::Platform::Modrinth },
+             { .quilt = "lwVhp9o5", .fabric = "Ha28R6CL", .slug = "KotlinLibraries", .provider = Resources::Platform::Modrinth } };
 }
 
 QString getMetaURL(Resources::Platform provider, QVariant projectID);
