@@ -507,6 +507,39 @@ set(API_SOURCES
     modplatform/helpers/ExportToModList.cpp
 )
 
+set(RESOURCESMETA_SOURCES
+    resourcesmeta/Type.h
+    resourcesmeta/Type.cpp
+    resourcesmeta/Side.h
+
+    resourcesmeta/ModLoader.h
+    resourcesmeta/ModLoader.cpp
+
+    resourcesmeta/Platform.h
+
+    resourcesmeta/HashAlgorithm.h
+    resourcesmeta/HashAlgorithm.cpp
+
+    resourcesmeta/DependencyType.h
+
+    resourcesmeta/ReleaseType.h
+
+    resourcesmeta/Details.h
+    resourcesmeta/Details.cpp
+    resourcesmeta/Hashes.h
+    resourcesmeta/Hashes.cpp
+    resourcesmeta/Dependency.h
+    resourcesmeta/Dependency.cpp
+    resourcesmeta/Source.h
+    resourcesmeta/Source.cpp
+    resourcesmeta/Sources.h
+    resourcesmeta/Sources.cpp
+    resourcesmeta/Entry.h
+    resourcesmeta/Entry.cpp
+    resourcesmeta/Index.h
+    resourcesmeta/Index.cpp
+)
+
 set(FTB_SOURCES
     modplatform/legacy_ftb/PackFetchTask.h
     modplatform/legacy_ftb/PackFetchTask.cpp
@@ -765,6 +798,7 @@ set(LOGIC_SOURCES
     ${META_SOURCES}
     ${ICONS_SOURCES}
     ${API_SOURCES}
+    ${RESOURCESMETA_SOURCES}
     ${FTB_SOURCES}
     ${FLAME_SOURCES}
     ${MODRINTH_SOURCES}
