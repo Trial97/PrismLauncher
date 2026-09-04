@@ -322,7 +322,7 @@ void ModFolderPage::changeModVersion()
     }
     auto selection = m_filterModel->mapSelectionToSource(ui->treeView->selectionModel()->selection()).indexes();
     auto modsList = m_model->selectedMods(selection);
-    if (modsList.length() != 1 || modsList[0]->metadata() == nullptr) {
+    if (modsList.length() != 1 || modsList[0]->entry().providers.isEmpty()) {
         return;
     }
 
@@ -330,7 +330,8 @@ void ModFolderPage::changeModVersion()
     connect(this, &QObject::destroyed, m_downloadDialog, &QDialog::close);
     connect(m_downloadDialog, &QDialog::finished, this, &ModFolderPage::downloadDialogFinished);
 
-    m_downloadDialog->setResourceMetadata((*modsList.begin())->metadata());
+    const auto& entry = modsList[0]->entry();
+    m_downloadDialog->setResourceMetadata(entry.primaryProvider(), *entry.primarySource(), entry.info.name);
     m_downloadDialog->open();
 }
 

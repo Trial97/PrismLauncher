@@ -42,6 +42,8 @@
 #include <QRunnable>
 #include <memory>
 #include "minecraft/mod/Resource.h"
+#include "resourcesmeta/Entry.h"
+#include "resourcesmeta/Type.h"
 #include "tasks/Task.h"
 
 class ResourceFolderLoadTask : public Task {
@@ -49,6 +51,10 @@ class ResourceFolderLoadTask : public Task {
    public:
     struct Result {
         QMap<QString, Resource::Ptr> resources;
+        // Resources::Entry values migrated from legacy packwiz (.pw.toml) metadata found during
+        // this scan, to be upserted into the instance's resource index by the caller (this task
+        // itself must not touch the shared index, since it runs off the main thread).
+        QList<Resources::Entry> migratedEntries;
     };
     using ResultPtr = std::shared_ptr<Result>;
     ResultPtr result() const { return m_result; }
@@ -58,6 +64,8 @@ class ResourceFolderLoadTask : public Task {
                            const QDir& indexDir,
                            bool isIndexed,
                            bool cleanOrphan,
+                           Resources::Type type,
+                           QString instanceRoot,
                            std::function<Resource*(const QFileInfo&)> createFunction);
 
     bool canAbort() const override { return true; }
@@ -70,12 +78,17 @@ class ResourceFolderLoadTask : public Task {
     void executeTask() override;
 
    private:
-    void getFromMetadata();
+    /** Converts any remaining legacy packwiz (.pw.toml) metadata files into Resources::Entry
+     *  values (see Result::migratedEntries) and deletes them - a one-time, self-terminating
+     *  migration: once every legacy file has been converted, this becomes a no-op. */
+    void migrateLegacyPackwizMetadata();
 
    private:
     QDir m_resource_dir, m_index_dir;
     bool m_is_indexed;
     bool m_clean_orphan;
+    Resources::Type m_type;
+    QString m_instance_root;
     std::function<Resource*(const QFileInfo&)> m_create_func;
     ResultPtr m_result;
 

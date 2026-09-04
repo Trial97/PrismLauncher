@@ -66,25 +66,37 @@ class V1 {
         auto version() -> QVariant& { return file_id; }
     };
 
+    // DEPRECATED: no remaining callers. New downloads/updates write straight into
+    // Resources::Entry/Resources::Source (resourcesmeta/) instead of a .pw.toml file - see
+    // LocalResourceUpdateTask and ResourceIndexEntry::sourceFromDownload(). Safe to delete.
     /* Generates the object representing the information in a mod.pw.toml file via
      * its common representation in the launcher, when downloading mods.
      * */
     static auto createModFormat(const QDir& index_dir, ModPlatform::IndexedPack& mod_pack, ModPlatform::IndexedVersion& mod_version) -> Mod;
 
+    // DEPRECATED: no remaining callers. See createModFormat() above. Safe to delete.
     /* Updates the mod index for the provided mod.
      * This creates a new index if one does not exist already
      * TODO: Ask the user if they want to override, and delete the old mod's files, or keep the old one.
      * */
     static void updateModIndex(const QDir& index_dir, Mod& mod);
 
+    // DEPRECATED: no remaining callers - clearing a resource's providers no longer deletes any
+    // file, see Resource::destroyMetadata(). Safe to delete.
     /* Deletes the metadata for the mod with the given slug. If the metadata doesn't exist, it does nothing. */
     static void deleteModIndex(const QDir& index_dir, QString& mod_slug);
 
     /* Gets the metadata for a mod with a particular file name.
      * If the mod doesn't have a metadata, it simply returns an empty Mod object.
+     *
+     * Still used, but ONLY by the one-time legacy-metadata migration in
+     * ResourceFolderLoadTask::migrateLegacyPackwizMetadata() - every other packwiz read/write path
+     * has been retired in favor of Resources::Entry/Resources::Source. Safe to delete once that
+     * migration path is also retired (see MetadataHandler.h).
      * */
     static auto getIndexForMod(const QDir& index_dir, QString slug) -> Mod;
 
+    // DEPRECATED: no remaining callers. Safe to delete.
     /* Gets the metadata for a mod with a particular id.
      * If the mod doesn't have a metadata, it simply returns an empty Mod object.
      * */

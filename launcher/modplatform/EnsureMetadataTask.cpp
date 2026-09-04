@@ -7,6 +7,8 @@
 #include "Json.h"
 
 #include "QObjectPtr.h"
+#include "minecraft/MinecraftInstance.h"
+#include "minecraft/mod/ResourceIndexEntry.h"
 #include "minecraft/mod/tasks/LocalResourceUpdateTask.h"
 
 #include "modplatform/flame/FlameAPI.h"
@@ -17,8 +19,12 @@
 #include "settings/SettingsObject.h"
 #include "tasks/ConcurrentTask.h"
 
-EnsureMetadataTask::EnsureMetadataTask(Resource* resource, const QDir& dir, Resources::Platform prov)
-    : m_indexDir(dir), m_provider(prov), m_hashingTask(nullptr), m_currentTask(nullptr)
+EnsureMetadataTask::EnsureMetadataTask(Resource* resource,
+                                       MinecraftInstance* instance,
+                                       const QDir& resourceDir,
+                                       Resources::Type type,
+                                       Resources::Platform prov)
+    : m_instance(instance), m_resourceDir(resourceDir), m_type(type), m_provider(prov), m_hashingTask(nullptr), m_currentTask(nullptr)
 {
     auto hashTask = createNewHash(resource);
     if (!hashTask) {
@@ -30,8 +36,12 @@ EnsureMetadataTask::EnsureMetadataTask(Resource* resource, const QDir& dir, Reso
     m_hashingTask = hashTask;
 }
 
-EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources, const QDir& dir, Resources::Platform prov)
-    : m_indexDir(dir), m_provider(prov), m_currentTask(nullptr)
+EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources,
+                                       MinecraftInstance* instance,
+                                       const QDir& resourceDir,
+                                       Resources::Type type,
+                                       Resources::Platform prov)
+    : m_instance(instance), m_resourceDir(resourceDir), m_type(type), m_provider(prov), m_currentTask(nullptr)
 {
     auto cHashTask = makeShared<ConcurrentTask>("MakeHashesTask", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     m_hashingTask = cHashTask;
@@ -47,8 +57,12 @@ EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources, const QDir& 
     }
 }
 
-EnsureMetadataTask::EnsureMetadataTask(QHash<QString, Resource*>& resources, const QDir& dir, Resources::Platform prov)
-    : m_resources(resources), m_indexDir(dir), m_provider(prov), m_currentTask(nullptr)
+EnsureMetadataTask::EnsureMetadataTask(QHash<QString, Resource*>& resources,
+                                       MinecraftInstance* instance,
+                                       const QDir& resourceDir,
+                                       Resources::Type type,
+                                       Resources::Platform prov)
+    : m_resources(resources), m_instance(instance), m_resourceDir(resourceDir), m_type(type), m_provider(prov), m_currentTask(nullptr)
 {}
 
 Hashing::Hasher::Ptr EnsureMetadataTask::createNewHash(Resource* resource)
@@ -104,7 +118,7 @@ void EnsureMetadataTask::executeTask()
         }
 
         // They already have the right metadata :o
-        if (resource->status() != ResourceStatus::NoMetadata && resource->metadata() && resource->metadata()->provider == m_provider) {
+        if (resource->status() != ResourceStatus::NoMetadata && resource->entry().providers.contains(m_provider)) {
             qDebug() << "Resource" << resource->name() << "already has metadata!";
             emitReady(resource);
             continue;
@@ -508,7 +522,7 @@ void EnsureMetadataTask::updateMetadata(ModPlatform::IndexedPack& pack, ModPlatf
             ver.fileName.chop(9);
         }
 
-        auto task = makeShared<LocalResourceUpdateTask>(m_indexDir, pack, ver);
+        auto task = makeShared<LocalResourceUpdateTask>(m_instance, m_resourceDir, m_type, pack, ver);
 
         connect(task.get(), &Task::finished, this, [this, &pack, resource] { updateMetadataCallback(pack, resource); });
 
@@ -523,15 +537,18 @@ void EnsureMetadataTask::updateMetadata(ModPlatform::IndexedPack& pack, ModPlatf
 
 void EnsureMetadataTask::updateMetadataCallback(ModPlatform::IndexedPack& pack, Resource* resource)
 {
-    QDir tmpIndexDir(m_indexDir);
-    auto metadata = Metadata::get(tmpIndexDir, pack.slug);
-    if (!metadata.isValid()) {
+    auto path = ResourceIndexEntry::canonicalRelativePath(resource->fileinfo(), m_instance->instanceRoot());
+    auto* entry = m_instance->resourcesIndex()->findByPath(path);
+    if (entry == nullptr || !entry->providers.contains(pack.provider)) {
         qCritical() << "Failed to generate metadata at last step!";
         emitFail(resource);
         return;
     }
 
-    resource->setMetadata(metadata);
+    if (resource->status() == ResourceStatus::NoMetadata) {
+        resource->setStatus(ResourceStatus::Installed);
+    }
+    resource->setEntry(*entry);
 
     emitReady(resource);
 }

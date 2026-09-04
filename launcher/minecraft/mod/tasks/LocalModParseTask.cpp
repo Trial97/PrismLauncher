@@ -582,25 +582,29 @@ bool processZIP(Mod& mod, [[maybe_unused]] ProcessingLevel level)
     bool baseForgePopulated = false;
     bool isNilMod = false;
     bool isValid = false;
+    bool foundIcon = false;
     QString manifestVersion = {};
     QByteArray nilData = {};
     QString nilFilePath = {};
+    QByteArray iconData = {};
 
-    if (!zip.parse([&details, &baseForgePopulated, &manifestVersion, &isValid, &nilData, &isNilMod, &nilFilePath](
-                       MMCZip::ArchiveReader::File* file, bool& stop) {
+    if (!zip.parse([&](MMCZip::ArchiveReader::File* file, bool& stop) {
             auto filePath = file->filename();
 
-            if (filePath == "META-INF/mods.toml" || filePath == "META-INF/neoforge.mods.toml") {
+            // Capture the icon in this same archive pass (once we know where it lives, from
+            // whichever metadata format was parsed below) instead of reopening the archive for
+            // it afterward - that would mean scanning the whole jar a second time.
+            if (isValid && !foundIcon && !details.icon_file.isEmpty() && filePath == details.icon_file) {
+                iconData = file->readAll();
+                foundIcon = true;
+            } else if (filePath == "META-INF/mods.toml" || filePath == "META-INF/neoforge.mods.toml") {
                 details = ReadMCModTOML(file->readAll());
                 isValid = true;
                 if (details.version == "${file.jarVersion}" && !manifestVersion.isEmpty()) {
                     details.version = manifestVersion;
                 }
-                stop = details.version != "${file.jarVersion}";
                 baseForgePopulated = true;
-                return true;
-            }
-            if (filePath == "META-INF/MANIFEST.MF") {
+            } else if (filePath == "META-INF/MANIFEST.MF") {
                 // quick and dirty line-by-line parser
                 auto manifestLines = QString(file->readAll()).split(s_newlineRegex);
                 manifestVersion = "";
@@ -618,50 +622,41 @@ bool processZIP(Mod& mod, [[maybe_unused]] ProcessingLevel level)
                 }
                 if (baseForgePopulated) {
                     details.version = manifestVersion;
-                    stop = true;
                 }
-                return true;
-            }
-            if (filePath == "mcmod.info") {
+            } else if (filePath == "mcmod.info") {
                 details = ReadMCModInfo(file->readAll());
                 isValid = true;
-                stop = true;
-                return true;
-            }
-            if (filePath == "quilt.mod.json") {
+            } else if (filePath == "quilt.mod.json") {
                 details = ReadQuiltModInfo(file->readAll());
                 isValid = true;
-                stop = true;
-                return true;
-            }
-            if (filePath == "fabric.mod.json") {
+            } else if (filePath == "fabric.mod.json") {
                 details = ReadFabricModInfo(file->readAll());
                 isValid = true;
-                stop = true;
-                return true;
-            }
-            if (filePath == "forgeversion.properties") {
+            } else if (filePath == "forgeversion.properties") {
                 details = ReadForgeInfo(file->readAll());
                 isValid = true;
-                stop = true;
-                return true;
-            }
-            if (filePath == "META-INF/nil/mappings.json") {
+            } else if (filePath == "META-INF/nil/mappings.json") {
                 // nilloader uses the filename of the metadata file for the modid, so we can't know the exact filename
                 // thankfully, there is a good file to use as a canary so we don't look for nil meta all the time
                 isNilMod = true;
-                stop = !nilFilePath.isEmpty();
                 file->skip();
-                return true;
-            }
-            // nilmods can shade nilloader to be able to run as a standalone agent - which includes nilloader's own meta file
-            if (filePath.endsWith(".nilmod.css") && filePath != "nilloader.nilmod.css") {
+            } else if (filePath.endsWith(".nilmod.css") && filePath != "nilloader.nilmod.css") {
+                // nilmods can shade nilloader to be able to run as a standalone agent - which includes nilloader's own meta file
                 nilData = file->readAll();
                 nilFilePath = filePath;
-                stop = isNilMod;
-                return true;
+            } else {
+                file->skip();
             }
-            file->skip();
+
+            // Stop once details are valid, we're not waiting on MANIFEST.MF to resolve a
+            // ${file.jarVersion} placeholder, and we're not still hunting for a declared icon
+            // (nilmod detection has its own, isValid-independent, canary-based stop condition,
+            // since isValid there only becomes true after the scan ends).
+            bool needManifestVersion = baseForgePopulated && details.version == "${file.jarVersion}";
+            bool needIcon = isValid && !details.icon_file.isEmpty() && !foundIcon;
+            bool nilDone = isNilMod && !nilFilePath.isEmpty();
+            stop = (isValid && !needManifestVersion && !needIcon) || nilDone;
+
             return true;
         })) {
         return false;
@@ -672,6 +667,10 @@ bool processZIP(Mod& mod, [[maybe_unused]] ProcessingLevel level)
     }
     if (isValid) {
         mod.setDetails(details);
+        if (foundIcon && !iconData.isEmpty()) {
+            QPixmap pixmap;
+            ModUtils::processIconPNG(mod, std::move(iconData), &pixmap);
+        }
         return true;
     }
     return false;  // no valid mod found in archive
@@ -726,6 +725,7 @@ bool processIconPNG(const Mod& mod, QByteArray&& raw_data, QPixmap* pixmap)
     auto img = QImage::fromData(raw_data);
     if (!img.isNull()) {
         *pixmap = mod.setIcon(img);
+        mod.setRawImage(img);
     } else {
         qWarning() << "Failed to parse mod logo:" << mod.iconPath() << "from" << mod.name();
         return false;
@@ -792,8 +792,8 @@ bool loadIconFile(const Mod& mod, QPixmap* pixmap)
 
 }  // namespace ModUtils
 
-LocalModParseTask::LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile)
-    : Task(false), m_token(token), m_type(type), m_modFile(modFile), m_result(new Result())
+LocalModParseTask::LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile, std::optional<Resources::Entry> previous)
+    : Task(false), m_token(token), m_type(type), m_modFile(modFile), m_previous(std::move(previous)), m_result(new Result())
 {}
 
 bool LocalModParseTask::abort()
@@ -804,12 +804,30 @@ bool LocalModParseTask::abort()
 
 void LocalModParseTask::executeTask()
 {
-    Mod mod{ m_modFile };
-    ModUtils::process(mod, ModUtils::ProcessingLevel::Full);
+    auto hash = Resources::HashAlgorithm::hash(m_modFile.absoluteFilePath(), Resources::HashAlgorithm::Sha256);
 
-    m_result->details = mod.details();
-    m_result->hashes.insert(Resources::HashAlgorithm::Sha256,
-                            Resources::HashAlgorithm::hash(m_modFile.absoluteFilePath(), Resources::HashAlgorithm::Sha256));
+    if (m_previous && m_previous->hashes.value(Resources::HashAlgorithm::Sha256) == hash) {
+        m_result->details = Mod::detailsFromIndex(m_previous->info);
+        m_result->hashes = m_previous->hashes;
+        m_result->image = m_previous->info.image;
+    } else {
+        Mod mod{ m_modFile };
+        ModUtils::process(mod, ModUtils::ProcessingLevel::Full);
+
+        // For ZIPFILE mods, processZIP() already captured the icon (if any) in the same archive
+        // pass used to read the metadata, so rawImage() is normally already set here. This is
+        // only a fallback for FOLDER/LITEMOD mods (cheap direct file reads, no archive rescan)
+        // and the rare miss case (e.g. nilmods, whose icon path isn't known until after the scan
+        // completes) - so it doesn't reopen the zip in the common case.
+        if (mod.rawImage().isNull()) {
+            QPixmap iconPixmap;
+            ModUtils::loadIconFile(mod, &iconPixmap);
+        }
+
+        m_result->details = mod.details();
+        m_result->hashes.insert(Resources::HashAlgorithm::Sha256, hash);
+        m_result->image = mod.rawImage();
+    }
 
     if (m_aborted)
         emitAborted();

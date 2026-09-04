@@ -320,7 +320,7 @@ void ExternalResourcesPage::updateActions()
     ui->actionUpdateItem->setEnabled(!m_model->empty());
     ui->actionResetItemMetadata->setEnabled(hasSelection);
 
-    ui->actionChangeVersion->setEnabled(selectedResources.size() == 1 && selectedResources[0]->metadata() != nullptr);
+    ui->actionChangeVersion->setEnabled(selectedResources.size() == 1 && !selectedResources[0]->entry().providers.isEmpty());
 
     ui->actionRemoveItem->setEnabled(hasSelection);
     ui->actionEnableItem->setEnabled(hasSelection);

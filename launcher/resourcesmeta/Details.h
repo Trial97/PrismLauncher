@@ -23,6 +23,7 @@
 #include <QString>
 #include <QStringList>
 #include <QUrl>
+#include <utility>
 
 #include "ModLoader.h"
 
@@ -33,6 +34,8 @@ struct Details {
     QImage image;
     QString imagePath;
     QString description;
+    // The resource's loader-specific id (e.g. a mod's mod_id), as declared by the resource itself.
+    QString id;
     QString newFormatId;
     QString details;
     QString name;
@@ -46,6 +49,15 @@ struct Details {
     QStringList licenses;
     QUrl issueTracker;
     QStringList dependencies;  // ToDo: make this one support a specific version range
+
+    // The numeric pack-format version (data packs / resource packs). Kept as raw ints (rather
+    // than only the human `details` display string) so it can be losslessly restored without
+    // re-parsing the file when its hash hasn't changed. Some pack.mcmeta files declare a single
+    // `packFormat` instead; when they instead declare a min/max range, packFormat stays 0 and the
+    // range is carried in packFormatMin/Max.
+    int packFormat = 0;
+    std::pair<int, int> packFormatMin;
+    std::pair<int, int> packFormatMax;
 
     QJsonObject toJson() const;
     void fromJson(const QJsonObject& obj);

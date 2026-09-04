@@ -258,9 +258,10 @@ int ModFolderModel::columnCount(const QModelIndex& parent) const
     return parent.isValid() ? 0 : NumColumns;
 }
 
-Task* ModFolderModel::createParseTask(Resource& resource)
+Task* ModFolderModel::createParseTask(Resource& resource, const Resources::Entry* previous)
 {
-    return new LocalModParseTask(m_nextResolutionTicket, resource.type(), resource.fileinfo());
+    return new LocalModParseTask(m_nextResolutionTicket, resource.type(), resource.fileinfo(),
+                                 previous ? std::make_optional(*previous) : std::nullopt);
 }
 
 bool ModFolderModel::isValid()
@@ -289,6 +290,10 @@ void ModFolderModel::onParseSucceeded(int ticket, const QString& resourceId)
         auto* mod = static_cast<Mod*>(resource.get());
         mod->finishResolvingWithDetails(std::move(result->details));
         mod->setHashes(result->hashes);
+        if (!result->image.isNull()) {
+            mod->setIcon(result->image);
+            mod->setRawImage(result->image);
+        }
         upsertIndexEntry(*mod);
     }
     emit dataChanged(index(row, RequiresColumn), index(row, RequiredByColumn));
@@ -313,9 +318,10 @@ void ModFolderModel::onParseFinished()
     m_requires.clear();
     m_requiredBy.clear();
 
-    auto findByProjectID = [mods](const QVariant& modId, Resources::Platform provider) -> Mod* {
+    auto findByProjectID = [mods](const QString& modId, Resources::Platform provider) -> Mod* {
         auto found = std::ranges::find_if(mods, [modId, provider](Mod* m) {
-            return m->metadata() && m->metadata()->provider == provider && m->metadata()->project_id == modId;
+            auto it = m->entry().providers.constFind(provider);
+            return it != m->entry().providers.constEnd() && it->id == modId;
         });
         return found != mods.end() ? *found : nullptr;
     };
@@ -328,10 +334,11 @@ void ModFolderModel::onParseFinished()
                 m_requiredBy[d->mod_id()] << mod;
             }
         }
-        if (mod->metadata()) {
-            for (const auto& dep : mod->metadata()->dependencies) {
+        auto provider = mod->entry().primaryProvider();
+        if (provider.isValid()) {
+            for (const auto& dep : mod->entry().providers.value(provider).dependencies) {
                 if (dep.type == Resources::DependencyType::Required) {
-                    auto* d = findByProjectID(dep.addonId, mod->metadata()->provider);
+                    auto* d = findByProjectID(dep.addonId, provider);
                     if (d) {
                         m_requires[id] << d;
                         m_requiredBy[d->mod_id()] << mod;

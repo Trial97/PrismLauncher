@@ -20,6 +20,8 @@
 
 #include <QString>
 
+#include "modplatform/ModIndex.h"
+#include "modplatform/packwiz/Packwiz.h"
 #include "resourcesmeta/Entry.h"
 #include "resourcesmeta/Type.h"
 
@@ -32,8 +34,17 @@ namespace ResourceIndexEntry {
  *  ".disabled" suffix so the path stays stable across enable/disable toggles. */
 QString canonicalRelativePath(const QFileInfo& fileInfo, const QString& instanceRootPath);
 
-/** Builds a Resources::Entry describing 'resource', migrating its packwiz metadata (if any)
- *  into the entry's Sources/hashes. */
+/** Builds a Resources::Entry describing 'resource'. Carries forward the resource's own cached
+ *  entry() (in particular its providers) - providers are updated separately, by whatever wrote
+ *  a fresh Resources::Source into the resource's entry (a download, or the legacy-packwiz
+ *  migration step), not derived here. */
 Resources::Entry build(const Resource& resource, Resources::Type type, const QString& instanceRootPath);
+
+/** Builds a Resources::Source from a legacy packwiz metadata record. Used only by the one-time
+ *  migration step that converts remaining .pw.toml files into index entries. */
+Resources::Source sourceFromPackwiz(const Packwiz::V1::Mod& mod);
+
+/** Builds a Resources::Source from a freshly-downloaded pack/version pair. */
+Resources::Source sourceFromDownload(const ModPlatform::IndexedPack& pack, const ModPlatform::IndexedVersion& version);
 
 }  // namespace ResourceIndexEntry

@@ -21,14 +21,23 @@
 #include <QDir>
 
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/Type.h"
 #include "tasks/Task.h"
 
+class MinecraftInstance;
+
+/** Records a downloaded (or about-to-be-downloaded) resource's provider identity directly into
+ *  the instance's resources.index.json - no packwiz/.pw.toml file is written. */
 class LocalResourceUpdateTask : public Task {
     Q_OBJECT
    public:
     using Ptr = shared_qobject_ptr<LocalResourceUpdateTask>;
 
-    explicit LocalResourceUpdateTask(QDir index_dir, ModPlatform::IndexedPack project, ModPlatform::IndexedVersion version);
+    LocalResourceUpdateTask(MinecraftInstance* instance,
+                            QDir resource_dir,
+                            Resources::Type type,
+                            ModPlatform::IndexedPack project,
+                            ModPlatform::IndexedVersion version);
 
     auto canAbort() const -> bool override { return true; }
     auto abort() -> bool override;
@@ -41,7 +50,9 @@ class LocalResourceUpdateTask : public Task {
     void hasOldResource(QString name, QString filename);
 
    private:
-    QDir m_index_dir;
+    MinecraftInstance* m_instance;
+    QDir m_resource_dir;
+    Resources::Type m_type;
     ModPlatform::IndexedPack m_project;
     ModPlatform::IndexedVersion m_version;
 };

@@ -45,6 +45,23 @@ struct Entry {
 
     QJsonObject toJson() const;
     void fromJson(const QJsonObject& obj);
+
+    /** The provider this resource is known from - Modrinth if available, otherwise whichever
+     *  other provider is known, or Platform::Unknown if it has none. */
+    Platform primaryProvider() const
+    {
+        if (providers.contains(Platform::Modrinth)) {
+            return Platform::Modrinth;
+        }
+        return providers.isEmpty() ? Platform(Platform::Unknown) : providers.constBegin().key();
+    }
+
+    /** The Source for primaryProvider(), or nullptr if this resource has no known provider. */
+    const Source* primarySource() const
+    {
+        auto it = providers.constFind(primaryProvider());
+        return it == providers.constEnd() ? nullptr : &it.value();
+    }
 };
 
 }  // namespace Resources

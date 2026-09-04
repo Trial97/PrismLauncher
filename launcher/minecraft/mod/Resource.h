@@ -39,13 +39,12 @@
 
 #include <QDateTime>
 #include <QFileInfo>
+#include <QImage>
 #include <QObject>
 #include <QPointer>
 #include <memory>
 
-#include "MetadataHandler.h"
-#include "resourcesmeta/Details.h"
-#include "resourcesmeta/Hashes.h"
+#include "resourcesmeta/Entry.h"
 
 class MinecraftInstance;
 
@@ -127,15 +126,25 @@ class Resource {
     auto hashes() const -> Resources::Hashes { return m_hashes; }
     void setHashes(Resources::Hashes hashes) { m_hashes = std::move(hashes); }
 
+    /** The cached resource-index entry for this resource: the single canonical source for
+     *  provider/hash/parsed-detail info, kept in sync with what's persisted to
+     *  resources.index.json. Populated on every resolve (whether by a fresh parse or by
+     *  hydration from a previously-stored entry when the file hasn't changed). */
+    auto entry() const -> const Resources::Entry& { return m_entry; }
+    void setEntry(Resources::Entry entry) { m_entry = std::move(entry); }
+
+    /** The unscaled, decoded icon/pack image (if any), used to populate Details::image for the
+     *  index. Separate from whatever a subclass caches in QPixmapCache for display, which is
+     *  scaled down for that purpose. Settable from a const context to match the existing
+     *  const icon/image-caching setters on Mod/DataPack/TexturePack. */
+    auto rawImage() const -> QImage { return m_rawImage; }
+    void setRawImage(QImage image) const { m_rawImage = std::move(image); }
+
     auto status() const -> ResourceStatus { return m_status; };
-    auto metadata() -> std::shared_ptr<Metadata::ModStruct> { return m_metadata; }
-    auto metadata() const -> std::shared_ptr<const Metadata::ModStruct> { return m_metadata; }
     auto provider() const -> QString;
     virtual auto homepage() const -> QString;
 
     void setStatus(ResourceStatus status) { m_status = status; }
-    void setMetadata(std::shared_ptr<Metadata::ModStruct>&& metadata);
-    void setMetadata(const Metadata::ModStruct& metadata) { setMetadata(std::make_shared<Metadata::ModStruct>(metadata)); }
 
     /**
      * Returns compatibility issues with the resource and the instance.
@@ -175,9 +184,10 @@ class Resource {
     }
 
     // Delete all files of this resource.
-    auto destroy(const QDir& indexDir, bool preserveMetadata = false, bool attemptTrash = true) -> bool;
-    // Delete the metadata only.
-    auto destroyMetadata(const QDir& indexDir) -> void;
+    auto destroy(bool preserveMetadata = false, bool attemptTrash = true) -> bool;
+    // Delete the metadata only (clears the resource's known providers; the index entry itself
+    // is rebuilt and re-saved by the caller).
+    auto destroyMetadata() -> void;
 
     auto isSymLink() const -> bool { return m_fileInfo.isSymLink(); }
 
@@ -209,10 +219,14 @@ class Resource {
     /* Installation status of the resource. */
     ResourceStatus m_status = ResourceStatus::Unknown;
 
-    std::shared_ptr<Metadata::ModStruct> m_metadata = nullptr;
-
     /* Locally-computed hashes of the resource file, always including at least Sha256 once resolved. */
     Resources::Hashes m_hashes;
+
+    /* The cached resource-index entry for this resource. See entry(). */
+    Resources::Entry m_entry;
+
+    /* The unscaled, decoded icon/pack image, if any. See rawImage(). */
+    mutable QImage m_rawImage;
 
     /* Whether the resource is enabled (e.g. shows up in the game) or not. */
     bool m_enabled = true;

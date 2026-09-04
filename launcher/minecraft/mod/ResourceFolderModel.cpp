@@ -211,7 +211,7 @@ void ResourceFolderModel::installResourceWithFlameMetadata(const QString& path, 
                 qDebug() << doc;
                 qWarning() << "Error while reading mod info:" << e.cause();
             }
-            LocalResourceUpdateTask updateMetadata(indexDir(), pack, vers);
+            LocalResourceUpdateTask updateMetadata(m_instance, dir(), m_resourceType, pack, vers);
             connect(&updateMetadata, &Task::finished, this, install);
             updateMetadata.start();
         });
@@ -232,7 +232,7 @@ bool ResourceFolderModel::uninstallResource(const QString& fileName, bool preser
         }
 
         if (resourceFileName == fileName) {
-            auto res = resource->destroy(indexDir(), preserveMetadata, false);
+            auto res = resource->destroy(preserveMetadata, false);
 
             removeIndexEntry(resourceFileInfo);
             update();
@@ -256,7 +256,7 @@ bool ResourceFolderModel::deleteResources(const QModelIndexList& indexes)
 
         const auto& resource = m_resources.at(i.row());
         auto resourceFileInfo = resource->fileinfo();
-        resource->destroy(indexDir());
+        resource->destroy();
         removeIndexEntry(resourceFileInfo);
     }
 
@@ -277,7 +277,7 @@ void ResourceFolderModel::deleteMetadata(const QModelIndexList& indexes)
         }
 
         const auto& resource = m_resources.at(i.row());
-        resource->destroyMetadata(indexDir());
+        resource->destroyMetadata();
         upsertIndexEntry(*resource);
     }
 
@@ -390,7 +390,19 @@ void ResourceFolderModel::resolveResource(Resource::Ptr res)
         return;
     }
 
-    Task::Ptr task{ createParseTask(*res) };
+    const Resources::Entry* previous = nullptr;
+    if (m_instance != nullptr) {
+        auto path = ResourceIndexEntry::canonicalRelativePath(res->fileinfo(), m_instance->instanceRoot());
+        previous = m_instance->resourcesIndex()->findByPath(path);
+        if (previous != nullptr) {
+            // Seed the freshly-constructed Resource with whatever the index already knows about
+            // it (providers in particular), so a later upsertIndexEntry() - even one triggered by
+            // a hash mismatch elsewhere - never rebuilds the entry from a blank slate.
+            res->setEntry(*previous);
+        }
+    }
+
+    Task::Ptr task{ createParseTask(*res, previous) };
     if (!task) {
         return;
     }
@@ -427,7 +439,9 @@ void ResourceFolderModel::upsertIndexEntry(Resource& resource)
     if (m_instance == nullptr) {
         return;
     }
-    m_instance->resourcesIndex()->upsert(ResourceIndexEntry::build(resource, m_resourceType, m_instance->instanceRoot()));
+    auto entry = ResourceIndexEntry::build(resource, m_resourceType, m_instance->instanceRoot());
+    resource.setEntry(entry);
+    m_instance->resourcesIndex()->upsert(std::move(entry));
     m_instance->saveResourcesIndex();
 }
 
@@ -445,6 +459,14 @@ void ResourceFolderModel::removeIndexEntry(const QFileInfo& fileInfo)
 void ResourceFolderModel::onUpdateSucceeded()
 {
     auto updateResults = static_cast<ResourceFolderLoadTask*>(m_currentUpdateTask.get())->result();
+
+    if (m_instance != nullptr && !updateResults->migratedEntries.isEmpty()) {
+        auto* index = m_instance->resourcesIndex();
+        for (const auto& entry : updateResults->migratedEntries) {
+            index->upsert(entry);
+        }
+        m_instance->saveResourcesIndex();
+    }
 
     auto& newResources = updateResults->resources;
 
@@ -472,7 +494,8 @@ void ResourceFolderModel::onParseSucceeded(int ticket, const QString& resourceId
 Task* ResourceFolderModel::createUpdateTask()
 {
     auto indexDir2 = indexDir();
-    auto* task = new ResourceFolderLoadTask(dir(), indexDir2, m_isIndexed, m_firstFolderLoad,
+    auto* task = new ResourceFolderLoadTask(dir(), indexDir2, m_isIndexed, m_firstFolderLoad, m_resourceType,
+                                            m_instance != nullptr ? m_instance->instanceRoot() : QString(),
                                             [this](const QFileInfo& file) { return createResource(file); });
     m_firstFolderLoad = false;
     return task;

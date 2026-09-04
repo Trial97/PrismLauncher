@@ -115,10 +115,12 @@ void FlamePackExportTask::collectHashes()
             if (!mod || mod->type() == ResourceType::FOLDER) {
                 continue;
             }
-            if (mod->metadata() && mod->metadata()->provider == Resources::Platform::Curseforge) {
+            const auto& providers = mod->entry().providers;
+            if (auto provIt = providers.constFind(Resources::Platform::Curseforge); provIt != providers.constEnd()) {
+                const auto& source = provIt.value();
                 resolvedFiles.insert(mod->fileinfo().absoluteFilePath(),
-                                     { mod->metadata()->project_id.toInt(), mod->metadata()->file_id.toInt(), mod->enabled(), true,
-                                       mod->metadata()->name, mod->metadata()->slug, mod->authors().join(", ") });
+                                     { source.id.toInt(), source.version.toInt(), mod->enabled(), true, mod->entry().info.name, {},
+                                       mod->authors().join(", ") });
                 continue;
             }
 
@@ -308,7 +310,13 @@ void FlamePackExportTask::getProjectsInfo()
         }
         buildZip();
     });
-    connect(projTask.get(), &Task::failed, this, &FlamePackExportTask::emitFailed);
+    // Don't fail the whole export just because the (now mandatory, since Resources::Source
+    // doesn't cache a slug locally) per-mod slug lookup failed - proceed with whatever slugs we
+    // do have rather than requiring network access to ever complete an export.
+    connect(projTask.get(), &Task::failed, this, [this](const QString& reason) {
+        qWarning() << "Failed to resolve project slugs from CurseForge, proceeding without them:" << reason;
+        buildZip();
+    });
     connect(projTask.get(), &Task::aborted, this, &FlamePackExportTask::emitAborted);
     task.reset(projTask);
     task->start();

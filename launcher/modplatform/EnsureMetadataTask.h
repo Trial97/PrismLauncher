@@ -7,14 +7,25 @@
 #include <QDir>
 
 #include "minecraft/mod/Resource.h"
+#include "resourcesmeta/Type.h"
+
+class MinecraftInstance;
 
 class EnsureMetadataTask : public Task {
     Q_OBJECT
 
    public:
-    EnsureMetadataTask(Resource*, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
-    EnsureMetadataTask(QList<Resource*>&, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
-    EnsureMetadataTask(QHash<QString, Resource*>&, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
+    EnsureMetadataTask(Resource*, MinecraftInstance*, const QDir&, Resources::Type, Resources::Platform = Resources::Platform::Modrinth);
+    EnsureMetadataTask(QList<Resource*>&,
+                       MinecraftInstance*,
+                       const QDir&,
+                       Resources::Type,
+                       Resources::Platform = Resources::Platform::Modrinth);
+    EnsureMetadataTask(QHash<QString, Resource*>&,
+                       MinecraftInstance*,
+                       const QDir&,
+                       Resources::Type,
+                       Resources::Platform = Resources::Platform::Modrinth);
 
     ~EnsureMetadataTask() override = default;
 
@@ -52,7 +63,9 @@ class EnsureMetadataTask : public Task {
 
    private:
     QHash<QString, Resource*> m_resources;
-    QDir m_indexDir;
+    MinecraftInstance* m_instance;
+    QDir m_resourceDir;
+    Resources::Type m_type;
     Resources::Platform m_provider;
 
     QHash<QString, ModPlatform::IndexedVersion> m_tempVersions;

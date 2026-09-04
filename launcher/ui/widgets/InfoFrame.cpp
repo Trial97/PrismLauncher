@@ -83,6 +83,8 @@ void InfoFrame::updateWithMod(const Mod& m)
         return;
     }
 
+    const auto& info = m.entry().info;
+
     QString text = "";
     QString name = "";
     QString link = m.homepage();
@@ -96,19 +98,22 @@ void InfoFrame::updateWithMod(const Mod& m)
     else {
         text = "<a href=\"" + QUrl(link).toEncoded() + "\">" + name + "</a>";
     }
-    if (!m.authors().isEmpty())
-        text += " by " + m.authors().join(", ");
+    if (!info.authors.isEmpty())
+        text += " by " + info.authors.join(", ");
 
     setName(text);
 
-    if (m.description().isEmpty()) {
+    if (info.description.isEmpty()) {
         setDescription(QString());
     } else {
-        setDescription(renderColorCodes(m.description()));
+        setDescription(renderColorCodes(info.description));
     }
 
     setImage(m.icon({ 64, 64 }));
 
+    // Licenses are read from m.licenses() (not entry().info.licenses) because the index only
+    // stores a flattened display string per license - the rich name/url/description used to
+    // build the links below only survives in the locally-parsed ModDetails.
     auto licenses = m.licenses();
     QString licenseText = "";
     if (!licenses.empty()) {
@@ -137,9 +142,10 @@ void InfoFrame::updateWithMod(const Mod& m)
     }
 
     QString issueTracker = "";
-    if (!m.issueTracker().isEmpty()) {
+    if (!info.issueTracker.isEmpty()) {
+        auto issueTrackerUrl = info.issueTracker.toString();
         issueTracker += tr("Report issues to: ");
-        issueTracker += "<a href=\"" + m.issueTracker() + "\">" + m.issueTracker() + "</a>";
+        issueTracker += "<a href=\"" + issueTrackerUrl + "\">" + issueTrackerUrl + "</a>";
     }
     setIssueTracker(issueTracker);
 }
@@ -225,14 +231,14 @@ void InfoFrame::updateWithResourcePack(ResourcePack& resource_pack)
     }
 
     setName(name);
-    setDescription(renderColorCodes(resource_pack.description()));
+    setDescription(renderColorCodes(resource_pack.entry().info.description));
     setImage(resource_pack.image({ 64, 64 }));
 }
 
 void InfoFrame::updateWithDataPack(DataPack& data_pack)
 {
     setName(renderColorCodes(data_pack.name()));
-    setDescription(renderColorCodes(data_pack.description()));
+    setDescription(renderColorCodes(data_pack.entry().info.description));
     setImage(data_pack.image({ 64, 64 }));
 }
 
@@ -246,7 +252,7 @@ void InfoFrame::updateWithTexturePack(TexturePack& texture_pack)
     }
 
     setName(name);
-    setDescription(renderColorCodes(texture_pack.description()));
+    setDescription(renderColorCodes(texture_pack.entry().info.description));
     setImage(texture_pack.image({ 64, 64 }));
 }
 

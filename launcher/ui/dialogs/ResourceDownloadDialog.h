@@ -27,6 +27,7 @@
 #include "QObjectPtr.h"
 #include "minecraft/mod/tasks/GetModDependenciesTask.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/Source.h"
 #include "ui/pages/BasePageProvider.h"
 
 class BaseInstance;
@@ -91,7 +92,7 @@ class ResourceDownloadDialog : public QDialog, public BasePageProvider {
     QList<DownloadTaskPtr> getTasks();
     ResourceFolderModel* getBaseModel() const { return m_baseModel; }
 
-    void setResourceMetadata(const std::shared_ptr<Metadata::ModStruct>& meta);
+    void setResourceMetadata(Resources::Platform provider, const Resources::Source& source, const QString& name);
 
     QList<BasePage*> getPages() override { return m_pages; };
 

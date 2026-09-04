@@ -24,7 +24,6 @@
 #include <memory>
 #include <utility>
 
-#include "minecraft/mod/MetadataHandler.h"
 #include "minecraft/mod/ModFolderModel.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
@@ -80,7 +79,7 @@ class GetModDependenciesTask : public SequentialTask {
 
    private:
     QList<std::shared_ptr<PackDependency>> m_packDependencies;
-    QList<std::shared_ptr<Metadata::ModStruct>> m_mods;
+    QList<Resources::Entry> m_mods;
     QList<std::shared_ptr<PackDependency>> m_selected;
     QStringList m_modsFileNames;
 

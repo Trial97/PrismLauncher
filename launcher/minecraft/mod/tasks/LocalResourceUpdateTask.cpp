@@ -19,52 +19,72 @@
 
 #include "LocalResourceUpdateTask.h"
 
-#include "FileSystem.h"
-#include "minecraft/mod/MetadataHandler.h"
+#include <QDateTime>
+#include <QDebug>
+#include <QFileInfo>
 
-#ifdef Q_OS_WIN32
-#include <windows.h>
-#endif
+#include "minecraft/MinecraftInstance.h"
+#include "minecraft/mod/ResourceIndexEntry.h"
+#include "resourcesmeta/HashAlgorithm.h"
 
-LocalResourceUpdateTask::LocalResourceUpdateTask(QDir index_dir, ModPlatform::IndexedPack project, ModPlatform::IndexedVersion version)
-    : m_index_dir(index_dir), m_project(std::move(project)), m_version(std::move(version))
-{
-    // Ensure a '.index' folder exists in the mods folder, and create it if it does not
-    if (!FS::ensureFolderPathExists(index_dir.path())) {
-        emitFailed(QString("Unable to create index directory at %1!").arg(index_dir.absolutePath()));
-        return;
-    }
-
-#ifdef Q_OS_WIN32
-    std::wstring wpath = index_dir.path().toStdWString();
-    if (index_dir.dirName().startsWith('.')) {
-        SetFileAttributesW(wpath.c_str(), FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_NOT_CONTENT_INDEXED);
-    } else {
-        // fix shaderpacks folder being hidden by Prism Launcher 10.0.1
-        SetFileAttributesW(wpath.c_str(), FILE_ATTRIBUTE_NORMAL);
-    }
-#endif
-}
+LocalResourceUpdateTask::LocalResourceUpdateTask(MinecraftInstance* instance,
+                                                 QDir resource_dir,
+                                                 Resources::Type type,
+                                                 ModPlatform::IndexedPack project,
+                                                 ModPlatform::IndexedVersion version)
+    : m_instance(instance)
+    , m_resource_dir(std::move(resource_dir))
+    , m_type(type)
+    , m_project(std::move(project))
+    , m_version(std::move(version))
+{}
 
 void LocalResourceUpdateTask::executeTask()
 {
     setStatus(tr("Updating index for resource:\n%1").arg(m_project.name));
 
-    auto old_metadata = Metadata::get(m_index_dir, m_project.addonId);
-    if (old_metadata.isValid()) {
-        emit hasOldResource(old_metadata.name, old_metadata.filename);
-        if (m_project.slug.isEmpty())
-            m_project.slug = old_metadata.slug;
+    if (m_project.addonId.isNull() || m_version.fileName.isEmpty()) {
+        qCritical() << "Tried to update the resource index with invalid data!";
+        emitFailed(tr("Invalid metadata"));
+        return;
     }
 
-    auto pw_mod = Metadata::create(m_index_dir, m_project, m_version);
-    if (pw_mod.isValid()) {
-        Metadata::update(m_index_dir, pw_mod);
-        emitSucceeded();
-    } else {
-        qCritical() << "Tried to update an invalid resource!";
-        emitFailed(tr("Invalid metadata"));
+    auto path = ResourceIndexEntry::canonicalRelativePath(QFileInfo(m_resource_dir.filePath(m_version.fileName)), m_instance->instanceRoot());
+
+    auto* index = m_instance->resourcesIndex();
+
+    if (auto* old = index->findBySource(m_project.provider, m_project.addonId.toString()); old != nullptr && old->path != path) {
+        emit hasOldResource(old->info.name, QFileInfo(old->path).fileName());
     }
+
+    auto* existing = index->findByPath(path);
+    Resources::Entry entry = existing != nullptr ? *existing : Resources::Entry{};
+    entry.path = path;
+    entry.type = m_type;
+    if (existing == nullptr) {
+        entry.enabled = true;
+    }
+    entry.updatedAt = QDateTime::currentDateTimeUtc();
+    if (entry.info.name.isEmpty()) {
+        entry.info.name = m_project.name;
+    }
+
+    auto source = ResourceIndexEntry::sourceFromDownload(m_project, m_version);
+    entry.providers.insert(m_project.provider, source);
+    entry.side = source.side;
+    entry.info.loaders = source.loaders;
+
+    if (!m_version.hash.isEmpty() && !m_version.hashType.isEmpty()) {
+        auto alg = Resources::HashAlgorithm::fromString(m_version.hashType);
+        if (alg.isValid()) {
+            entry.hashes.insert(alg, m_version.hash);
+        }
+    }
+
+    index->upsert(entry);
+    m_instance->saveResourcesIndex();
+
+    emitSucceeded();
 }
 
 auto LocalResourceUpdateTask::abort() -> bool

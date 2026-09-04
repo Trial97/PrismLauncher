@@ -269,7 +269,21 @@ Resources::Details DataPack::toIndexDetails() const
     Resources::Details out;
     out.description = description();
     out.details = packFormatStr();
+    out.packFormat = packFormat();
+    out.packFormatMin = m_min_format;
+    out.packFormatMax = m_max_format;
+    out.image = rawImage();
     return out;
+}
+
+void DataPack::hydrateFromIndex(const Resources::Details& details)
+{
+    setDescription(details.description);
+    setPackFormat(details.packFormat, details.packFormatMin, details.packFormatMax);
+    if (!details.image.isNull()) {
+        setImage(details.image);
+        setRawImage(details.image);
+    }
 }
 
 QString DataPack::packFormatStr() const

@@ -23,9 +23,11 @@
 
 #include <QDebug>
 #include <QObject>
+#include <optional>
 
 #include "minecraft/mod/DataPack.h"
 
+#include "resourcesmeta/Entry.h"
 #include "tasks/Task.h"
 
 namespace DataPackUtils {
@@ -57,7 +59,7 @@ bool validateResourcePack(QFileInfo file);
 class LocalDataPackParseTask : public Task {
     Q_OBJECT
    public:
-    LocalDataPackParseTask(int token, DataPack* dp);
+    LocalDataPackParseTask(int token, DataPack* dp, std::optional<Resources::Entry> previous = std::nullopt);
 
     void executeTask() override;
 
@@ -67,4 +69,5 @@ class LocalDataPackParseTask : public Task {
     int m_token;
 
     DataPack* m_data_pack;
+    std::optional<Resources::Entry> m_previous;
 };

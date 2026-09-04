@@ -122,17 +122,16 @@ void ModrinthPackExportTask::collectHashes()
         if (auto modIter = std::find_if(allMods.begin(), allMods.end(), [&file](Mod* mod) { return mod->fileinfo() == file; });
             modIter != allMods.end()) {
             const Mod* mod = *modIter;
-            if (mod->metadata() != nullptr) {
-                const QUrl& url = mod->metadata()->url;
+            if (const auto* source = mod->entry().primarySource(); source != nullptr) {
+                const QUrl& url = source->url;
                 // ensure the url is permitted on modrinth.com
                 if (!url.isEmpty() && BuildConfig.MODRINTH_MRPACK_HOSTS.contains(url.host())) {
                     qDebug() << "Resolving" << relative << "from index";
 
                     auto sha1 = Resources::HashAlgorithm::hash(data, Resources::HashAlgorithm::Sha1);
 
-                    ResolvedFile resolvedFile{
-                        .sha1 = sha1, .sha512 = sha512, .url = url.toEncoded(), .size = openFile.size(), .side = mod->metadata()->side
-                    };
+                    ResolvedFile resolvedFile{ .sha1 = sha1, .sha512 = sha512, .url = url.toEncoded(), .size = openFile.size(),
+                                               .side = source->side };
                     resolvedFiles[relative] = resolvedFile;
 
                     // nice! we've managed to resolve based on local metadata!

@@ -21,6 +21,13 @@
 
 #include "modplatform/packwiz/Packwiz.h"
 
+// DEPRECATED: this whole namespace has no remaining callers - resource provider/version identity
+// now lives in Resources::Entry/Resources::Source (resourcesmeta/), persisted to
+// resources.index.json, and is read/written via Resource::entry()/setEntry() instead of
+// packwiz .pw.toml files. The only surviving packwiz reader is the one-time legacy-metadata
+// migration in ResourceFolderLoadTask (which calls Packwiz::V1::getIndexForMod(QDir, QString)
+// directly, bypassing this indirection). Safe to delete this header once that migration path is
+// also retired.
 namespace Metadata {
 using ModStruct = Packwiz::V1::Mod;
 

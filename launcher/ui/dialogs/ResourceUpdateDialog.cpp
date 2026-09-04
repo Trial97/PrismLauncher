@@ -291,8 +291,6 @@ void ResourceUpdateDialog::checkCandidates()
 // Part 1: Ensure we have a valid metadata
 auto ResourceUpdateDialog::ensureMetadata() -> bool
 {
-    auto indexDir2 = indexDir();
-
     SequentialTask seq(tr("Looking for metadata"));
 
     // A better use of data structures here could remove the need for this QHash
@@ -367,7 +365,8 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
 
     // prepare task for the modrinth mods
     if (!modrinthTmp.empty()) {
-        auto modrinthTask = makeShared<EnsureMetadataTask>(modrinthTmp, indexDir2, Resources::Platform::Modrinth);
+        auto modrinthTask = makeShared<EnsureMetadataTask>(modrinthTmp, m_instance, m_resourceModel->dir(), m_resourceModel->resourceType(),
+                                                           Resources::Platform::Modrinth);
         connect(modrinthTask.get(), &EnsureMetadataTask::metadataReady, this,
                 [this](Resource* candidate) { onMetadataEnsured(candidate); });
         connect(modrinthTask.get(), &EnsureMetadataTask::metadataFailed, this, [this, &shouldTryOthers](Resource* candidate) {
@@ -385,7 +384,8 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
 
     // prepare task for the flame mods
     if (!flameTmp.empty()) {
-        auto flameTask = makeShared<EnsureMetadataTask>(flameTmp, indexDir2, Resources::Platform::Curseforge);
+        auto flameTask = makeShared<EnsureMetadataTask>(flameTmp, m_instance, m_resourceModel->dir(), m_resourceModel->resourceType(),
+                                                        Resources::Platform::Curseforge);
         connect(flameTask.get(), &EnsureMetadataTask::metadataReady, this, [this](Resource* candidate) { onMetadataEnsured(candidate); });
         connect(flameTask.get(), &EnsureMetadataTask::metadataFailed, this, [this, &shouldTryOthers](Resource* candidate) {
             onMetadataFailed(candidate, shouldTryOthers.find(candidate->internalId()).value(), Resources::Platform::Curseforge);
@@ -413,12 +413,14 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
 
 void ResourceUpdateDialog::onMetadataEnsured(Resource* resource)
 {
-    // When the mod is a folder, for instance
-    if (!resource->metadata()) {
+    // When the mod is a folder, for instance - EnsureMetadataTask::executeTask() emits 'ready'
+    // for those unconditionally, since they never have metadata to begin with.
+    if (resource->entry().providers.isEmpty()) {
+        qDebug() << "Metadata ensured for" << resource->name() << "but it still has no known provider - skipping update check for it.";
         return;
     }
 
-    switch (resource->metadata()->provider.value()) {
+    switch (resource->entry().primaryProvider().value()) {
         case Resources::Platform::Modrinth:
             m_modrinthToUpdate.push_back(resource);
             break;
@@ -433,9 +435,8 @@ void ResourceUpdateDialog::onMetadataEnsured(Resource* resource)
 void ResourceUpdateDialog::onMetadataFailed(Resource* resource, bool tryOthers, Resources::Platform firstChoice)
 {
     if (tryOthers) {
-        auto indexDir2 = indexDir();
-
-        auto task = makeShared<EnsureMetadataTask>(resource, indexDir2, next(firstChoice));
+        auto task =
+            makeShared<EnsureMetadataTask>(resource, m_instance, m_resourceModel->dir(), m_resourceModel->resourceType(), next(firstChoice));
         connect(task.get(), &EnsureMetadataTask::metadataReady, this, [this](Resource* candidate) { onMetadataEnsured(candidate); });
         connect(task.get(), &EnsureMetadataTask::metadataFailed, this, [this](Resource* candidate) { onMetadataFailed(candidate, false); });
         connect(task.get(), &EnsureMetadataTask::failed, this,

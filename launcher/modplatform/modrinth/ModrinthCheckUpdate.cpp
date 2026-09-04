@@ -11,6 +11,7 @@
 #include "modplatform/ModIndex.h"
 #include "modplatform/helpers/HashUtils.h"
 
+#include "resourcesmeta/HashAlgorithm.h"
 #include "resourcesmeta/ModLoader.h"
 #include "tasks/ConcurrentTask.h"
 
@@ -25,7 +26,7 @@ ModrinthCheckUpdate::ModrinthCheckUpdate(QList<Resource*>& resources,
         m_initialSize = m_loadersList.length();
         Resources::ModLoaders modLoaders;
         for (auto* m : resources) {
-            modLoaders |= m->metadata()->loaders;
+            modLoaders |= m->entry().providers.value(Resources::Platform::Modrinth).loaders;
         }
         for (auto l : m_loadersList) {
             modLoaders &= ~static_cast<std::uint16_t>(l);
@@ -56,12 +57,12 @@ void ModrinthCheckUpdate::executeTask()
         makeShared<ConcurrentTask>("MakeModrinthHashesTask", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     bool startHasing = false;
     for (auto* resource : m_resources) {
-        auto hash = resource->metadata()->hash;
+        auto hash = resource->entry().hashes.value(Resources::HashAlgorithm::fromString(m_hashType));
 
         // Sadly the API can only handle one hash type per call, se we
         // need to generate a new hash if the current one is innadequate
         // (though it will rarely happen, if at all)
-        if (resource->metadata()->hash_format != m_hashType) {
+        if (hash.isEmpty()) {
             auto hashTask = Hashing::createHasher(resource->fileinfo().absoluteFilePath(), Resources::Platform::Modrinth);
             connect(hashTask.get(), &Hashing::Hasher::resultsReady, this,
                     [this, resource](const QString& hash) { m_mappings.insert(hash, resource); });
@@ -92,7 +93,7 @@ void ModrinthCheckUpdate::getUpdateModsForLoader(std::optional<Resources::ModLoa
     QStringList hashes;
     if (forceModLoaderCheck && loader.has_value()) {
         for (const auto& hash : m_mappings.keys()) {
-            if ((m_mappings.value(hash)->metadata()->loaders & loader.value()) != 0) {
+            if ((m_mappings.value(hash)->entry().providers.value(Resources::Platform::Modrinth).loaders & loader.value()) != 0) {
                 hashes.append(hash);
             }
         }
@@ -171,16 +172,17 @@ void ModrinthCheckUpdate::checkVersionsResponse(QByteArray* response, std::optio
                 continue;
             }
 
+            auto source = resource->entry().providers.value(Resources::Platform::Modrinth);
+
             // Fake pack with the necessary info to pass to the download task :)
             auto pack = std::make_shared<ModPlatform::IndexedPack>();
             pack->name = resource->name();
-            pack->slug = resource->metadata()->slug;
-            pack->addonId = resource->metadata()->project_id;
+            pack->addonId = source.id;
             pack->provider = Resources::Platform::Modrinth;
             if ((projectVer.hash != hash && projectVer.isPreferred) || (resource->status() == ResourceStatus::NotInstalled)) {
                 auto downloadTask = makeShared<ResourceDownloadTask>(pack, projectVer, m_resourceModel, true, "update");
 
-                QString oldVersion = resource->metadata()->version_number;
+                QString oldVersion = source.version;
                 if (oldVersion.isEmpty()) {
                     if (resource->status() == ResourceStatus::NotInstalled) {
                         oldVersion = tr("Not installed");

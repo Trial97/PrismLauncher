@@ -23,9 +23,11 @@
 
 #include <QDebug>
 #include <QObject>
+#include <optional>
 
 #include "minecraft/mod/ShaderPack.h"
 
+#include "resourcesmeta/Entry.h"
 #include "tasks/Task.h"
 
 namespace ShaderPackUtils {
@@ -44,7 +46,7 @@ bool validate(QFileInfo file);
 class LocalShaderPackParseTask : public Task {
     Q_OBJECT
    public:
-    LocalShaderPackParseTask(int token, ShaderPack& sp);
+    LocalShaderPackParseTask(int token, ShaderPack& sp, std::optional<Resources::Entry> previous = std::nullopt);
 
     bool canAbort() const override { return true; }
     bool abort() override;
@@ -57,6 +59,7 @@ class LocalShaderPackParseTask : public Task {
     int m_token;
 
     ShaderPack& m_shader_pack;
+    std::optional<Resources::Entry> m_previous;
 
     bool m_aborted = false;
 };

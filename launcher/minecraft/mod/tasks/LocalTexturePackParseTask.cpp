@@ -123,6 +123,7 @@ bool processPackPNG(const TexturePack& pack, QByteArray&& raw_data)
     auto img = QImage::fromData(raw_data);
     if (!img.isNull()) {
         pack.setImage(img);
+        pack.setRawImage(img);
     } else {
         qWarning() << "Failed to parse pack.png.";
         return false;
@@ -187,7 +188,9 @@ bool validate(QFileInfo file)
 
 }  // namespace TexturePackUtils
 
-LocalTexturePackParseTask::LocalTexturePackParseTask(int token, TexturePack& rp) : Task(false), m_token(token), m_texture_pack(rp) {}
+LocalTexturePackParseTask::LocalTexturePackParseTask(int token, TexturePack& rp, std::optional<Resources::Entry> previous)
+    : Task(false), m_token(token), m_texture_pack(rp), m_previous(std::move(previous))
+{}
 
 bool LocalTexturePackParseTask::abort()
 {
@@ -197,13 +200,19 @@ bool LocalTexturePackParseTask::abort()
 
 void LocalTexturePackParseTask::executeTask()
 {
-    if (!TexturePackUtils::process(m_texture_pack)) {
-        emitFailed("this is not a texture pack");
-        return;
-    }
+    auto hash = Resources::HashAlgorithm::hash(m_texture_pack.fileinfo().absoluteFilePath(), Resources::HashAlgorithm::Sha256);
 
-    m_texture_pack.setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_texture_pack.fileinfo().absoluteFilePath(),
-                                                                                                    Resources::HashAlgorithm::Sha256) } });
+    if (m_previous && m_previous->hashes.value(Resources::HashAlgorithm::Sha256) == hash) {
+        m_texture_pack.hydrateFromIndex(m_previous->info);
+        m_texture_pack.setHashes(m_previous->hashes);
+    } else {
+        if (!TexturePackUtils::process(m_texture_pack)) {
+            emitFailed("this is not a texture pack");
+            return;
+        }
+
+        m_texture_pack.setHashes({ { Resources::HashAlgorithm::Sha256, hash } });
+    }
 
     if (m_aborted)
         emitAborted();

@@ -64,6 +64,9 @@ class DataPack : public Resource {
     QString packFormatStr() const;
 
     auto toIndexDetails() const -> Resources::Details override;
+    /** Restores description/packFormat from a previously-stored index entry, used to hydrate this
+     *  DataPack without re-parsing pack.mcmeta/pack.png when the file's hash hasn't changed. */
+    void hydrateFromIndex(const Resources::Details& details);
 
    protected:
     virtual QMap<std::pair<int, int>, std::pair<Version, Version>> mappings() const;

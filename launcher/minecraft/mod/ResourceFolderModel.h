@@ -14,6 +14,7 @@
 
 #include "BaseInstance.h"
 
+#include "modplatform/ModIndex.h"
 #include "resourcesmeta/Type.h"
 #include "tasks/ConcurrentTask.h"
 #include "tasks/Task.h"
@@ -215,8 +216,11 @@ class ResourceFolderModel : public QAbstractListModel {
      *
      *  This task should load and parse all heavy info needed by a resource, such as parsing a manifest. It gets executed
      *  in the background, so it slowly updates the UI as tasks get done.
+     *
+     *  'previous' is the resource's previously-stored index entry, if any (looked up by resolveResource() before
+     *  dispatching). Implementations should use it to skip the expensive parse when the file's hash hasn't changed.
      */
-    [[nodiscard]] virtual Task* createParseTask(Resource& /*unused*/) { return nullptr; }
+    [[nodiscard]] virtual Task* createParseTask(Resource& /*unused*/, const Resources::Entry* /*previous*/) { return nullptr; }
 
     /** Standard implementation of the model update logic.
      *

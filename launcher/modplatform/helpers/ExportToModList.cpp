@@ -25,7 +25,7 @@ QString toHTML(QList<Mod*> mods, OptionalData extraData)
 {
     QStringList lines;
     for (auto mod : mods) {
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = mod->name().toHtmlEscaped();
         if (extraData & Url) {
             auto url = mod->homepage().toHtmlEscaped();
@@ -35,8 +35,8 @@ QString toHTML(QList<Mod*> mods, OptionalData extraData)
         auto line = modName;
         if (extraData & Version) {
             auto ver = mod->version();
-            if (ver.isEmpty() && meta != nullptr)
-                ver = meta->version().toString();
+            if (ver.isEmpty() && source != nullptr)
+                ver = source->version;
             if (!ver.isEmpty())
                 line += QString(" [%1]").arg(ver.toHtmlEscaped());
         }
@@ -62,7 +62,7 @@ QString toMarkdown(QList<Mod*> mods, OptionalData extraData)
     QStringList lines;
 
     for (auto mod : mods) {
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = toMarkdownEscaped(mod->name());
         if (extraData & Url) {
             auto url = mod->homepage();
@@ -72,8 +72,8 @@ QString toMarkdown(QList<Mod*> mods, OptionalData extraData)
         auto line = modName;
         if (extraData & Version) {
             auto ver = toMarkdownEscaped(mod->version());
-            if (ver.isEmpty() && meta != nullptr)
-                ver = toMarkdownEscaped(meta->version().toString());
+            if (ver.isEmpty() && source != nullptr)
+                ver = toMarkdownEscaped(source->version);
             if (!ver.isEmpty())
                 line += QString(" [%1]").arg(ver);
         }
@@ -90,7 +90,7 @@ QString toPlainTXT(QList<Mod*> mods, OptionalData extraData)
 {
     QStringList lines;
     for (auto mod : mods) {
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = mod->name();
 
         auto line = modName;
@@ -101,8 +101,8 @@ QString toPlainTXT(QList<Mod*> mods, OptionalData extraData)
         }
         if (extraData & Version) {
             auto ver = mod->version();
-            if (ver.isEmpty() && meta != nullptr)
-                ver = meta->version().toString();
+            if (ver.isEmpty() && source != nullptr)
+                ver = source->version;
             if (!ver.isEmpty())
                 line += QString(" [%1]").arg(ver);
         }
@@ -119,7 +119,7 @@ QString toJSON(QList<Mod*> mods, OptionalData extraData)
 {
     QJsonArray lines;
     for (auto mod : mods) {
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = mod->name();
         QJsonObject line;
         line["name"] = modName;
@@ -130,8 +130,8 @@ QString toJSON(QList<Mod*> mods, OptionalData extraData)
         }
         if (extraData & Version) {
             auto ver = mod->version();
-            if (ver.isEmpty() && meta != nullptr)
-                ver = meta->version().toString();
+            if (ver.isEmpty() && source != nullptr)
+                ver = source->version;
             if (!ver.isEmpty())
                 line["version"] = ver;
         }
@@ -151,7 +151,7 @@ QString toCSV(QList<Mod*> mods, OptionalData extraData)
     QStringList lines;
     for (auto mod : mods) {
         QStringList data;
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = mod->name();
 
         data << modName;
@@ -159,8 +159,8 @@ QString toCSV(QList<Mod*> mods, OptionalData extraData)
             data << mod->homepage();
         if (extraData & Version) {
             auto ver = mod->version();
-            if (ver.isEmpty() && meta != nullptr)
-                ver = meta->version().toString();
+            if (ver.isEmpty() && source != nullptr)
+                ver = source->version;
             data << ver;
         }
         if (extraData & Authors) {
@@ -201,13 +201,13 @@ QString exportToModList(QList<Mod*> mods, QString lineTemplate)
 {
     QStringList lines;
     for (auto mod : mods) {
-        auto meta = mod->metadata();
+        const auto* source = mod->entry().primarySource();
         auto modName = mod->name();
         auto modID = mod->mod_id();
         auto url = mod->homepage();
         auto ver = mod->version();
-        if (ver.isEmpty() && meta != nullptr)
-            ver = meta->version().toString();
+        if (ver.isEmpty() && source != nullptr)
+            ver = source->version;
         auto authors = mod->authors().join(", ");
         auto filename = mod->fileinfo().fileName();
         lines << QString(lineTemplate)

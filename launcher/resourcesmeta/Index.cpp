@@ -46,6 +46,7 @@ void Index::fromJson(const QJsonArray& array)
         item.fromJson(value.toObject());
         append(item);
     }
+    m_pathIndexBuilt = false;
 }
 
 std::optional<Index> Index::load(const QString& filePath)
@@ -84,30 +85,75 @@ bool Index::save(const QString& filePath) const
     return file.commit();
 }
 
+void Index::ensurePathIndex() const
+{
+    if (m_pathIndexBuilt) {
+        return;
+    }
+    m_pathIndex.clear();
+    m_pathIndex.reserve(size());
+    for (qsizetype i = 0; i < size(); ++i) {
+        m_pathIndex.insert(at(i).path, i);
+    }
+    m_pathIndexBuilt = true;
+}
+
 Entry* Index::findByPath(const QString& path)
 {
-    auto it = std::ranges::find_if(*this, [&path](const Entry& entry) { return entry.path == path; });
-    return it == end() ? nullptr : &*it;
+    ensurePathIndex();
+    auto it = m_pathIndex.constFind(path);
+    if (it == m_pathIndex.constEnd()) {
+        return nullptr;
+    }
+    return &(*this)[it.value()];
 }
 
 const Entry* Index::findByPath(const QString& path) const
 {
-    auto it = std::ranges::find_if(*this, [&path](const Entry& entry) { return entry.path == path; });
+    ensurePathIndex();
+    auto it = m_pathIndex.constFind(path);
+    if (it == m_pathIndex.constEnd()) {
+        return nullptr;
+    }
+    return &at(it.value());
+}
+
+Entry* Index::findBySource(Platform provider, const QString& id)
+{
+    // Not path-keyed, and only ever called once per download (not on the per-resource scan hot
+    // path that findByPath()/upsert() are), so a linear scan is fine here.
+    auto it = std::ranges::find_if(*this, [provider, &id](const Entry& entry) {
+        auto source = entry.providers.constFind(provider);
+        return source != entry.providers.constEnd() && source->id == id;
+    });
     return it == end() ? nullptr : &*it;
 }
 
 void Index::upsert(Entry entry)
 {
-    if (auto* existing = findByPath(entry.path)) {
-        *existing = std::move(entry);
-    } else {
-        append(std::move(entry));
+    ensurePathIndex();
+    auto it = m_pathIndex.constFind(entry.path);
+    if (it != m_pathIndex.constEnd()) {
+        (*this)[it.value()] = std::move(entry);
+        return;
     }
+    auto path = entry.path;
+    append(std::move(entry));
+    m_pathIndex.insert(path, size() - 1);
 }
 
 bool Index::removeByPath(const QString& path)
 {
-    return removeIf([&path](const Entry& entry) { return entry.path == path; }) > 0;
+    ensurePathIndex();
+    auto it = m_pathIndex.constFind(path);
+    if (it == m_pathIndex.constEnd()) {
+        return false;
+    }
+    removeAt(it.value());
+    // Positions after the removed one all shifted down by one - rebuild lazily on next access
+    // rather than eagerly reindexing here (removals are rare, not part of the scan hot path).
+    m_pathIndexBuilt = false;
+    return true;
 }
 
 }  // namespace Resources

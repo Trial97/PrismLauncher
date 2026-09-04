@@ -61,7 +61,8 @@ ResourceDownloadTask::ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
     : m_pack(std::move(pack)), m_pack_version(std::move(version)), m_pack_model(packs)
 {
     if (isIndexed) {
-        m_update_task.reset(new LocalResourceUpdateTask(m_pack_model->indexDir(), *m_pack, m_pack_version));
+        m_update_task.reset(
+            new LocalResourceUpdateTask(m_pack_model->instance(), m_pack_model->dir(), m_pack_model->resourceType(), *m_pack, m_pack_version));
         connect(m_update_task.get(), &LocalResourceUpdateTask::hasOldResource, this, &ResourceDownloadTask::hasOldResource);
 
         addTask(m_update_task);

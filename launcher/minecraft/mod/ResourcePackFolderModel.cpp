@@ -69,7 +69,7 @@ QVariant ResourcePackFolderModel::data(const QModelIndex& index, int role) const
         case Qt::DisplayRole: {
             if (column == PackFormatColumn) {
                 const auto& resource = at(row);
-                return resource.packFormatStr();
+                return resource.entry().info.details;
             }
             break;
         }
@@ -180,7 +180,8 @@ int ResourcePackFolderModel::columnCount(const QModelIndex& parent) const
     return parent.isValid() ? 0 : NumColumns;
 }
 
-Task* ResourcePackFolderModel::createParseTask(Resource& resource)
+Task* ResourcePackFolderModel::createParseTask(Resource& resource, const Resources::Entry* previous)
 {
-    return new LocalDataPackParseTask(m_nextResolutionTicket, dynamic_cast<ResourcePack*>(&resource));
+    return new LocalDataPackParseTask(m_nextResolutionTicket, dynamic_cast<ResourcePack*>(&resource),
+                                      previous ? std::make_optional(*previous) : std::nullopt);
 }

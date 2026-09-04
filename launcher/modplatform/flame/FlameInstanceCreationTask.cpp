@@ -759,12 +759,12 @@ void FlameCreationTask::validateOtherResources()
     // TODO make this work with other sorts of resource
     auto task = makeShared<ConcurrentTask>("CreateModMetadata", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
     auto results = m_modIdResolver->getResults().files;
-    auto folder = FS::PathCombine(m_stagingPath, "minecraft", "mods", ".index");
+    auto folder = FS::PathCombine(m_stagingPath, "minecraft", "mods");
     for (const auto& file : results) {
         if (file.targetFolder != "mods" || (file.version.fileName.endsWith(".zip") && !zipMods.contains(file.version.fileName))) {
             continue;
         }
-        task->addTask(makeShared<LocalResourceUpdateTask>(folder, file.pack, file.version));
+        task->addTask(makeShared<LocalResourceUpdateTask>(m_newInstance.get(), folder, Resources::Type::Mod, file.pack, file.version));
     }
     connect(task.get(), &Task::finished, this, &FlameCreationTask::finishInstall);
     m_processUpdateFileInfoJob = task;

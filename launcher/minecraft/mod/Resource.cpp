@@ -80,8 +80,8 @@ void Resource::parseFile()
 
 auto Resource::name() const -> QString
 {
-    if (metadata()) {
-        return metadata()->name;
+    if (!entry().info.name.isEmpty()) {
+        return entry().info.name;
     }
 
     return m_name;
@@ -98,29 +98,20 @@ void removeThePrefix(QString& string)
 
 auto Resource::provider() const -> QString
 {
-    if (metadata()) {
-        return (metadata()->provider).readableName();
+    auto provider = entry().primaryProvider();
+    if (!provider.isValid()) {
+        return QObject::tr("Unknown");
     }
-
-    return QObject::tr("Unknown");
+    return provider.readableName();
 }
 
 auto Resource::homepage() const -> QString
 {
-    if (metadata()) {
-        return ModPlatform::getMetaURL(metadata()->provider, metadata()->project_id);
+    const auto* source = entry().primarySource();
+    if (!source) {
+        return {};
     }
-
-    return {};
-}
-
-void Resource::setMetadata(std::shared_ptr<Metadata::ModStruct>&& metadata)
-{
-    if (status() == ResourceStatus::NoMetadata) {
-        setStatus(ResourceStatus::Installed);
-    }
-
-    m_metadata = std::move(metadata);
+    return ModPlatform::getMetaURL(entry().primaryProvider(), source->id);
 }
 
 QStringList Resource::issues() const
@@ -139,14 +130,15 @@ void Resource::updateIssues(const MinecraftInstance* inst)
 {
     m_issues.clear();
 
-    if (m_metadata == nullptr) {
+    const auto* source = entry().primarySource();
+    if (source == nullptr) {
         return;
     }
 
     auto* profile = inst->getPackProfile();
     QString mcVersion = profile->getComponentVersion("net.minecraft");
 
-    if (!m_metadata->mcVersions.empty() && !m_metadata->mcVersions.contains(mcVersion)) {
+    if (!source->mcVersions.empty() && !source->mcVersions.contains(mcVersion)) {
         // delay translation until issues() is called
         m_issues.append(QT_TR_NOOP("Not marked as compatible with the instance's game version."));
     }
@@ -277,27 +269,21 @@ bool Resource::enable(EnableAction action)
     return true;
 }
 
-auto Resource::destroy(const QDir& indexDir, bool preserveMetadata, bool attemptTrash) -> bool
+auto Resource::destroy(bool preserveMetadata, bool attemptTrash) -> bool
 {
     m_type = ResourceType::UNKNOWN;
 
     if (!preserveMetadata) {
         qDebug() << QString("Destroying metadata for '%1' on purpose").arg(name());
-        destroyMetadata(indexDir);
+        destroyMetadata();
     }
 
     return (attemptTrash && FS::trash(m_fileInfo.filePath())) || FS::deletePath(m_fileInfo.filePath());
 }
 
-auto Resource::destroyMetadata(const QDir& indexDir) -> void
+auto Resource::destroyMetadata() -> void
 {
-    if (metadata()) {
-        Metadata::remove(indexDir, metadata()->slug);
-    } else {
-        auto n = name();
-        Metadata::remove(indexDir, n);
-    }
-    m_metadata = nullptr;
+    m_entry.providers.clear();
 }
 
 bool Resource::isSymLinkUnder(const QString& instPath) const

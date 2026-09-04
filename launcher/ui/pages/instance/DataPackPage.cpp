@@ -210,12 +210,13 @@ void DataPackPage::changeDataPackVersion()
 
     Resource& resource = m_model->at(m_filterModel->mapToSource(rows[0]).row());
 
-    if (resource.metadata() == nullptr) {
+    if (resource.entry().providers.isEmpty()) {
         return;
     }
 
     m_downloadDialog = ResourceDownload::ResourceDownloadDialog::createDataPack(this, m_model, m_instance, true);
-    m_downloadDialog->setResourceMetadata(resource.metadata());
+    const auto& entry = resource.entry();
+    m_downloadDialog->setResourceMetadata(entry.primaryProvider(), *entry.primarySource(), entry.info.name);
     if (m_downloadDialog->exec() != 0) {
         ConcurrentTask tasks("Download Data Packs", APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
         connect(&tasks, &Task::failed, this,

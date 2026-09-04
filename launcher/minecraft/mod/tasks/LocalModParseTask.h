@@ -2,6 +2,7 @@
 
 #include <QDebug>
 #include <QObject>
+#include <optional>
 
 #include "minecraft/mod/Mod.h"
 #include "minecraft/mod/ModDetails.h"
@@ -37,6 +38,7 @@ class LocalModParseTask : public Task {
     struct Result {
         ModDetails details;
         Resources::Hashes hashes;
+        QImage image;
     };
     using ResultPtr = std::shared_ptr<Result>;
     ResultPtr result() const { return m_result; }
@@ -44,7 +46,7 @@ class LocalModParseTask : public Task {
     bool canAbort() const override { return true; }
     bool abort() override;
 
-    LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile);
+    LocalModParseTask(int token, ResourceType type, const QFileInfo& modFile, std::optional<Resources::Entry> previous = std::nullopt);
     void executeTask() override;
 
     int token() const { return m_token; }
@@ -53,6 +55,7 @@ class LocalModParseTask : public Task {
     int m_token;
     ResourceType m_type;
     QFileInfo m_modFile;
+    std::optional<Resources::Entry> m_previous;
     ResultPtr m_result;
 
     std::atomic<bool> m_aborted = false;

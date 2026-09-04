@@ -107,7 +107,9 @@ bool validate(QFileInfo file)
 
 }  // namespace ShaderPackUtils
 
-LocalShaderPackParseTask::LocalShaderPackParseTask(int token, ShaderPack& sp) : Task(false), m_token(token), m_shader_pack(sp) {}
+LocalShaderPackParseTask::LocalShaderPackParseTask(int token, ShaderPack& sp, std::optional<Resources::Entry> previous)
+    : Task(false), m_token(token), m_shader_pack(sp), m_previous(std::move(previous))
+{}
 
 bool LocalShaderPackParseTask::abort()
 {
@@ -117,13 +119,19 @@ bool LocalShaderPackParseTask::abort()
 
 void LocalShaderPackParseTask::executeTask()
 {
-    if (!ShaderPackUtils::process(m_shader_pack)) {
-        emitFailed("this is not a shader pack");
-        return;
-    }
+    auto hash = Resources::HashAlgorithm::hash(m_shader_pack.fileinfo().absoluteFilePath(), Resources::HashAlgorithm::Sha256);
 
-    m_shader_pack.setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_shader_pack.fileinfo().absoluteFilePath(),
-                                                                                                  Resources::HashAlgorithm::Sha256) } });
+    if (m_previous && m_previous->hashes.value(Resources::HashAlgorithm::Sha256) == hash) {
+        m_shader_pack.setPackFormat(ShaderPackFormat::VALID);
+        m_shader_pack.setHashes(m_previous->hashes);
+    } else {
+        if (!ShaderPackUtils::process(m_shader_pack)) {
+            emitFailed("this is not a shader pack");
+            return;
+        }
+
+        m_shader_pack.setHashes({ { Resources::HashAlgorithm::Sha256, hash } });
+    }
 
     if (m_aborted)
         emitAborted();

@@ -306,6 +306,7 @@ bool processPackPNG(const DataPack* pack, QByteArray&& raw_data)
     auto img = QImage::fromData(raw_data);
     if (!img.isNull()) {
         pack->setImage(img);
+        pack->setRawImage(img);
     } else {
         qWarning() << "Failed to parse pack.png.";
         return false;
@@ -376,17 +377,27 @@ bool validateResourcePack(QFileInfo file)
 
 }  // namespace DataPackUtils
 
-LocalDataPackParseTask::LocalDataPackParseTask(int token, DataPack* dp) : Task(false), m_token(token), m_data_pack(dp) {}
+LocalDataPackParseTask::LocalDataPackParseTask(int token, DataPack* dp, std::optional<Resources::Entry> previous)
+    : Task(false), m_token(token), m_data_pack(dp), m_previous(std::move(previous))
+{}
 
 void LocalDataPackParseTask::executeTask()
 {
+    auto hash = Resources::HashAlgorithm::hash(m_data_pack->fileinfo().absoluteFilePath(), Resources::HashAlgorithm::Sha256);
+
+    if (m_previous && m_previous->hashes.value(Resources::HashAlgorithm::Sha256) == hash) {
+        m_data_pack->hydrateFromIndex(m_previous->info);
+        m_data_pack->setHashes(m_previous->hashes);
+        emitSucceeded();
+        return;
+    }
+
     if (!DataPackUtils::process(m_data_pack)) {
         emitFailed("process failed");
         return;
     }
 
-    m_data_pack->setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_data_pack->fileinfo().absoluteFilePath(),
-                                                                                                 Resources::HashAlgorithm::Sha256) } });
+    m_data_pack->setHashes({ { Resources::HashAlgorithm::Sha256, hash } });
 
     emitSucceeded();
 }

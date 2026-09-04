@@ -104,10 +104,8 @@ bool ModModel::isPackInstalled(ModPlatform::IndexedPack::Ptr pack) const
 {
     auto allMods = static_cast<MinecraftInstance&>(m_baseInstance).loaderModList()->allMods();
     return std::ranges::any_of(allMods, [pack](Mod* mod) {
-        if (auto meta = mod->metadata(); meta) {
-            return meta->provider == pack->provider && meta->project_id == pack->addonId;
-        }
-        return false;
+        auto it = mod->entry().providers.constFind(pack->provider);
+        return it != mod->entry().providers.constEnd() && it->id == pack->addonId.toString();
     });
 }
 
@@ -115,8 +113,9 @@ QVariant ModModel::getInstalledPackVersion(ModPlatform::IndexedPack::Ptr pack) c
 {
     auto allMods = static_cast<MinecraftInstance&>(m_baseInstance).loaderModList()->allMods();
     for (auto* mod : allMods) {
-        if (auto meta = mod->metadata(); meta && meta->provider == pack->provider && meta->project_id == pack->addonId) {
-            return meta->version();
+        auto it = mod->entry().providers.constFind(pack->provider);
+        if (it != mod->entry().providers.constEnd() && it->id == pack->addonId.toString()) {
+            return it->version;
         }
     }
     return {};

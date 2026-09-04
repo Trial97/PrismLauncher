@@ -16,6 +16,7 @@
 #include "modplatform/ModIndex.h"
 #include "net/ApiRequest.h"
 #include "net/NetJob.h"
+#include "resourcesmeta/HashAlgorithm.h"
 #include "tasks/Task.h"
 
 bool FlameCheckUpdate::abort()
@@ -45,7 +46,7 @@ void FlameCheckUpdate::executeTask()
     connect(netJob, &Task::details, this, &FlameCheckUpdate::setDetails);
     for (auto* resource : m_resources) {
         auto project = std::make_shared<ModPlatform::IndexedPack>();
-        project->addonId = resource->metadata()->project_id.toString();
+        project->addonId = resource->entry().providers.value(Resources::Platform::Curseforge).id;
         auto versionsUrlOptional = FlameAPI::get().getVersionsURL({ .pack = project, .mcVersions = m_gameVersions });
         if (!versionsUrlOptional.has_value()) {
             continue;
@@ -71,11 +72,12 @@ void FlameCheckUpdate::getLatestVersionCallback(Resource* resource, QByteArray* 
         return;
     }
 
+    auto source = resource->entry().providers.value(Resources::Platform::Curseforge);
+
     // Fake pack with the necessary info to pass to the download task :)
     auto pack = std::make_shared<ModPlatform::IndexedPack>();
     pack->name = resource->name();
-    pack->slug = resource->metadata()->slug;
-    pack->addonId = resource->metadata()->project_id;
+    pack->addonId = source.id;
     pack->provider = Resources::Platform::Curseforge;
     try {
         auto obj = Json::requireObject(doc);
@@ -87,7 +89,7 @@ void FlameCheckUpdate::getLatestVersionCallback(Resource* resource, QByteArray* 
         qCritical() << e.what();
         qDebug() << doc;
     }
-    auto latestVer = FlameAPI::getLatestVersion(pack->versions, m_loadersList, resource->metadata()->loaders, !m_loadersList.isEmpty());
+    auto latestVer = FlameAPI::getLatestVersion(pack->versions, m_loadersList, source.loaders, !m_loadersList.isEmpty());
 
     setStatus(tr("Parsing the API response from CurseForge for '%1'...").arg(resource->name()));
 
@@ -105,14 +107,14 @@ void FlameCheckUpdate::getLatestVersionCallback(Resource* resource, QByteArray* 
         return;
     }
 
-    if (latestVer->downloadUrl.isEmpty() && latestVer->fileId != resource->metadata()->file_id) {
+    if (latestVer->downloadUrl.isEmpty() && latestVer->fileId.toString() != source.version) {
         m_blocked[resource] = latestVer->fileId.toString();
         return;
     }
 
-    if (!latestVer->hash.isEmpty() &&
-        (resource->metadata()->hash != latestVer->hash || resource->status() == ResourceStatus::NotInstalled)) {
-        auto oldVersion = resource->metadata()->version_number;
+    auto currentHash = resource->entry().hashes.value(Resources::HashAlgorithm::Murmur2);
+    if (!latestVer->hash.isEmpty() && (currentHash != latestVer->hash || resource->status() == ResourceStatus::NotInstalled)) {
+        auto oldVersion = source.version;
         if (oldVersion.isEmpty()) {
             if (resource->status() == ResourceStatus::NotInstalled) {
                 oldVersion = tr("Not installed");
@@ -122,7 +124,7 @@ void FlameCheckUpdate::getLatestVersionCallback(Resource* resource, QByteArray* 
         }
 
         auto downloadTask = makeShared<ResourceDownloadTask>(pack, latestVer.value(), m_resourceModel, true, "update");
-        m_updates.emplace_back(pack->name, resource->metadata()->hash, oldVersion, latestVer->version, latestVer->versionType,
+        m_updates.emplace_back(pack->name, currentHash, oldVersion, latestVer->version, latestVer->versionType,
                                FlameAPI::getModFileChangelog(latestVer->addonId.toInt(), latestVer->fileId.toInt()),
                                Resources::Platform::Curseforge, downloadTask, resource->enabled());
     }
@@ -134,7 +136,7 @@ void FlameCheckUpdate::collectBlockedMods()
     QStringList addonIds;
     QHash<QString, Resource*> quickSearch;
     for (const auto& resource : m_blocked.keys()) {
-        auto addonId = resource->metadata()->project_id.toString();
+        auto addonId = resource->entry().providers.value(Resources::Platform::Curseforge).id;
         addonIds.append(addonId);
         quickSearch[addonId] = resource;
     }

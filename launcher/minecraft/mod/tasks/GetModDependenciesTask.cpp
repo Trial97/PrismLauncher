@@ -25,7 +25,6 @@
 #include "Json.h"
 #include "QObjectPtr.h"
 #include "minecraft/PackProfile.h"
-#include "minecraft/mod/MetadataHandler.h"
 #include "minecraft/mod/ModFolderModel.h"
 #include "minecraft/mod/ResourceFolderModel.h"
 #include "modplatform/ModIndex.h"
@@ -97,16 +96,16 @@ GetModDependenciesTask::GetModDependenciesTask(MinecraftInstance* instance,
 {
     for (auto* mod : folder->allMods()) {
         m_modsFileNames << mod->fileinfo().fileName();
-        if (auto meta = mod->metadata(); meta) {
-            m_mods.append(meta);
+        if (!mod->entry().providers.isEmpty()) {
+            m_mods.append(mod->entry());
         }
     }
 
     for (auto* model : instance->resourceLists()) {
         if (model) {
             for (auto* mod : model->allResources()) {  // only append meta
-                if (auto meta = mod->metadata(); meta) {
-                    m_mods.append(meta);
+                if (!mod->entry().providers.isEmpty()) {
+                    m_mods.append(mod->entry());
                 }
             }
         }
@@ -167,8 +166,12 @@ QList<Resources::Dependency> GetModDependenciesTask::getDependenciesForVersion(c
             continue;  // check the selected versions
         }
 
-        auto isInstalledMod = [&verDep, providerName, isOnlyVersion](const std::shared_ptr<Metadata::ModStruct>& i) {
-            return i->provider == providerName && (isOnlyVersion ? i->file_id == verDep.version : i->project_id == verDep.addonId);
+        auto isInstalledMod = [&verDep, providerName, isOnlyVersion](const Resources::Entry& i) {
+            auto it = i.providers.constFind(providerName);
+            if (it == i.providers.constEnd()) {
+                return false;
+            }
+            return isOnlyVersion ? it->version == verDep.version : it->id == verDep.addonId;
         };
         if (std::ranges::any_of(m_mods, isInstalledMod)) {
             continue;  // check the existing mods

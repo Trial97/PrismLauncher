@@ -16,9 +16,10 @@ class ShaderPackFolderModel : public ResourceFolderModel {
 
     [[nodiscard]] Resource* createResource(const QFileInfo& info) override { return new ShaderPack(info); }
 
-    [[nodiscard]] Task* createParseTask(Resource& resource) override
+    [[nodiscard]] Task* createParseTask(Resource& resource, const Resources::Entry* previous) override
     {
-        return new LocalShaderPackParseTask(m_nextResolutionTicket, static_cast<ShaderPack&>(resource));
+        return new LocalShaderPackParseTask(m_nextResolutionTicket, static_cast<ShaderPack&>(resource),
+                                            previous ? std::make_optional(*previous) : std::nullopt);
     }
 
     QDir indexDir() const override { return m_dir; }

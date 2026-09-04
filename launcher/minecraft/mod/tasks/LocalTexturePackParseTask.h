@@ -21,9 +21,11 @@
 
 #include <QDebug>
 #include <QObject>
+#include <optional>
 
 #include "minecraft/mod/TexturePack.h"
 
+#include "resourcesmeta/Entry.h"
 #include "tasks/Task.h"
 
 namespace TexturePackUtils {
@@ -48,7 +50,7 @@ bool validate(QFileInfo file);
 class LocalTexturePackParseTask : public Task {
     Q_OBJECT
    public:
-    LocalTexturePackParseTask(int token, TexturePack& rp);
+    LocalTexturePackParseTask(int token, TexturePack& rp, std::optional<Resources::Entry> previous = std::nullopt);
 
     bool canAbort() const override { return true; }
     bool abort() override;
@@ -61,6 +63,7 @@ class LocalTexturePackParseTask : public Task {
     int m_token;
 
     TexturePack& m_texture_pack;
+    std::optional<Resources::Entry> m_previous;
 
     bool m_aborted = false;
 };

@@ -23,26 +23,6 @@
 #include <QFileInfo>
 
 #include "Resource.h"
-#include "modplatform/packwiz/Packwiz.h"
-#include "resourcesmeta/HashAlgorithm.h"
-
-namespace {
-
-Resources::Source fromPackwiz(const Packwiz::V1::Mod& mod)
-{
-    Resources::Source src;
-    src.id = mod.project_id.toString();
-    src.version = mod.version_number;
-    src.url = mod.url;
-    src.side = mod.side;
-    src.loaders = mod.loaders;
-    src.mcVersions = mod.mcVersions;
-    src.releaseType = mod.releaseType;
-    src.dependencies = mod.dependencies;
-    return src;
-}
-
-}  // namespace
 
 namespace ResourceIndexEntry {
 
@@ -57,7 +37,10 @@ QString canonicalRelativePath(const QFileInfo& fileInfo, const QString& instance
 
 Resources::Entry build(const Resource& resource, Resources::Type type, const QString& instanceRootPath)
 {
-    Resources::Entry entry;
+    // Carry forward whatever this resource already knows about its provider(s) - build() only
+    // refreshes the locally-derived parts (path/type/enabled/info/hashes); providers are written
+    // separately (by a download, or by the legacy-packwiz migration step).
+    Resources::Entry entry = resource.entry();
     entry.path = canonicalRelativePath(resource.fileinfo(), instanceRootPath);
     entry.type = type;
     entry.enabled = resource.enabled();
@@ -65,20 +48,58 @@ Resources::Entry build(const Resource& resource, Resources::Type type, const QSt
     entry.hashes = resource.hashes();
     entry.updatedAt = QDateTime::currentDateTimeUtc();
 
-    if (auto metadata = resource.metadata()) {
-        entry.side = metadata->side;
-        entry.info.loaders = metadata->loaders;
-        entry.providers.insert(metadata->provider, fromPackwiz(*metadata));
-
-        if (!metadata->hash.isEmpty() && !metadata->hash_format.isEmpty()) {
-            auto alg = Resources::HashAlgorithm::fromString(metadata->hash_format);
-            if (alg.isValid()) {
-                entry.hashes.insert(alg, metadata->hash);
-            }
-        }
+    if (const auto* src = entry.primarySource()) {
+        entry.side = src->side;
+        entry.info.loaders = src->loaders;
     }
 
     return entry;
+}
+
+Resources::Source sourceFromPackwiz(const Packwiz::V1::Mod& mod)
+{
+    Resources::Source src;
+    src.id = mod.project_id.toString();
+    // CurseForge has no human version string - packwiz's version_number for CF mods is actually
+    // just the downloaded file's display name (see Packwiz::V1::createModFormat's fallback), not
+    // a real version - so prefer the file id there. Other providers keep version_number as-is.
+    if (mod.provider == Resources::Platform::Curseforge) {
+        src.version = mod.file_id.toString();
+    } else {
+        src.version = !mod.version_number.isEmpty() ? mod.version_number : mod.file_id.toString();
+    }
+    src.url = mod.url;
+    src.side = mod.side;
+    src.loaders = mod.loaders;
+    src.mcVersions = mod.mcVersions;
+    src.releaseType = mod.releaseType;
+    src.dependencies = mod.dependencies;
+    return src;
+}
+
+Resources::Source sourceFromDownload(const ModPlatform::IndexedPack& pack, const ModPlatform::IndexedVersion& version)
+{
+    Resources::Source src;
+    src.id = pack.addonId.toString();
+    if (!version.versionNumber.isEmpty()) {
+        src.version = version.versionNumber;
+    } else if (pack.provider == Resources::Platform::Curseforge) {
+        // CurseForge has no human version string - version.version is just the file's display
+        // name (e.g. "MyMod-1.2.jar"), not a real version - so use its file id instead, which is
+        // the actual version equivalent.
+        src.version = version.fileId.toString();
+    } else if (!version.version.isEmpty()) {
+        src.version = version.version;
+    } else {
+        src.version = version.fileId.toString();
+    }
+    src.url = version.downloadUrl;
+    src.side = version.side.isValid() ? version.side : pack.side;
+    src.loaders = version.loaders;
+    src.mcVersions = version.mcVersion;
+    src.releaseType = version.versionType;
+    src.dependencies = version.dependencies;
+    return src;
 }
 
 }  // namespace ResourceIndexEntry

@@ -329,9 +329,9 @@ void ResourceDownloadDialog::selectedPageChanged(BasePage* previous, BasePage* s
     result->setSearchTerm(prevPage->getSearchTerm());
 }
 
-void ResourceDownloadDialog::setResourceMetadata(const std::shared_ptr<Metadata::ModStruct>& meta)
+void ResourceDownloadDialog::setResourceMetadata(Resources::Platform provider, const Resources::Source& source, const QString& name)
 {
-    switch (meta->provider.value()) {
+    switch (provider.value()) {
         case Resources::Platform::Modrinth:
             selectPage(Modrinth::id());
             break;
@@ -342,11 +342,11 @@ void ResourceDownloadDialog::setResourceMetadata(const std::shared_ptr<Metadata:
             break;
     }
 
-    setWindowTitle(tr("Change %1 version").arg(meta->name));
+    setWindowTitle(tr("Change %1 version").arg(name));
     m_container->hidePageList();
     m_buttons.hide();
     auto* page = selectedPage();
-    page->openProject(meta->project_id);
+    page->openProject(source.id);
 }
 
 GetModDependenciesTask::Ptr ResourceDownloadDialog::getModDependenciesTask()

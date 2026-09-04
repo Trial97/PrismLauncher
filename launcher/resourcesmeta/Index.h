@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QHash>
 #include <QList>
 #include <QString>
 #include <optional>
@@ -29,6 +30,12 @@ class QJsonArray;
 namespace Resources {
 
 // Matches the top-level array of the resource index schema.
+//
+// NOTE: findByPath()/upsert()/removeByPath() maintain a path -> position lookup cache for O(1)
+// (amortized) access instead of a linear scan, which matters since a full folder scan calls
+// findByPath()+upsert() once per resource. This cache is only kept consistent by those methods
+// (and fromJson()/load()) - mutating the list directly via inherited QList methods (append,
+// removeAt, clear, operator[]=, ...) will desync it. Stick to upsert()/removeByPath() to mutate.
 struct Index : public QList<Entry> {
     using QList::QList;
 
@@ -45,11 +52,21 @@ struct Index : public QList<Entry> {
     Entry* findByPath(const QString& path);
     const Entry* findByPath(const QString& path) const;
 
+    /** Finds the entry (if any) whose Source for 'provider' has the given id - used to detect a
+     *  previously-downloaded version of the same resource under a different file name. */
+    Entry* findBySource(Platform provider, const QString& id);
+
     /** Replaces the entry with the same path, or appends it if none exists yet. */
     void upsert(Entry entry);
 
     /** Removes the entry with the given path, if any. Returns whether one was removed. */
     bool removeByPath(const QString& path);
+
+   private:
+    void ensurePathIndex() const;
+
+    mutable QHash<QString, qsizetype> m_pathIndex;
+    mutable bool m_pathIndexBuilt = false;
 };
 
 }  // namespace Resources

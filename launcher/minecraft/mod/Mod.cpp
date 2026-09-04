@@ -207,19 +207,13 @@ auto Mod::homepage() const -> QString
 
 auto Mod::loaders() const -> QString
 {
-    if (metadata()) {
-        auto modLoaders = metadata()->loaders;
-        auto loaders = modLoaders.toStringList();
-        return loaders.join(", ");
-    }
-
-    return {};
+    return entry().info.loaders.toStringList().join(", ");
 }
 
 auto Mod::side() const -> QString
 {
-    if (metadata()) {
-        return metadata()->side.toString();
+    if (entry().side.isValid()) {
+        return entry().side.toString();
     }
 
     return Resources::Side(Resources::Side::Universal).toString();
@@ -227,8 +221,9 @@ auto Mod::side() const -> QString
 
 auto Mod::mcVersions() const -> QStringList
 {
-    if (metadata())
-        return metadata()->mcVersions;
+    if (const auto* source = entry().primarySource()) {
+        return source->mcVersions;
+    }
 
     return {};
 }
@@ -240,8 +235,8 @@ auto Mod::mcVersionsString() const -> QString
 
 auto Mod::releaseType() const -> QString
 {
-    if (metadata()) {
-        return metadata()->releaseType.toString();
+    if (const auto* source = entry().primarySource()) {
+        return source->releaseType.toString();
     }
 
     return Resources::ReleaseType(Resources::ReleaseType::Unknown).toString();
@@ -343,6 +338,7 @@ Resources::Details Mod::toIndexDetails() const
     const auto& d = details();
 
     out.name = d.name;
+    out.id = d.mod_id;
     out.version = d.version;
     out.mcVersion = d.mcversion;
     out.homeUrl = QUrl(d.homeurl);
@@ -352,9 +348,27 @@ Resources::Details Mod::toIndexDetails() const
     for (const auto& license : d.licenses) {
         out.licenses << (license.name.isEmpty() ? license.id : license.name);
     }
-    out.imagePath = d.icon_file;
+    out.image = rawImage();
     out.dependencies = d.dependencies;
 
+    return out;
+}
+
+ModDetails Mod::detailsFromIndex(const Resources::Details& details)
+{
+    ModDetails out;
+    out.mod_id = details.id;
+    out.name = details.name;
+    out.version = details.version;
+    out.mcversion = details.mcVersion;
+    out.homeurl = details.homeUrl.toString();
+    out.description = details.description;
+    out.authors = details.authors;
+    out.issue_tracker = details.issueTracker.toString();
+    for (const auto& license : details.licenses) {
+        out.licenses.append(ModLicense(license));
+    }
+    out.dependencies = details.dependencies;
     return out;
 }
 

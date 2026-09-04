@@ -32,6 +32,9 @@ namespace Resources {
 // Matches the "provider" definition of the resource index schema.
 struct Source {
     QString id;
+    // The provider's version identity: a human-readable version string for most providers, or
+    // the provider's opaque file/version id when it has no such string (e.g. CurseForge, whose
+    // file id doubles as its version identifier).
     QString version;
     QUrl url;
     Side side{ Side::Unknown };

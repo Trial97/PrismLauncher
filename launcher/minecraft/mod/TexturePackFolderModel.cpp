@@ -50,9 +50,10 @@ TexturePackFolderModel::TexturePackFolderModel(const QDir& dir, MinecraftInstanc
     m_columnsHideable = { false, true, false, true, true, true, true };
 }
 
-Task* TexturePackFolderModel::createParseTask(Resource& resource)
+Task* TexturePackFolderModel::createParseTask(Resource& resource, const Resources::Entry* previous)
 {
-    return new LocalTexturePackParseTask(m_nextResolutionTicket, static_cast<TexturePack&>(resource));
+    return new LocalTexturePackParseTask(m_nextResolutionTicket, static_cast<TexturePack&>(resource),
+                                         previous ? std::make_optional(*previous) : std::nullopt);
 }
 
 QVariant TexturePackFolderModel::data(const QModelIndex& index, int role) const

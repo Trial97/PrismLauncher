@@ -70,7 +70,7 @@ QVariant DataPackFolderModel::data(const QModelIndex& index, int role) const
         case Qt::DisplayRole:
             if (column == PackFormatColumn) {
                 const auto& resource = at(row);
-                return resource.packFormatStr();
+                return resource.entry().info.details;
             }
             if (column == SizeColumn) {
                 const auto& resource = at(row);
@@ -186,7 +186,8 @@ Resource* DataPackFolderModel::createResource(const QFileInfo& file)
     return new DataPack(file);
 }
 
-Task* DataPackFolderModel::createParseTask(Resource& resource)
+Task* DataPackFolderModel::createParseTask(Resource& resource, const Resources::Entry* previous)
 {
-    return new LocalDataPackParseTask(m_nextResolutionTicket, static_cast<DataPack*>(&resource));
+    return new LocalDataPackParseTask(m_nextResolutionTicket, static_cast<DataPack*>(&resource),
+                                      previous ? std::make_optional(*previous) : std::nullopt);
 }

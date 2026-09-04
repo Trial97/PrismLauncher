@@ -80,5 +80,15 @@ Resources::Details TexturePack::toIndexDetails() const
 {
     Resources::Details out;
     out.description = description();
+    out.image = rawImage();
     return out;
+}
+
+void TexturePack::hydrateFromIndex(const Resources::Details& details)
+{
+    setDescription(details.description);
+    if (!details.image.isNull()) {
+        setImage(details.image);
+        setRawImage(details.image);
+    }
 }

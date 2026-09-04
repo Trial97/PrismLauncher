@@ -47,6 +47,9 @@ class TexturePack : public Resource {
     bool valid() const override;
 
     auto toIndexDetails() const -> Resources::Details override;
+    /** Restores description from a previously-stored index entry, used to hydrate this TexturePack
+     *  without re-parsing pack.txt when the file's hash hasn't changed. */
+    void hydrateFromIndex(const Resources::Details& details);
 
    protected:
     mutable QMutex m_data_lock;

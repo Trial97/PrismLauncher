@@ -86,6 +86,9 @@ class Mod : public Resource {
     bool valid() const override;
 
     auto toIndexDetails() const -> Resources::Details override;
+    /** Inverse of toIndexDetails() - reconstructs a ModDetails from a previously-stored index entry,
+     *  used to hydrate a Mod without re-parsing its jar when the file's hash hasn't changed. */
+    static auto detailsFromIndex(const Resources::Details& details) -> ModDetails;
 
     [[nodiscard]] int compare(const Resource& other, SortType type) const override;
     [[nodiscard]] bool applyFilter(const QRegularExpression& filter) const override;

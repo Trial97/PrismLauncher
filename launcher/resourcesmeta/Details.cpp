@@ -19,6 +19,7 @@
 #include "Details.h"
 
 #include <QBuffer>
+#include <QJsonArray>
 
 #include "Json.h"
 
@@ -40,6 +41,7 @@ QJsonObject Details::toJson() const
     }
     obj.insert(QStringLiteral("imagePath"), imagePath);
     obj.insert(QStringLiteral("description"), description);
+    obj.insert(QStringLiteral("id"), id);
     obj.insert(QStringLiteral("new_format_id"), newFormatId);
     obj.insert(QStringLiteral("details"), details);
     obj.insert(QStringLiteral("name"), name);
@@ -55,6 +57,13 @@ QJsonObject Details::toJson() const
     obj.insert(QStringLiteral("authors"), Json::toJsonArray<QString>(authors));
     obj.insert(QStringLiteral("licenses"), Json::toJsonArray<QString>(licenses));
     obj.insert(QStringLiteral("dependencies"), Json::toJsonArray<QString>(dependencies));
+    obj.insert(QStringLiteral("packFormat"), packFormat);
+    if (packFormatMin.first != 0 || packFormatMin.second != 0) {
+        obj.insert(QStringLiteral("packFormatMin"), QJsonArray{ packFormatMin.first, packFormatMin.second });
+    }
+    if (packFormatMax.first != 0 || packFormatMax.second != 0) {
+        obj.insert(QStringLiteral("packFormatMax"), QJsonArray{ packFormatMax.first, packFormatMax.second });
+    }
     return obj;
 }
 
@@ -68,6 +77,7 @@ void Details::fromJson(const QJsonObject& obj)
         }
     }
     description = obj.value(QStringLiteral("description")).toString();
+    id = obj.value(QStringLiteral("id")).toString();
     newFormatId = obj.value(QStringLiteral("new_format_id")).toString();
     details = obj.value(QStringLiteral("details")).toString();
     name = obj.value(QStringLiteral("name")).toString();
@@ -92,6 +102,13 @@ void Details::fromJson(const QJsonObject& obj)
     issueTracker = QUrl(obj.value(QStringLiteral("issueTracker")).toString());
     for (const auto& value : obj.value(QStringLiteral("dependencies")).toArray()) {
         dependencies.append(value.toString());
+    }
+    packFormat = obj.value(QStringLiteral("packFormat")).toInt();
+    if (auto min = obj.value(QStringLiteral("packFormatMin")).toArray(); min.size() == 2) {
+        packFormatMin = { min.at(0).toInt(), min.at(1).toInt() };
+    }
+    if (auto max = obj.value(QStringLiteral("packFormatMax")).toArray(); max.size() == 2) {
+        packFormatMax = { max.at(0).toInt(), max.at(1).toInt() };
     }
 }
 

@@ -229,7 +229,7 @@ void ResourcePackPage::changeResourcePackVersion()
 
     Resource& resource = m_model->at(m_filterModel->mapToSource(rows[0]).row());
 
-    if (resource.metadata() == nullptr) {
+    if (resource.entry().providers.isEmpty()) {
         return;
     }
 
@@ -237,6 +237,7 @@ void ResourcePackPage::changeResourcePackVersion()
     connect(this, &QObject::destroyed, m_downloadDialog, &QDialog::close);
     connect(m_downloadDialog, &QDialog::finished, this, &ResourcePackPage::downloadDialogFinished);
 
-    m_downloadDialog->setResourceMetadata(resource.metadata());
+    const auto& entry = resource.entry();
+    m_downloadDialog->setResourceMetadata(entry.primaryProvider(), *entry.primarySource(), entry.info.name);
     m_downloadDialog->open();
 }
