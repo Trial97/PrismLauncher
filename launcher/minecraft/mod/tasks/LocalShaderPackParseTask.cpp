@@ -23,6 +23,7 @@
 
 #include "FileSystem.h"
 #include "archive/ArchiveReader.h"
+#include "resourcesmeta/HashAlgorithm.h"
 
 namespace ShaderPackUtils {
 
@@ -120,6 +121,9 @@ void LocalShaderPackParseTask::executeTask()
         emitFailed("this is not a shader pack");
         return;
     }
+
+    m_shader_pack.setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_shader_pack.fileinfo().absoluteFilePath(),
+                                                                                                  Resources::HashAlgorithm::Sha256) } });
 
     if (m_aborted)
         emitAborted();

@@ -6,6 +6,7 @@
 #include "minecraft/mod/Mod.h"
 #include "minecraft/mod/ModDetails.h"
 
+#include "resourcesmeta/Hashes.h"
 #include "tasks/Task.h"
 
 namespace ModUtils {
@@ -35,6 +36,7 @@ class LocalModParseTask : public Task {
    public:
     struct Result {
         ModDetails details;
+        Resources::Hashes hashes;
     };
     using ResultPtr = std::shared_ptr<Result>;
     ResultPtr result() const { return m_result; }

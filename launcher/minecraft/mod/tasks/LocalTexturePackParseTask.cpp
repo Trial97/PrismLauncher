@@ -21,6 +21,7 @@
 
 #include "FileSystem.h"
 #include "archive/ArchiveReader.h"
+#include "resourcesmeta/HashAlgorithm.h"
 
 #include <QCryptographicHash>
 
@@ -200,6 +201,9 @@ void LocalTexturePackParseTask::executeTask()
         emitFailed("this is not a texture pack");
         return;
     }
+
+    m_texture_pack.setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_texture_pack.fileinfo().absoluteFilePath(),
+                                                                                                    Resources::HashAlgorithm::Sha256) } });
 
     if (m_aborted)
         emitAborted();

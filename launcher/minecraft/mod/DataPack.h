@@ -63,6 +63,8 @@ class DataPack : public Resource {
 
     QString packFormatStr() const;
 
+    auto toIndexDetails() const -> Resources::Details override;
+
    protected:
     virtual QMap<std::pair<int, int>, std::pair<Version, Version>> mappings() const;
 

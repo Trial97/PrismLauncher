@@ -61,7 +61,7 @@
 #include "ui/dialogs/CustomMessageBox.h"
 
 ModFolderModel::ModFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent)
-    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, parent)
+    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, Resources::Type::Mod, parent)
 {
     m_columnNames = QStringList({ "Enable", "Image", "Name", "Version", "Last Modified", "Provider", "Size", "Side", "Loaders",
                                   "Minecraft Versions", "Release Type", "Requires", "Required By", "File Name" });
@@ -288,6 +288,8 @@ void ModFolderModel::onParseSucceeded(int ticket, const QString& resourceId)
     if (result && resource) {
         auto* mod = static_cast<Mod*>(resource.get());
         mod->finishResolvingWithDetails(std::move(result->details));
+        mod->setHashes(result->hashes);
+        upsertIndexEntry(*mod);
     }
     emit dataChanged(index(row, RequiresColumn), index(row, RequiredByColumn));
 }

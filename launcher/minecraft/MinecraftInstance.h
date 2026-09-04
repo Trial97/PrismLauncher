@@ -42,6 +42,7 @@
 #include "BaseInstance.h"
 #include "minecraft/launch/MinecraftTarget.h"
 #include "minecraft/mod/Mod.h"
+#include "resourcesmeta/Index.h"
 
 class ModFolderModel;
 class ResourceFolderModel;
@@ -120,6 +121,11 @@ class MinecraftInstance : public BaseInstance {
     QList<ResourceFolderModel*> resourceLists();
     WorldList* worldList();
 
+    //////  Resource index  //////
+    Resources::Index* resourcesIndex();
+    QString resourcesIndexPath() const;
+    void saveResourcesIndex();
+
     //////  Launch stuff //////
     QList<Task::Ptr> createUpdateTask() override;
     LaunchTask* createLaunchTask(AuthSessionPtr account, MinecraftTarget::Ptr targetToJoin) override;
@@ -169,4 +175,7 @@ class MinecraftInstance : public BaseInstance {
     std::unique_ptr<TexturePackFolderModel> m_texture_pack_list;
     std::unique_ptr<DataPackFolderModel> m_data_pack_list;
     std::unique_ptr<WorldList> m_world_list;
+
+    std::unique_ptr<Resources::Index> m_resources_index;
+    bool m_resources_index_save_scheduled = false;
 };

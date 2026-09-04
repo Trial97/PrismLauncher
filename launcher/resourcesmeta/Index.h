@@ -19,6 +19,8 @@
 #pragma once
 
 #include <QList>
+#include <QString>
+#include <optional>
 
 #include "Entry.h"
 
@@ -32,6 +34,22 @@ struct Index : public QList<Entry> {
 
     QJsonArray toJson() const;
     void fromJson(const QJsonArray& array);
+
+    /** Loads an index from a JSON file on disk. Returns std::nullopt if the file is missing,
+     *  unreadable, or its contents can't be parsed. */
+    static std::optional<Index> load(const QString& filePath);
+
+    /** Saves the index to a JSON file on disk, atomically. Returns whether it succeeded. */
+    bool save(const QString& filePath) const;
+
+    Entry* findByPath(const QString& path);
+    const Entry* findByPath(const QString& path) const;
+
+    /** Replaces the entry with the same path, or appends it if none exists yet. */
+    void upsert(Entry entry);
+
+    /** Removes the entry with the given path, if any. Returns whether one was removed. */
+    bool removeByPath(const QString& path);
 };
 
 }  // namespace Resources

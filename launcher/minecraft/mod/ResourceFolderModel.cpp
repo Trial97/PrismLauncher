@@ -21,6 +21,7 @@
 
 #include "Json.h"
 #include "minecraft/MinecraftInstance.h"
+#include "minecraft/mod/ResourceIndexEntry.h"
 #include "minecraft/mod/tasks/LocalResourceUpdateTask.h"
 #include "modplatform/flame/FlameAPI.h"
 #include "modplatform/flame/FlameModIndex.h"
@@ -29,8 +30,13 @@
 #include "tasks/Task.h"
 #include "ui/dialogs/CustomMessageBox.h"
 
-ResourceFolderModel::ResourceFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent)
-    : QAbstractListModel(parent), m_dir(dir), m_instance(instance), m_watcher(this), m_isIndexed(isIndexed)
+ResourceFolderModel::ResourceFolderModel(const QDir& dir,
+                                         MinecraftInstance* instance,
+                                         bool isIndexed,
+                                         bool createDir,
+                                         Resources::Type resourceType,
+                                         QObject* parent)
+    : QAbstractListModel(parent), m_dir(dir), m_instance(instance), m_watcher(this), m_isIndexed(isIndexed), m_resourceType(resourceType)
 {
     if (createDir) {
         FS::ensureFolderPathExists(m_dir.absolutePath());
@@ -228,6 +234,7 @@ bool ResourceFolderModel::uninstallResource(const QString& fileName, bool preser
         if (resourceFileName == fileName) {
             auto res = resource->destroy(indexDir(), preserveMetadata, false);
 
+            removeIndexEntry(resourceFileInfo);
             update();
 
             return res;
@@ -248,7 +255,9 @@ bool ResourceFolderModel::deleteResources(const QModelIndexList& indexes)
         }
 
         const auto& resource = m_resources.at(i.row());
+        auto resourceFileInfo = resource->fileinfo();
         resource->destroy(indexDir());
+        removeIndexEntry(resourceFileInfo);
     }
 
     update();
@@ -269,6 +278,7 @@ void ResourceFolderModel::deleteMetadata(const QModelIndexList& indexes)
 
         const auto& resource = m_resources.at(i.row());
         resource->destroyMetadata(indexDir());
+        upsertIndexEntry(*resource);
     }
 
     update();
@@ -314,6 +324,8 @@ bool ResourceFolderModel::setResourceEnabled(const QModelIndexList& indexes, Ena
 
         m_resourcesIndex.remove(oldId);
         m_resourcesIndex[newId] = row;
+
+        upsertIndexEntry(*resource);
 
         emit dataChanged(index(row, 0), index(row, columnCount(QModelIndex()) - 1));
     }
@@ -410,6 +422,26 @@ void ResourceFolderModel::resolveResource(Resource::Ptr res)
     }
 }
 
+void ResourceFolderModel::upsertIndexEntry(Resource& resource)
+{
+    if (m_instance == nullptr) {
+        return;
+    }
+    m_instance->resourcesIndex()->upsert(ResourceIndexEntry::build(resource, m_resourceType, m_instance->instanceRoot()));
+    m_instance->saveResourcesIndex();
+}
+
+void ResourceFolderModel::removeIndexEntry(const QFileInfo& fileInfo)
+{
+    if (m_instance == nullptr) {
+        return;
+    }
+    auto path = ResourceIndexEntry::canonicalRelativePath(fileInfo, m_instance->instanceRoot());
+    if (m_instance->resourcesIndex()->removeByPath(path)) {
+        m_instance->saveResourcesIndex();
+    }
+}
+
 void ResourceFolderModel::onUpdateSucceeded()
 {
     auto updateResults = static_cast<ResourceFolderLoadTask*>(m_currentUpdateTask.get())->result();
@@ -433,6 +465,7 @@ void ResourceFolderModel::onParseSucceeded(int ticket, const QString& resourceId
     }
 
     int row = m_resourcesIndex[resourceId];
+    upsertIndexEntry(*m_resources.at(row));
     emit dataChanged(index(row), index(row, columnCount(QModelIndex()) - 1));
 }
 
@@ -923,6 +956,8 @@ void ResourceFolderModel::applyUpdates(QSet<QString>& currentSet, QSet<QString>&
                     task->abort();
                 }
             }
+
+            removeIndexEntry((*removedIt)->fileinfo());
 
             beginRemoveRows(QModelIndex(), removedIndex, removedIndex);
             m_resources.erase(removedIt);

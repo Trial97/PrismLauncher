@@ -40,6 +40,7 @@
 #include <QDir>
 #include <QRegularExpression>
 #include <QString>
+#include <QUrl>
 #include <algorithm>
 
 #include "MTPixmapCache.h"
@@ -334,6 +335,27 @@ bool Mod::valid() const
 QStringList Mod::dependencies() const
 {
     return details().dependencies;
+}
+
+Resources::Details Mod::toIndexDetails() const
+{
+    Resources::Details out;
+    const auto& d = details();
+
+    out.name = d.name;
+    out.version = d.version;
+    out.mcVersion = d.mcversion;
+    out.homeUrl = QUrl(d.homeurl);
+    out.description = d.description;
+    out.authors = d.authors;
+    out.issueTracker = QUrl(d.issue_tracker);
+    for (const auto& license : d.licenses) {
+        out.licenses << (license.name.isEmpty() ? license.id : license.name);
+    }
+    out.imagePath = d.icon_file;
+    out.dependencies = d.dependencies;
+
+    return out;
 }
 
 int Mod::requiredByCount() const

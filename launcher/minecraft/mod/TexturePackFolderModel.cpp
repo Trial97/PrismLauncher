@@ -38,7 +38,7 @@
 #include "minecraft/mod/tasks/LocalTexturePackParseTask.h"
 
 TexturePackFolderModel::TexturePackFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent)
-    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, parent)
+    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, Resources::Type::TexturePack, parent)
 {
     m_columnNames = QStringList({ "Enable", "Image", "Name", "Last Modified", "Provider", "Size", "File Name" });
     m_columnNamesTranslated =

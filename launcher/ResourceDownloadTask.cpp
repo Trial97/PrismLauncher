@@ -95,6 +95,9 @@ void ResourceDownloadTask::downloadSucceeded()
     auto oldFilename = std::get<1>(to_delete);
 
     if (oldName.isEmpty() || oldFilename == m_pack_version.fileName) {
+        // fresh install (no prior version to replace) - make sure the new file is picked up
+        // (and its resource-index entry created) deterministically, regardless of watcher state.
+        m_pack_model->update();
         return;
     }
 

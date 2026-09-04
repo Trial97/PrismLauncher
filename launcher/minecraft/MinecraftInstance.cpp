@@ -36,6 +36,7 @@
  */
 
 #include "MinecraftInstance.h"
+#include <QTimer>
 #include "Application.h"
 #include "BuildConfig.h"
 #include "Json.h"
@@ -1331,6 +1332,34 @@ DataPackFolderModel* MinecraftInstance::dataPackList()
 QList<ResourceFolderModel*> MinecraftInstance::resourceLists()
 {
     return { loaderModList(), coreModList(), nilModList(), resourcePackList(), texturePackList(), shaderPackList(), dataPackList() };
+}
+
+QString MinecraftInstance::resourcesIndexPath() const
+{
+    return FS::PathCombine(instanceRoot(), "resources.index.json");
+}
+
+Resources::Index* MinecraftInstance::resourcesIndex()
+{
+    if (!m_resources_index) {
+        auto loaded = Resources::Index::load(resourcesIndexPath());
+        m_resources_index = std::make_unique<Resources::Index>(loaded.value_or(Resources::Index{}));
+    }
+    return m_resources_index.get();
+}
+
+void MinecraftInstance::saveResourcesIndex()
+{
+    if (!m_resources_index || m_resources_index_save_scheduled) {
+        return;
+    }
+    m_resources_index_save_scheduled = true;
+    QTimer::singleShot(0, this, [this] {
+        m_resources_index_save_scheduled = false;
+        if (!m_resources_index->save(resourcesIndexPath())) {
+            qWarning() << "Failed to save resources index for instance" << name();
+        }
+    });
 }
 
 WorldList* MinecraftInstance::worldList()

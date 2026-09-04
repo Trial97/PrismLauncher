@@ -25,6 +25,7 @@
 #include "Json.h"
 #include "archive/ArchiveReader.h"
 #include "minecraft/mod/ResourcePack.h"
+#include "resourcesmeta/HashAlgorithm.h"
 
 #include <QCryptographicHash>
 #include <utility>
@@ -383,6 +384,9 @@ void LocalDataPackParseTask::executeTask()
         emitFailed("process failed");
         return;
     }
+
+    m_data_pack->setHashes({ { Resources::HashAlgorithm::Sha256, Resources::HashAlgorithm::hash(m_data_pack->fileinfo().absoluteFilePath(),
+                                                                                                 Resources::HashAlgorithm::Sha256) } });
 
     emitSucceeded();
 }

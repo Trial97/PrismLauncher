@@ -264,6 +264,14 @@ QMap<std::pair<int, int>, std::pair<Version, Version>> DataPack::mappings() cons
     return s_pack_format_versions;
 }
 
+Resources::Details DataPack::toIndexDetails() const
+{
+    Resources::Details out;
+    out.description = description();
+    out.details = packFormatStr();
+    return out;
+}
+
 QString DataPack::packFormatStr() const
 {
     if (m_pack_format != 0) {

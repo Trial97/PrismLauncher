@@ -43,7 +43,7 @@
 #include "minecraft/mod/tasks/LocalDataPackParseTask.h"
 
 DataPackFolderModel::DataPackFolderModel(const QString& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent)
-    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, parent)
+    : ResourceFolderModel(QDir(dir), instance, isIndexed, createDir, Resources::Type::DataPack, parent)
 {
     m_columnNames = QStringList({ "Enable", "Image", "Name", "Pack Format", "Last Modified", "Size", "File Name" });
     m_columnNamesTranslated =

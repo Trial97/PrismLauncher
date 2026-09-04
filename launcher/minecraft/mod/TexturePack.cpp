@@ -75,3 +75,10 @@ bool TexturePack::valid() const
 {
     return m_description != nullptr;
 }
+
+Resources::Details TexturePack::toIndexDetails() const
+{
+    Resources::Details out;
+    out.description = description();
+    return out;
+}

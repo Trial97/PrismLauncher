@@ -85,6 +85,8 @@ class Mod : public Resource {
 
     bool valid() const override;
 
+    auto toIndexDetails() const -> Resources::Details override;
+
     [[nodiscard]] int compare(const Resource& other, SortType type) const override;
     [[nodiscard]] bool applyFilter(const QRegularExpression& filter) const override;
 

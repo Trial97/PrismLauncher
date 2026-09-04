@@ -14,6 +14,7 @@
 
 #include "BaseInstance.h"
 
+#include "resourcesmeta/Type.h"
 #include "tasks/ConcurrentTask.h"
 #include "tasks/Task.h"
 
@@ -62,10 +63,17 @@ class QSortFilterProxyModel;
 class ResourceFolderModel : public QAbstractListModel {
     Q_OBJECT
    public:
-    ResourceFolderModel(const QDir& dir, MinecraftInstance* instance, bool isIndexed, bool createDir, QObject* parent = nullptr);
+    ResourceFolderModel(const QDir& dir,
+                        MinecraftInstance* instance,
+                        bool isIndexed,
+                        bool createDir,
+                        Resources::Type resourceType,
+                        QObject* parent = nullptr);
     ~ResourceFolderModel() override;
 
     virtual QString id() const { return "resource"; }
+
+    Resources::Type resourceType() const { return m_resourceType; }
 
     /** Starts watching the paths for changes.
      *
@@ -218,6 +226,12 @@ class ResourceFolderModel : public QAbstractListModel {
      */
     void applyUpdates(QSet<QString>& currentSet, QSet<QString>& newSet, QMap<QString, Resource::Ptr>& newResources);
 
+    /** Builds a Resources::Entry for 'resource' and upserts+saves it into the instance's resource index. */
+    void upsertIndexEntry(Resource& resource);
+
+    /** Removes the resource index entry at the given instance-root-relative path, if any changed. */
+    void removeIndexEntry(const QFileInfo& fileInfo);
+
    protected slots:
     void directoryChanged(const QString&);
 
@@ -256,6 +270,8 @@ class ResourceFolderModel : public QAbstractListModel {
 
     bool m_isIndexed;
     bool m_firstFolderLoad = true;
+
+    Resources::Type m_resourceType;
 
     Task::Ptr m_currentUpdateTask = nullptr;
     bool m_scheduledUpdate = false;

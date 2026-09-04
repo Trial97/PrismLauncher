@@ -13,6 +13,7 @@
 #include "Json.h"
 #include "archive/ArchiveReader.h"
 #include "minecraft/mod/ModDetails.h"
+#include "resourcesmeta/HashAlgorithm.h"
 #include "settings/INIFile.h"
 
 static const QRegularExpression s_newlineRegex("\r\n|\n|\r");
@@ -807,6 +808,8 @@ void LocalModParseTask::executeTask()
     ModUtils::process(mod, ModUtils::ProcessingLevel::Full);
 
     m_result->details = mod.details();
+    m_result->hashes.insert(Resources::HashAlgorithm::Sha256,
+                            Resources::HashAlgorithm::hash(m_modFile.absoluteFilePath(), Resources::HashAlgorithm::Sha256));
 
     if (m_aborted)
         emitAborted();

@@ -9,7 +9,7 @@ class ShaderPackFolderModel : public ResourceFolderModel {
 
    public:
     explicit ShaderPackFolderModel(const QDir& dir, MinecraftInstance* instance, bool is_indexed, bool create_dir, QObject* parent = nullptr)
-        : ResourceFolderModel(dir, instance, is_indexed, create_dir, parent)
+        : ResourceFolderModel(dir, instance, is_indexed, create_dir, Resources::Type::ShaderPack, parent)
     {}
 
     virtual QString id() const override { return "shaderpacks"; }

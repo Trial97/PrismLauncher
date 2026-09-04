@@ -46,6 +46,8 @@ class TexturePack : public Resource {
 
     bool valid() const override;
 
+    auto toIndexDetails() const -> Resources::Details override;
+
    protected:
     mutable QMutex m_data_lock;
 

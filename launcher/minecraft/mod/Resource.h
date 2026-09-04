@@ -44,6 +44,8 @@
 #include <memory>
 
 #include "MetadataHandler.h"
+#include "resourcesmeta/Details.h"
+#include "resourcesmeta/Hashes.h"
 
 class MinecraftInstance;
 
@@ -117,6 +119,13 @@ class Resource {
 
     virtual auto name() const -> QString;
     virtual bool valid() const { return m_type != ResourceType::UNKNOWN; }
+
+    /** Maps this resource's locally-parsed details onto the resource-index Details schema.
+     *  Default: empty (no locally-parsed info available for this resource kind). */
+    virtual auto toIndexDetails() const -> Resources::Details { return {}; }
+
+    auto hashes() const -> Resources::Hashes { return m_hashes; }
+    void setHashes(Resources::Hashes hashes) { m_hashes = std::move(hashes); }
 
     auto status() const -> ResourceStatus { return m_status; };
     auto metadata() -> std::shared_ptr<Metadata::ModStruct> { return m_metadata; }
@@ -201,6 +210,9 @@ class Resource {
     ResourceStatus m_status = ResourceStatus::Unknown;
 
     std::shared_ptr<Metadata::ModStruct> m_metadata = nullptr;
+
+    /* Locally-computed hashes of the resource file, always including at least Sha256 once resolved. */
+    Resources::Hashes m_hashes;
 
     /* Whether the resource is enabled (e.g. shows up in the game) or not. */
     bool m_enabled = true;

@@ -326,6 +326,8 @@ set(MINECRAFT_SOURCES
     minecraft/mod/Resource.cpp
     minecraft/mod/ResourceFolderModel.h
     minecraft/mod/ResourceFolderModel.cpp
+    minecraft/mod/ResourceIndexEntry.h
+    minecraft/mod/ResourceIndexEntry.cpp
     minecraft/mod/DataPack.h
     minecraft/mod/DataPack.cpp
     minecraft/mod/DataPackFolderModel.h

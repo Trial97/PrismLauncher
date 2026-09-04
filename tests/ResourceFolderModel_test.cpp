@@ -154,7 +154,7 @@ class ResourceFolderModelTest : public QObject {
         QString file_mod = QFINDTESTDATA("testdata/Resources/supercoolmod.jar");
 
         QTemporaryDir tmp;
-        ResourceFolderModel model(QDir(tmp.path()), nullptr, false, false);
+        ResourceFolderModel model(QDir(tmp.path()), nullptr, false, false, Resources::Type::Mod);
 
         QCOMPARE(model.size(), 0);
 
@@ -199,7 +199,7 @@ class ResourceFolderModelTest : public QObject {
         QString file_mod = QFINDTESTDATA("testdata/Resources/supercoolmod.jar");
 
         QTemporaryDir tmp;
-        ResourceFolderModel model(tmp.path(), nullptr, false, false);
+        ResourceFolderModel model(tmp.path(), nullptr, false, false, Resources::Type::Mod);
 
         QCOMPARE(model.size(), 0);
 
