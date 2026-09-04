@@ -214,7 +214,7 @@ class ModrinthAPI final : public ResourceAPI {
                    ? QString("%1/version/%2").arg(BuildConfig.MODRINTH_PROD_URL, args.dependency.version)
                    : QString(R"(%1/project/%2/version?game_versions=["%3"]&loaders=["%4"]&include_changelog=%5)")
                          .arg(BuildConfig.MODRINTH_PROD_URL)
-                         .arg(args.dependency.addonId.toString())
+                         .arg(args.dependency.addonId)
                          .arg(mapMCVersionToModrinth(args.mcVersion))
                          .arg(getModLoaderStrings(args.loader).join("\",\""))
                          .arg(args.includeChangelog ? "true" : "false");

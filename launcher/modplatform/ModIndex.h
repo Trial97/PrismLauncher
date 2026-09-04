@@ -29,7 +29,7 @@
 #include <utility>
 #include "EnumWrapper.h"
 #include "modplatform/ResourceType.h"
-#include "resourcesmeta/DependencyType.h"
+#include "resourcesmeta/Dependency.h"
 
 class QIODevice;
 
@@ -113,12 +113,6 @@ struct IndexedVersionType : EnumWrapper<IndexedVersionType, IndexedVersionTypeVa
     using Base::Base; /* inherit ctor */
 };
 
-struct Dependency {
-    QVariant addonId;
-    Resources::DependencyType type;
-    QString version;
-};
-
 struct IndexedVersion {
     QVariant addonId;
     QVariant fileId;
@@ -134,7 +128,7 @@ struct IndexedVersion {
     QString hash;
     bool isPreferred = true;
     QString changelog;
-    QList<Dependency> dependencies;
+    QList<Resources::Dependency> dependencies;
     SideType side = SideType::NoSide;  // this is for flame API
 
     // For internal use, not provided by APIs

@@ -1,4 +1,5 @@
 #include "FlameModIndex.h"
+#include <qhashfunctions.h>
 
 #include <algorithm>
 
@@ -206,8 +207,8 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
     auto dependencies = obj["dependencies"].toArray();
     for (auto d : dependencies) {
         auto dep = d.toObject();
-        ModPlatform::Dependency dependency;
-        dependency.addonId = Json::requireInteger(dep, "modId");
+        Resources::Dependency dependency;
+        dependency.addonId = QString::number(Json::requireInteger(dep, "modId"));
         dependency.type = mapDependency(Json::requireInteger(dep, "relationType"));
         file.dependencies.append(dependency);
     }

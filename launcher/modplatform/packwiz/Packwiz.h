@@ -20,6 +20,7 @@
 #pragma once
 
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/Dependency.h"
 
 #include <QString>
 #include <QUrl>
@@ -53,7 +54,7 @@ class V1 {
         QVariant project_id{};
         QString version_number{};
 
-        QList<ModPlatform::Dependency> dependencies;
+        QList<Resources::Dependency> dependencies;
 
        public:
         // This is a totally heuristic, but should work for now.

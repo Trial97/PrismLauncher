@@ -181,7 +181,7 @@ ModPlatform::IndexedVersion Modrinth::loadIndexedPackVersion(QJsonObject& obj,
     auto dependencies = obj["dependencies"].toArray();
     for (auto d : dependencies) {
         auto dep = d.toObject();
-        ModPlatform::Dependency dependency;
+        Resources::Dependency dependency;
         dependency.addonId = dep["project_id"].toString();
         dependency.version = dep["version_id"].toString();
         dependency.type = mapDependency(Json::requireString(dep, "dependency_type"));

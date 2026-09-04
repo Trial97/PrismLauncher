@@ -165,7 +165,7 @@ class FlameAPI final : public ResourceAPI {
     std::optional<QString> getInfoURL(const QString& id) const override { return QString(BuildConfig.FLAME_BASE_URL + "/mods/%1").arg(id); }
     std::optional<QString> getDependencyURL(const DependencySearchArgs& args) const override
     {
-        auto addonId = args.dependency.addonId.toString();
+        auto addonId = args.dependency.addonId;
         auto url =
             QString(BuildConfig.FLAME_BASE_URL + "/mods/%1/files?pageSize=10000&gameVersion=%2").arg(addonId, args.mcVersion.toString());
         if ((args.loader != 0U) && ModPlatform::hasSingleModLoaderSelected(args.loader)) {

@@ -125,8 +125,8 @@ void GetModDependenciesTask::prepare()
     }
 }
 
-ModPlatform::Dependency GetModDependenciesTask::getOverride(const ModPlatform::Dependency& dep,
-                                                            const ModPlatform::ResourceProvider providerName)
+Resources::Dependency GetModDependenciesTask::getOverride(const Resources::Dependency& dep,
+                                                          const ModPlatform::ResourceProvider providerName)
 {
     if (auto isQuilt = (m_loaderType & ModPlatform::Quilt) != 0U; isQuilt || (m_loaderType & ModPlatform::Fabric) != 0U) {
         auto overide = ModPlatform::getOverrideDeps();
@@ -141,17 +141,17 @@ ModPlatform::Dependency GetModDependenciesTask::getOverride(const ModPlatform::D
     return dep;
 }
 
-QList<ModPlatform::Dependency> GetModDependenciesTask::getDependenciesForVersion(const ModPlatform::IndexedVersion& version,
-                                                                                 const ModPlatform::ResourceProvider providerName)
+QList<Resources::Dependency> GetModDependenciesTask::getDependenciesForVersion(const ModPlatform::IndexedVersion& version,
+                                                                               const ModPlatform::ResourceProvider providerName)
 {
-    QList<ModPlatform::Dependency> cDependencies;
+    QList<Resources::Dependency> cDependencies;
     for (auto verDep : version.dependencies) {
         if (verDep.type != Resources::DependencyType::Required) {
             continue;
         }
         verDep = getOverride(verDep, providerName);
-        auto isOnlyVersion = providerName == ModPlatform::ResourceProvider::MODRINTH && verDep.addonId.toString().isEmpty();
-        auto isDuplicateDep = [&verDep, isOnlyVersion](const ModPlatform::Dependency& i) {
+        auto isOnlyVersion = providerName == ModPlatform::ResourceProvider::MODRINTH && verDep.addonId.isEmpty();
+        auto isDuplicateDep = [&verDep, isOnlyVersion](const Resources::Dependency& i) {
             return isOnlyVersion ? i.version == verDep.version : i.addonId == verDep.addonId;
         };
         if (std::ranges::any_of(cDependencies, isDuplicateDep)) {
@@ -213,7 +213,7 @@ Task::Ptr GetModDependenciesTask::getProjectInfoTask(const std::shared_ptr<PackD
     return info;
 }
 
-Task::Ptr GetModDependenciesTask::prepareDependencyTask(const ModPlatform::Dependency& dep,
+Task::Ptr GetModDependenciesTask::prepareDependencyTask(const Resources::Dependency& dep,
                                                         const ModPlatform::ResourceProvider providerName,
                                                         int level)
 {
@@ -227,10 +227,9 @@ Task::Ptr GetModDependenciesTask::prepareDependencyTask(const ModPlatform::Depen
 
     auto provider = providerName;
 
-    auto tasks = makeShared<SequentialTask>(
-        QString("DependencyInfo: %1").arg(dep.addonId.toString().isEmpty() ? dep.version : dep.addonId.toString()));
+    auto tasks = makeShared<SequentialTask>(QString("DependencyInfo: %1").arg(dep.addonId.isEmpty() ? dep.version : dep.addonId));
 
-    if (!dep.addonId.toString().isEmpty()) {
+    if (!dep.addonId.isEmpty()) {
         tasks->addTask(getProjectInfoTask(pDep));
     }
 
@@ -266,9 +265,10 @@ Task::Ptr GetModDependenciesTask::prepareDependencyTask(const ModPlatform::Depen
             qWarning() << "Dependency cycle exceeded";
             return;
         }
-        if (dep.addonId.toString().isEmpty() && !pDep->version.addonId.toString().isEmpty()) {
+        if (dep.addonId.isEmpty() && !pDep->version.addonId.toString().isEmpty()) {
             pDep->pack->addonId = pDep->version.addonId;
-            auto overrideDep = getOverride({ .addonId = pDep->version.addonId, .type = pDep->dependency.type, .version = "" }, provider);
+            auto overrideDep =
+                getOverride({ .addonId = pDep->version.addonId.toString(), .type = pDep->dependency.type, .version = "" }, provider);
             if (overrideDep.addonId != pDep->version.addonId) {
                 removePack(pDep->version.addonId);
                 addTask(prepareDependencyTask(overrideDep, provider, level));
@@ -323,10 +323,10 @@ auto GetModDependenciesTask::getExtraInfo() -> QHash<QString, PackDependencyExtr
                 continue;
             }
             auto deps = smod->version.dependencies;
-            auto isRequiredByOther = [addonId, provider, version](const ModPlatform::Dependency& d) {
+            auto isRequiredByOther = [addonId, provider, version](const Resources::Dependency& d) {
                 return d.type == Resources::DependencyType::Required &&
-                       (provider == ModPlatform::ResourceProvider::MODRINTH && d.addonId.toString().isEmpty() ? version == d.version
-                                                                                                              : d.addonId == addonId);
+                       (provider == ModPlatform::ResourceProvider::MODRINTH && d.addonId.isEmpty() ? version == d.version
+                                                                                                   : d.addonId == addonId);
             };
             if (std::ranges::any_of(deps, isRequiredByOther)) {
                 reqNames.append(smod->pack->name);

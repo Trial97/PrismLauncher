@@ -216,7 +216,7 @@ Task::Ptr ResourceAPI::getDependencyVersion(const DependencySearchArgs& args, co
 
     const auto& versionsUrl = versionsUrlOptional.value();
 
-    auto netJob = makeShared<NetJob>(QString("%1::Dependency").arg(args.dependency.addonId.toString()), APPLICATION->network());
+    auto netJob = makeShared<NetJob>(QString("%1::Dependency").arg(args.dependency.addonId), APPLICATION->network());
     auto [action, response] = Net::ApiRequest::makeByteArray(versionsUrl);
     netJob->addNetAction(action);
 

@@ -99,7 +99,7 @@ class ResourceAPI {
     };
 
     struct DependencySearchArgs {
-        ModPlatform::Dependency dependency;
+        Resources::Dependency dependency;
         Version mcVersion;
         ModPlatform::ModLoaderTypes loader;
         bool includeChangelog{};
