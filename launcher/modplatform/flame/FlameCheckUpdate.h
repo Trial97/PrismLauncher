@@ -8,7 +8,7 @@ class FlameCheckUpdate : public CheckUpdateTask {
    public:
     FlameCheckUpdate(QList<Resource*>& resources,
                      std::vector<Version>& mcVersions,
-                     QList<ModPlatform::ModLoaderType> loadersList,
+                     QList<Resources::ModLoader> loadersList,
                      ResourceFolderModel* resourceModel)
         : CheckUpdateTask(resources, mcVersions, std::move(loadersList), resourceModel)
     {}

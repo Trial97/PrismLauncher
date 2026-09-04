@@ -35,7 +35,7 @@ struct Source {
     QString version;
     QUrl url;
     Side side{ Side::Unknown };
-    ModLoaderTypes loaders;
+    ModLoaders loaders;
     QStringList mcVersions;
     ReleaseType releaseType;
     QList<Dependency> dependencies;

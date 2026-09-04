@@ -45,7 +45,7 @@ using UpdateAction = std::variant<UpdateActionNone,
                                   UpdateActionImportantChanged>;
 
 struct ModloaderMapEntry {
-    ModPlatform::ModLoaderType type;
+    Resources::ModLoader type;
     QStringList knownConflictingComponents;
 };
 

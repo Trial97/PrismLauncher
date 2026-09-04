@@ -50,11 +50,11 @@
 #include <assert.h>
 
 const QMap<QString, ModloaderMapEntry> Component::KNOWN_MODLOADERS = {
-    { "net.neoforged", { ModPlatform::NeoForge, { "net.minecraftforge", "net.fabricmc.fabric-loader", "org.quiltmc.quilt-loader" } } },
-    { "net.minecraftforge", { ModPlatform::Forge, { "net.neoforged", "net.fabricmc.fabric-loader", "org.quiltmc.quilt-loader" } } },
-    { "net.fabricmc.fabric-loader", { ModPlatform::Fabric, { "net.minecraftforge", "net.neoforged", "org.quiltmc.quilt-loader" } } },
-    { "org.quiltmc.quilt-loader", { ModPlatform::Quilt, { "net.minecraftforge", "net.neoforged", "net.fabricmc.fabric-loader" } } },
-    { "com.mumfrey.liteloader", { ModPlatform::LiteLoader, {} } }
+    { "net.neoforged", { Resources::ModLoader::NeoForge, { "net.minecraftforge", "net.fabricmc.fabric-loader", "org.quiltmc.quilt-loader" } } },
+    { "net.minecraftforge", { Resources::ModLoader::Forge, { "net.neoforged", "net.fabricmc.fabric-loader", "org.quiltmc.quilt-loader" } } },
+    { "net.fabricmc.fabric-loader", { Resources::ModLoader::Fabric, { "net.minecraftforge", "net.neoforged", "org.quiltmc.quilt-loader" } } },
+    { "org.quiltmc.quilt-loader", { Resources::ModLoader::Quilt, { "net.minecraftforge", "net.neoforged", "net.fabricmc.fabric-loader" } } },
+    { "com.mumfrey.liteloader", { Resources::ModLoader::LiteLoader, {} } }
 };
 
 Component::Component(PackProfile* parent, const QString& uid)

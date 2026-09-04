@@ -222,19 +222,19 @@ void ModrinthCreationTask::createInstance()
     QString loader;
     if (!m_fabricVersion.isEmpty()) {
         components->setComponentVersion("net.fabricmc.fabric-loader", m_fabricVersion);
-        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Fabric);
+        loader = Resources::ModLoader(Resources::ModLoader::Fabric).toString();
     }
     if (!m_quiltVersion.isEmpty()) {
         components->setComponentVersion("org.quiltmc.quilt-loader", m_quiltVersion);
-        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Quilt);
+        loader = Resources::ModLoader(Resources::ModLoader::Quilt).toString();
     }
     if (!m_forgeVersion.isEmpty()) {
         components->setComponentVersion("net.minecraftforge", m_forgeVersion);
-        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::Forge);
+        loader = Resources::ModLoader(Resources::ModLoader::Forge).toString();
     }
     if (!m_neoForgeVersion.isEmpty()) {
         components->setComponentVersion("net.neoforged", m_neoForgeVersion);
-        loader = ModPlatform::getModLoaderAsString(ModPlatform::ModLoaderType::NeoForge);
+        loader = Resources::ModLoader(Resources::ModLoader::NeoForge).toString();
     }
 
     if (m_instIcon != "default") {

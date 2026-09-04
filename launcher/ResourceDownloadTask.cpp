@@ -47,7 +47,7 @@ Net::ModrinthDownloadMeta createModrinthMeta(MinecraftInstance* instance, QStrin
 
     return { .reason = std::move(reason),
              .gameVersion = profile->getComponentVersion("net.minecraft"),
-             .loader = !loaders.isEmpty() ? ModPlatform::getModLoaderAsString(loaders.first()) : "",
+             .loader = !loaders.isEmpty() ? Resources::ModLoader(loaders.first()).toString() : "",
              .dependentOn = std::move(dependentOn) };
 }
 }  // namespace

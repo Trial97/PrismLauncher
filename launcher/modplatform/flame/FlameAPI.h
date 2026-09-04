@@ -14,6 +14,7 @@
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
 #include "modplatform/flame/FlameModIndex.h"
+#include "resourcesmeta/ModLoader.h"
 
 class FlameAPI final : public ResourceAPI {
    public:
@@ -27,8 +28,8 @@ class FlameAPI final : public ResourceAPI {
     static QString getModDescription(int modId);
 
     static std::optional<ModPlatform::IndexedVersion> getLatestVersion(const QList<ModPlatform::IndexedVersion>& versions,
-                                                                       const QList<ModPlatform::ModLoaderType>& instanceLoaders,
-                                                                       ModPlatform::ModLoaderTypes fallback,
+                                                                       const QList<Resources::ModLoader>& instanceLoaders,
+                                                                       Resources::ModLoaders fallback,
                                                                        bool checkLoaders);
 
     std::pair<Task::Ptr, QByteArray*> getProjects(QStringList addonIds) const override;
@@ -42,9 +43,10 @@ class FlameAPI final : public ResourceAPI {
 
     QList<ResourceAPI::SortingMethod> getSortingMethods() const override;
 
-    static bool validateModLoaders(ModPlatform::ModLoaderTypes loaders)
+    static bool validateModLoaders(Resources::ModLoaders loaders)
     {
-        return (loaders & (ModPlatform::NeoForge | ModPlatform::Forge | ModPlatform::Fabric | ModPlatform::Quilt)) != 0;
+        return (loaders & (Resources::ModLoader::NeoForge | Resources::ModLoader::Forge | Resources::ModLoader::Fabric |
+                           Resources::ModLoader::Quilt)) != 0;
     }
 
     static ModPlatform::ResourceType getResourceType(int classId);
@@ -52,38 +54,39 @@ class FlameAPI final : public ResourceAPI {
    private:
     static int getClassId(ModPlatform::ResourceType type);
 
-    static int getMappedModLoader(ModPlatform::ModLoaderType loaders)
+    static int getMappedModLoader(Resources::ModLoader loaders)
     {
         // https://docs.curseforge.com/?http#tocS_ModLoaderType
-        switch (loaders) {
-            case ModPlatform::Forge:
+        switch (loaders.value()) {
+            case Resources::ModLoader::Forge:
                 return 1;
-            case ModPlatform::Cauldron:
+            case Resources::ModLoader::Cauldron:
                 return 2;
-            case ModPlatform::LiteLoader:
+            case Resources::ModLoader::LiteLoader:
                 return 3;
-            case ModPlatform::Fabric:
+            case Resources::ModLoader::Fabric:
                 return 4;
-            case ModPlatform::Quilt:
+            case Resources::ModLoader::Quilt:
                 return 5;
-            case ModPlatform::NeoForge:
+            case Resources::ModLoader::NeoForge:
                 return 6;
-            case ModPlatform::DataPack:
-            case ModPlatform::Babric:
-            case ModPlatform::BTA:
-            case ModPlatform::LegacyFabric:
-            case ModPlatform::Ornithe:
-            case ModPlatform::Rift:
-            case ModPlatform::None:
+            case Resources::ModLoader::DataPack:
+            case Resources::ModLoader::Babric:
+            case Resources::ModLoader::BTA:
+            case Resources::ModLoader::LegacyFabric:
+            case Resources::ModLoader::Ornithe:
+            case Resources::ModLoader::Rift:
+            case Resources::ModLoader::Unknown:
                 break;  // not supported
         }
         return 0;
     }
 
-    static QStringList getModLoaderStrings(const ModPlatform::ModLoaderTypes types)
+    static QStringList getModLoaderStrings(const Resources::ModLoaders types)
     {
         QStringList l;
-        for (auto loader : { ModPlatform::NeoForge, ModPlatform::Forge, ModPlatform::Fabric, ModPlatform::Quilt }) {
+        for (auto loader :
+             { Resources::ModLoader::NeoForge, Resources::ModLoader::Forge, Resources::ModLoader::Fabric, Resources::ModLoader::Quilt }) {
             if ((types & loader) != 0) {
                 l << QString::number(getMappedModLoader(loader));
             }
@@ -91,7 +94,7 @@ class FlameAPI final : public ResourceAPI {
         return l;
     }
 
-    static QString getModLoaderFilters(ModPlatform::ModLoaderTypes types) { return "[" + getModLoaderStrings(types).join(',') + "]"; }
+    static QString getModLoaderFilters(Resources::ModLoaders types) { return "[" + getModLoaderStrings(types).join(',') + "]"; }
 
    public:
     std::optional<QString> getSearchURL(const SearchArgs& args) const override
@@ -108,8 +111,8 @@ class FlameAPI final : public ResourceAPI {
         }
         getArguments.append("sortOrder=desc");
         if (args.loaders.has_value()) {
-            ModPlatform::ModLoaderTypes loaders = args.loaders.value();
-            loaders &= ~static_cast<std::uint16_t>(ModPlatform::ModLoaderType::DataPack);
+            Resources::ModLoaders loaders = args.loaders.value();
+            loaders &= ~static_cast<std::uint16_t>(Resources::ModLoader::DataPack);
             if (loaders != 0) {
                 getArguments.append(QString("modLoaderTypes=%1").arg(getModLoaderFilters(loaders)));
             }
@@ -134,9 +137,8 @@ class FlameAPI final : public ResourceAPI {
             url += QString("&gameVersion=%1").arg(args.mcVersions.value().front().toString());
         }
 
-        if (args.loaders.has_value() && args.loaders.value() != ModPlatform::ModLoaderType::DataPack &&
-            ModPlatform::hasSingleModLoaderSelected(args.loaders.value())) {
-            int mappedModLoader = getMappedModLoader(static_cast<ModPlatform::ModLoaderType>(static_cast<int>(args.loaders.value())));
+        if (args.loaders.has_value() && args.loaders.value() != Resources::ModLoader::DataPack && args.loaders.value().isSingle()) {
+            int mappedModLoader = getMappedModLoader(args.loaders.value().toSingle());
             url += QString("&modLoaderType=%1").arg(mappedModLoader);
         }
         return url;
@@ -168,8 +170,8 @@ class FlameAPI final : public ResourceAPI {
         auto addonId = args.dependency.addonId;
         auto url =
             QString(BuildConfig.FLAME_BASE_URL + "/mods/%1/files?pageSize=10000&gameVersion=%2").arg(addonId, args.mcVersion.toString());
-        if ((args.loader != 0U) && ModPlatform::hasSingleModLoaderSelected(args.loader)) {
-            int mappedModLoader = getMappedModLoader(static_cast<ModPlatform::ModLoaderType>(static_cast<int>(args.loader)));
+        if ((args.loader != 0U) && args.loader.isSingle()) {
+            int mappedModLoader = getMappedModLoader(args.loader.toSingle());
             url += QString("&modLoaderType=%1").arg(mappedModLoader);
         }
         return url;

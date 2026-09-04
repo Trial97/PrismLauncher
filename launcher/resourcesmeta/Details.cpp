@@ -44,8 +44,8 @@ QJsonObject Details::toJson() const
     obj.insert(QStringLiteral("version"), version);
     obj.insert(QStringLiteral("mcVersion"), mcVersion);
     obj.insert(QStringLiteral("homeurl"), homeUrl.toString());
-    if (ModLoader::toList(loaders) != QList<ModLoaderValue>{}) {
-        obj.insert(QStringLiteral("loaders"), Json::toJsonArray<QString>(ModLoader::toStringList(loaders)));
+    if (loaders) {
+        obj.insert(QStringLiteral("loaders"), Json::toJsonArray<QString>(loaders.toStringList()));
     }
     obj.insert(QStringLiteral("status"), status);
     obj.insert(QStringLiteral("provider"), provider);
@@ -80,7 +80,7 @@ void Details::fromJson(const QJsonObject& obj)
         for (const auto& value : obj.value(QStringLiteral("loaders")).toArray()) {
             loaderNames.append(value.toString());
         }
-        loaders = ModLoader::fromList(loaderNames);
+        loaders = ModLoaders::fromList(loaderNames);
     }
     status = obj.value(QStringLiteral("status")).toString();
     provider = obj.value(QStringLiteral("provider")).toString();

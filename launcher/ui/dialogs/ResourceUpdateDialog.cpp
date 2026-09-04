@@ -53,7 +53,7 @@ ResourceUpdateDialog::ResourceUpdateDialog(QWidget* parent,
                                            ResourceFolderModel* resourceModel,
                                            QList<Resource*>& searchFor,
                                            bool includeDeps,
-                                           QList<ModPlatform::ModLoaderType> loadersList)
+                                           QList<Resources::ModLoader> loadersList)
     : ReviewMessageBox(parent, tr("Confirm resources to update"), "")
     , m_parent(parent)
     , m_resourceModel(resourceModel)

@@ -24,6 +24,7 @@
 #include "Json.h"
 #include "modplatform/ModIndex.h"
 #include "resourcesmeta/DependencyType.h"
+#include "resourcesmeta/ModLoader.h"
 
 namespace {
 bool shouldDownloadOnSide(const QString& side)
@@ -157,17 +158,17 @@ ModPlatform::IndexedVersion Modrinth::loadIndexedPackVersion(QJsonObject& obj,
     auto loaders = Json::requireArray(obj, "loaders");
     for (auto loader : loaders) {
         if (loader == "neoforge") {
-            file.loaders |= ModPlatform::NeoForge;
+            file.loaders |= Resources::ModLoader::NeoForge;
         } else if (loader == "forge") {
-            file.loaders |= ModPlatform::Forge;
+            file.loaders |= Resources::ModLoader::Forge;
         } else if (loader == "cauldron") {
-            file.loaders |= ModPlatform::Cauldron;
+            file.loaders |= Resources::ModLoader::Cauldron;
         } else if (loader == "liteloader") {
-            file.loaders |= ModPlatform::LiteLoader;
+            file.loaders |= Resources::ModLoader::LiteLoader;
         } else if (loader == "fabric") {
-            file.loaders |= ModPlatform::Fabric;
+            file.loaders |= Resources::ModLoader::Fabric;
         } else if (loader == "quilt") {
-            file.loaders |= ModPlatform::Quilt;
+            file.loaders |= Resources::ModLoader::Quilt;
         }
     }
     file.version = Json::requireString(obj, "name");

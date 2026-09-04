@@ -2,6 +2,7 @@
 
 #include "minecraft/mod/tasks/GetModDependenciesTask.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/ModLoader.h"
 #include "tasks/Task.h"
 
 class ResourceDownloadTask;
@@ -13,7 +14,7 @@ class CheckUpdateTask : public Task {
    public:
     CheckUpdateTask(QList<Resource*>& resources,
                     std::vector<Version>& mcVersions,
-                    QList<ModPlatform::ModLoaderType> loadersList,
+                    QList<Resources::ModLoader> loadersList,
                     ResourceFolderModel* resourceModel)
         : m_resources(resources), m_gameVersions(mcVersions), m_loadersList(std::move(loadersList)), m_resourceModel(resourceModel)
     {}
@@ -63,7 +64,7 @@ class CheckUpdateTask : public Task {
    protected:
     QList<Resource*>& m_resources;
     std::vector<Version>& m_gameVersions;
-    QList<ModPlatform::ModLoaderType> m_loadersList;
+    QList<Resources::ModLoader> m_loadersList;
     ResourceFolderModel* m_resourceModel;
 
     std::vector<Update> m_updates;

@@ -40,7 +40,7 @@ struct Modpack {
     // not needed for instance creation
     QVariant jvmArgs;
 
-    std::optional<ModPlatform::ModLoaderType> loaderType;
+    std::optional<Resources::ModLoader> loaderType;
     QString loaderVersion;
 
     QIcon icon;
@@ -49,7 +49,7 @@ struct Modpack {
 using ModpackList = QList<Modpack>;
 
 Modpack parseDirectory(QString path);
-void legacyInstanceParsing(QString path, std::optional<ModPlatform::ModLoaderType>* loaderType, QString* loaderVersion);
+void legacyInstanceParsing(QString path, std::optional<Resources::ModLoader>* loaderType, QString* loaderVersion);
 }  // namespace FTBImportAPP
 
 // We need it for the proxy model

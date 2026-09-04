@@ -33,8 +33,8 @@ QJsonObject Source::toJson() const
     if (side.isValid()) {
         obj.insert(QStringLiteral("side"), side.toString());
     }
-    if (ModLoader::toList(loaders) != QList<ModLoaderValue>{}) {
-        obj.insert(QStringLiteral("loaders"), Json::toJsonArray<QString>(ModLoader::toStringList(loaders)));
+    if (loaders) {
+        obj.insert(QStringLiteral("loaders"), Json::toJsonArray<QString>(loaders.toStringList()));
     }
     if (!mcVersions.isEmpty()) {
         obj.insert(QStringLiteral("mcVersions"), Json::toJsonArray<QString>(mcVersions));
@@ -63,7 +63,7 @@ void Source::fromJson(const QJsonObject& obj)
         for (const auto& value : obj.value(QStringLiteral("loaders")).toArray()) {
             loaderNames.append(value.toString());
         }
-        loaders = ModLoader::fromList(loaderNames);
+        loaders = ModLoaders::fromList(loaderNames);
     }
     for (const auto& value : obj.value(QStringLiteral("mcVersions")).toArray()) {
         mcVersions.append(value.toString());

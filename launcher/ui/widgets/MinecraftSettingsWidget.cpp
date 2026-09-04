@@ -37,6 +37,7 @@
 
 #include "MinecraftSettingsWidget.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/ModLoader.h"
 #include "ui_MinecraftSettingsWidget.h"
 
 #include <QFileDialog>
@@ -269,34 +270,34 @@ void MinecraftSettingsWidget::loadSettings()
         }
 
         const bool overrideLoaders = settings->get("OverrideModDownloadLoaders").toBool();
-        const QStringList loaders = Json::toStringList(settings->get("ModDownloadLoaders").toString());
+        const auto loaders = Resources::ModLoaders::fromList(Json::toStringList(settings->get("ModDownloadLoaders").toString()));
 
         m_ui->loaderGroup->setChecked(overrideLoaders);
 
         if (overrideLoaders) {
-            m_ui->neoForge->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::NeoForge)));
-            m_ui->forge->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Forge)));
-            m_ui->fabric->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Fabric)));
-            m_ui->quilt->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Quilt)));
-            m_ui->liteLoader->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::LiteLoader)));
-            m_ui->babric->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Babric)));
-            m_ui->btaBabric->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::BTA)));
-            m_ui->legacyFabric->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::LegacyFabric)));
-            m_ui->ornithe->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Ornithe)));
-            m_ui->rift->setChecked(loaders.contains(getModLoaderAsString(ModPlatform::Rift)));
+            m_ui->neoForge->setChecked(loaders.testAnyFlag(Resources::ModLoader::NeoForge));
+            m_ui->forge->setChecked(loaders.testAnyFlag(Resources::ModLoader::Forge));
+            m_ui->fabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::Fabric));
+            m_ui->quilt->setChecked(loaders.testAnyFlag(Resources::ModLoader::Quilt));
+            m_ui->liteLoader->setChecked(loaders.testAnyFlag(Resources::ModLoader::LiteLoader));
+            m_ui->babric->setChecked(loaders.testAnyFlag(Resources::ModLoader::Babric));
+            m_ui->btaBabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::BTA));
+            m_ui->legacyFabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::LegacyFabric));
+            m_ui->ornithe->setChecked(loaders.testAnyFlag(Resources::ModLoader::Ornithe));
+            m_ui->rift->setChecked(loaders.testAnyFlag(Resources::ModLoader::Rift));
         } else {
-            auto instLoaders = m_instance->getPackProfile()->getSupportedModLoaders().value_or(ModPlatform::ModLoaderTypes(0));
+            auto instLoaders = m_instance->getPackProfile()->getSupportedModLoaders().value_or(Resources::ModLoader::Unknown);
 
-            m_ui->neoForge->setChecked(instLoaders & ModPlatform::NeoForge);
-            m_ui->forge->setChecked(instLoaders & ModPlatform::Forge);
-            m_ui->fabric->setChecked(instLoaders & ModPlatform::Fabric);
-            m_ui->quilt->setChecked(instLoaders & ModPlatform::Quilt);
-            m_ui->liteLoader->setChecked(instLoaders & ModPlatform::LiteLoader);
-            m_ui->babric->setChecked(instLoaders & ModPlatform::Babric);
-            m_ui->btaBabric->setChecked(instLoaders & ModPlatform::BTA);
-            m_ui->legacyFabric->setChecked(instLoaders & ModPlatform::LegacyFabric);
-            m_ui->ornithe->setChecked(instLoaders & ModPlatform::Ornithe);
-            m_ui->rift->setChecked(instLoaders & ModPlatform::Rift);
+            m_ui->neoForge->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::NeoForge));
+            m_ui->forge->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Forge));
+            m_ui->fabric->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Fabric));
+            m_ui->quilt->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Quilt));
+            m_ui->liteLoader->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::LiteLoader));
+            m_ui->babric->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Babric));
+            m_ui->btaBabric->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::BTA));
+            m_ui->legacyFabric->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::LegacyFabric));
+            m_ui->ornithe->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Ornithe));
+            m_ui->rift->setChecked(instLoaders.testAnyFlag(Resources::ModLoader::Rift));
         }
 
         m_ui->loaderGroup->blockSignals(false);
@@ -545,26 +546,36 @@ void MinecraftSettingsWidget::saveSelectedLoaders()
 {
     QStringList loaders;
 
-    if (m_ui->neoForge->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::NeoForge);
-    if (m_ui->forge->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Forge);
-    if (m_ui->fabric->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Fabric);
-    if (m_ui->quilt->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Quilt);
-    if (m_ui->liteLoader->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::LiteLoader);
-    if (m_ui->babric->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Babric);
-    if (m_ui->btaBabric->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::BTA);
-    if (m_ui->legacyFabric->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::LegacyFabric);
-    if (m_ui->ornithe->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Ornithe);
-    if (m_ui->rift->isChecked())
-        loaders << getModLoaderAsString(ModPlatform::Rift);
+    if (m_ui->neoForge->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::NeoForge).toString();
+    }
+    if (m_ui->forge->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Forge).toString();
+    }
+    if (m_ui->fabric->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Fabric).toString();
+    }
+    if (m_ui->quilt->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Quilt).toString();
+    }
+    if (m_ui->liteLoader->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::LiteLoader).toString();
+    }
+    if (m_ui->babric->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Babric).toString();
+    }
+    if (m_ui->btaBabric->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::BTA).toString();
+    }
+    if (m_ui->legacyFabric->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::LegacyFabric).toString();
+    }
+    if (m_ui->ornithe->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Ornithe).toString();
+    }
+    if (m_ui->rift->isChecked()) {
+        loaders << Resources::ModLoader(Resources::ModLoader::Rift).toString();
+    }
 
     m_instance->settings()->set("ModDownloadLoaders", Json::fromStringList(loaders));
 }

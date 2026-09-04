@@ -49,6 +49,7 @@
 #include "minecraft/mod/ModDetails.h"
 #include "minecraft/mod/tasks/LocalModParseTask.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/ModLoader.h"
 
 namespace {
 
@@ -207,11 +208,8 @@ auto Mod::homepage() const -> QString
 auto Mod::loaders() const -> QString
 {
     if (metadata()) {
-        QStringList loaders;
         auto modLoaders = metadata()->loaders;
-        for (auto loader : ModPlatform::modLoaderTypesToList(modLoaders)) {
-            loaders << getModLoaderAsString(loader);
-        }
+        auto loaders = modLoaders.toStringList();
         return loaders.join(", ");
     }
 

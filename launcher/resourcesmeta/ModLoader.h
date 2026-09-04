@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <QFlags>
 #include <QList>
 #include <QMetaType>
 #include <QString>
@@ -47,7 +48,26 @@ enum class ModLoaderValue : std::uint16_t {
 };
 
 using enum ModLoaderValue;
-Q_DECLARE_FLAGS(ModLoaderTypes, ModLoaderValue)
+
+struct ModLoader;
+struct ModLoaders : QFlags<ModLoaderValue> {
+    using QFlags::QFlags;
+
+    constexpr explicit ModLoaders(int value);
+    constexpr explicit ModLoaders(ModLoader loader);
+    constexpr explicit operator ModLoader() const;
+
+    bool isSingle() const;
+    ModLoader toSingle() const;
+
+    QString toString() const;
+    static ModLoaders fromString(const QString& str);
+
+    QList<ModLoader> toList() const;
+    static ModLoaders fromList(const QStringList& loaders);
+    QStringList toStringList() const;
+    static ModLoaders fromStringList(const QStringList& strings);
+};
 
 struct ModLoader : EnumWrapper<ModLoader, ModLoaderValue> {
     static constexpr auto invalid() { return Unknown; };
@@ -62,20 +82,34 @@ struct ModLoader : EnumWrapper<ModLoader, ModLoaderValue> {
         };
     };
 
-    static QList<ModLoaderValue> toList(ModLoaderTypes flags);
-    static ModLoaderTypes fromList(const QStringList& loaders);
-    static QStringList toStringList(ModLoaderTypes flags);
+    constexpr explicit ModLoader(int value) : Base(static_cast<ModLoaderValue>(value)) {}
+    int toInt() const;
 
-    ModLoaderTypes toFlags() const { return static_cast<ModLoaderTypes>(value()); }
+    ModLoaders toFlags() const { return static_cast<ModLoaders>(value()); }
 
     using enum ModLoaderValue;
     using Base = EnumWrapper<ModLoader, ModLoaderValue>;
     using Base::Base; /* inherit ctor */
 };
 
-ModLoaderValue operator|(ModLoaderValue lhs, ModLoaderValue rhs);
-ModLoaderTypes operator|(ModLoader lhs, ModLoader rhs);
+ModLoaders operator|(ModLoaders lhs, ModLoaders rhs);
+// QFlags::operator| already covers these combos but returns the sliced base QFlags<ModLoaderValue>,
+// losing ModLoaders' extra API (toStringList, isSingle, ...); these keep the result typed as ModLoaders.
+inline ModLoaders operator|(ModLoaders lhs, ModLoaderValue rhs)
+{
+    return lhs | ModLoaders(rhs);
+}
+inline ModLoaders operator|(ModLoaderValue lhs, ModLoaders rhs)
+{
+    return ModLoaders(lhs) | rhs;
+}
 
 }  // namespace Resources
 
 Q_DECLARE_METATYPE(Resources::ModLoaderValue)
+Q_DECLARE_OPERATORS_FOR_FLAGS(Resources::ModLoaders)
+
+inline uint qHash(const Resources::ModLoader& key, uint seed = 0)
+{
+    return qHash(static_cast<std::uint16_t>(key.value()), seed);
+}

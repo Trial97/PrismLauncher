@@ -75,9 +75,8 @@ void DataPackPage::downloadDialogFinished(int result)
 {
     if (result != 0) {
         ConcurrentTask tasks(tr("Download Data Packs"), APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
-        connect(&tasks, &Task::failed, this, [this](const QString& reason) {
-            CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show();
-        });
+        connect(&tasks, &Task::failed, this,
+                [this](const QString& reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
         connect(&tasks, &Task::succeeded, this, [this, &tasks]() {
             QStringList warnings = tasks.warnings();
             if (warnings.count()) {
@@ -131,7 +130,7 @@ void DataPackPage::updateDataPacks()
         modsList = m_model->allResources();
     }
 
-    ResourceUpdateDialog updateDialog(this, m_instance, m_model, modsList, false, { ModPlatform::ModLoaderType::DataPack });
+    ResourceUpdateDialog updateDialog(this, m_instance, m_model, modsList, false, { Resources::ModLoader::DataPack });
     updateDialog.checkCandidates();
 
     if (updateDialog.aborted()) {
@@ -152,9 +151,8 @@ void DataPackPage::updateDataPacks()
 
     if (updateDialog.exec() != 0) {
         ConcurrentTask tasks("Download Data Packs", APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
-        connect(&tasks, &Task::failed, this, [this](const QString& reason) {
-            CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show();
-        });
+        connect(&tasks, &Task::failed, this,
+                [this](const QString& reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
         connect(&tasks, &Task::succeeded, this, [this, &tasks]() {
             QStringList warnings = tasks.warnings();
             if (warnings.count()) {
@@ -220,9 +218,8 @@ void DataPackPage::changeDataPackVersion()
     m_downloadDialog->setResourceMetadata(resource.metadata());
     if (m_downloadDialog->exec() != 0) {
         ConcurrentTask tasks("Download Data Packs", APPLICATION->settings()->get("NumberOfConcurrentDownloads").toInt());
-        connect(&tasks, &Task::failed, this, [this](const QString& reason) {
-            CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show();
-        });
+        connect(&tasks, &Task::failed, this,
+                [this](const QString& reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->show(); });
         connect(&tasks, &Task::succeeded, this, [this, &tasks]() {
             QStringList warnings = tasks.warnings();
             if (warnings.count()) {

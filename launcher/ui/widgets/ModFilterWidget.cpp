@@ -43,6 +43,7 @@
 #include "Version.h"
 #include "meta/Index.h"
 #include "modplatform/ModIndex.h"
+#include "resourcesmeta/ModLoader.h"
 #include "ui/widgets/CheckComboBox.h"
 #include "ui_ModFilterWidget.h"
 
@@ -225,24 +226,22 @@ void ModFilterWidget::prepareBasicFilter()
     if (m_instance) {
         m_filter->hideInstalled = false;
         m_filter->side = ModPlatform::SideType::NoSide;  // or "both"
-        ModPlatform::ModLoaderTypes loaders;
+        Resources::ModLoaders loaders;
         if (m_instance->settings()->get("OverrideModDownloadLoaders").toBool()) {
-            for (auto loader : Json::toStringList(m_instance->settings()->get("ModDownloadLoaders").toString())) {
-                loaders |= ModPlatform::getModLoaderFromString(loader);
-            }
+            loaders = Resources::ModLoaders::fromList(Json::toStringList(m_instance->settings()->get("ModDownloadLoaders").toString()));
         } else {
-            loaders = m_instance->getPackProfile()->getSupportedModLoaders().value_or(ModPlatform::ModLoaderTypes(0));
+            loaders = m_instance->getPackProfile()->getSupportedModLoaders().value_or(Resources::ModLoader::Unknown);
         }
-        ui->neoForge->setChecked(loaders & ModPlatform::NeoForge);
-        ui->forge->setChecked(loaders & ModPlatform::Forge);
-        ui->fabric->setChecked(loaders & ModPlatform::Fabric);
-        ui->quilt->setChecked(loaders & ModPlatform::Quilt);
-        ui->liteLoader->setChecked(loaders & ModPlatform::LiteLoader);
-        ui->babric->setChecked(loaders & ModPlatform::Babric);
-        ui->btaBabric->setChecked(loaders & ModPlatform::BTA);
-        ui->legacyFabric->setChecked(loaders & ModPlatform::LegacyFabric);
-        ui->ornithe->setChecked(loaders & ModPlatform::Ornithe);
-        ui->rift->setChecked(loaders & ModPlatform::Rift);
+        ui->neoForge->setChecked(loaders.testAnyFlag(Resources::ModLoader::NeoForge));
+        ui->forge->setChecked(loaders.testAnyFlag(Resources::ModLoader::Forge));
+        ui->fabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::Fabric));
+        ui->quilt->setChecked(loaders.testAnyFlag(Resources::ModLoader::Quilt));
+        ui->liteLoader->setChecked(loaders.testAnyFlag(Resources::ModLoader::LiteLoader));
+        ui->babric->setChecked(loaders.testAnyFlag(Resources::ModLoader::Babric));
+        ui->btaBabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::BTA));
+        ui->legacyFabric->setChecked(loaders.testAnyFlag(Resources::ModLoader::LegacyFabric));
+        ui->ornithe->setChecked(loaders.testAnyFlag(Resources::ModLoader::Ornithe));
+        ui->rift->setChecked(loaders.testAnyFlag(Resources::ModLoader::Rift));
         m_filter->loaders = loaders;
         auto def = m_instance->getPackProfile()->getComponentVersion("net.minecraft");
         m_filter->versions.emplace_back(def);
@@ -279,31 +278,42 @@ void ModFilterWidget::onVersionFilterChanged(int)
 
 void ModFilterWidget::onLoadersFilterChanged()
 {
-    ModPlatform::ModLoaderTypes loaders;
-    if (ui->neoForge->isChecked())
-        loaders |= ModPlatform::NeoForge;
-    if (ui->forge->isChecked())
-        loaders |= ModPlatform::Forge;
-    if (ui->fabric->isChecked())
-        loaders |= ModPlatform::Fabric;
-    if (ui->quilt->isChecked())
-        loaders |= ModPlatform::Quilt;
-    if (ui->liteLoader->isChecked())
-        loaders |= ModPlatform::LiteLoader;
-    if (ui->babric->isChecked())
-        loaders |= ModPlatform::Babric;
-    if (ui->btaBabric->isChecked())
-        loaders |= ModPlatform::BTA;
-    if (ui->legacyFabric->isChecked())
-        loaders |= ModPlatform::LegacyFabric;
-    if (ui->ornithe->isChecked())
-        loaders |= ModPlatform::Ornithe;
-    if (ui->rift->isChecked())
-        loaders |= ModPlatform::Rift;
+    Resources::ModLoaders loaders;
+    if (ui->neoForge->isChecked()) {
+        loaders |= Resources::ModLoader::NeoForge;
+    }
+    if (ui->forge->isChecked()) {
+        loaders |= Resources::ModLoader::Forge;
+    }
+    if (ui->fabric->isChecked()) {
+        loaders |= Resources::ModLoader::Fabric;
+    }
+    if (ui->quilt->isChecked()) {
+        loaders |= Resources::ModLoader::Quilt;
+    }
+    if (ui->liteLoader->isChecked()) {
+        loaders |= Resources::ModLoader::LiteLoader;
+    }
+    if (ui->babric->isChecked()) {
+        loaders |= Resources::ModLoader::Babric;
+    }
+    if (ui->btaBabric->isChecked()) {
+        loaders |= Resources::ModLoader::BTA;
+    }
+    if (ui->legacyFabric->isChecked()) {
+        loaders |= Resources::ModLoader::LegacyFabric;
+    }
+    if (ui->ornithe->isChecked()) {
+        loaders |= Resources::ModLoader::Ornithe;
+    }
+    if (ui->rift->isChecked()) {
+        loaders |= Resources::ModLoader::Rift;
+    }
     m_filter_changed = loaders != m_filter->loaders;
     m_filter->loaders = loaders;
-    if (m_filter_changed)
+    if (m_filter_changed) {
         emit filterChanged();
+    }
 }
 
 void ModFilterWidget::onSideFilterChanged()

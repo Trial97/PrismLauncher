@@ -85,5 +85,5 @@ class GetModDependenciesTask : public SequentialTask {
     QStringList m_modsFileNames;
 
     Version m_version;
-    ModPlatform::ModLoaderTypes m_loaderType;
+    Resources::ModLoaders m_loaderType;
 };

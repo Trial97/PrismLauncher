@@ -22,43 +22,87 @@
 
 namespace Resources {
 
-ModLoaderValue operator|(ModLoaderValue lhs, ModLoaderValue rhs)
+ModLoaders operator|(ModLoaders lhs, ModLoaders rhs)
 {
-    return static_cast<ModLoaderValue>(static_cast<std::uint16_t>(lhs) | static_cast<std::uint16_t>(rhs));
+    auto l = static_cast<std::uint16_t>(lhs);
+    auto r = static_cast<std::uint16_t>(rhs);
+    return { static_cast<ModLoaderValue>(l | r) };
 }
 
-ModLoaderTypes operator|(ModLoader lhs, ModLoader rhs)
+int ModLoader::toInt() const
 {
-    return static_cast<ModLoaderTypes>(static_cast<ModLoaderValue>(lhs) | static_cast<ModLoaderValue>(rhs));
+    return static_cast<int>(value());
 }
 
-QList<ModLoaderValue> ModLoader::toList(ModLoaderTypes flags)
+constexpr ModLoaders::ModLoaders(int value) : QFlags(static_cast<ModLoaderValue>(static_cast<std::uint16_t>(value))) {}
+constexpr ModLoaders::ModLoaders(ModLoader loader) : QFlags(static_cast<ModLoaderValue>(loader)) {}
+
+constexpr ModLoaders::operator ModLoader() const
 {
-    QList<ModLoaderValue> out;
+    return { static_cast<ModLoaderValue>(static_cast<std::uint16_t>(*this)) };
+}
+
+bool ModLoaders::isSingle() const
+{
+    auto x = static_cast<std::uint16_t>(*this);
+    return (x != 0U) && ((x & (x - 1U)) == 0U);
+}
+
+ModLoader ModLoaders::toSingle() const
+{
+    if (!isSingle()) {
+        Q_ASSERT_X(false, "ModLoaders::toSingle", "called on a value that isn't exactly one flag");
+        return ModLoader::invalid();
+    }
+    return { static_cast<ModLoaderValue>(static_cast<std::uint16_t>(*this)) };
+}
+
+QString ModLoaders::toString() const
+{
+    if (!isSingle()) {
+        Q_ASSERT_X(false, "ModLoaders::toString", "called on a value that isn't exactly one flag; use toStringList() instead");
+        return {};
+    }
+    return toSingle().toString();
+}
+
+ModLoaders ModLoaders::fromString(const QString& str)
+{
+    return { ModLoader::fromString(str).value() };
+}
+
+QList<ModLoader> ModLoaders::toList() const
+{
+    QList<ModLoader> out;
     for (std::uint16_t bit = 1U; bit != 0U; bit <<= 1U) {
-        if (flags.testFlag(static_cast<ModLoaderValue>(bit))) {
+        if (testFlag(static_cast<ModLoaderValue>(bit))) {
             out.append(static_cast<ModLoaderValue>(bit));
         }
     }
     return out;
 }
 
-ModLoaderTypes ModLoader::fromList(const QStringList& loaders)
+ModLoaders ModLoaders::fromList(const QStringList& loaders)
 {
-    ModLoaderTypes flags;
+    ModLoaders flags;
     for (const auto& loader : loaders) {
         flags |= ModLoader::fromString(loader).value();
     }
     return flags;
 }
 
-QStringList ModLoader::toStringList(ModLoaderTypes flags)
+QStringList ModLoaders::toStringList() const
 {
     QStringList out;
-    for (const auto& loader : toList(flags)) {
+    for (const auto& loader : toList()) {
         out.append(ModLoader(loader).toString());
     }
     return out;
+}
+
+ModLoaders ModLoaders::fromStringList(const QStringList& strings)
+{
+    return fromList(strings);
 }
 
 }  // namespace Resources

@@ -11,6 +11,7 @@
 #include "modplatform/ModIndex.h"
 #include "net/ApiRequest.h"
 #include "net/NetJob.h"
+#include "resourcesmeta/ModLoader.h"
 
 std::pair<Task::Ptr, QByteArray*> FlameAPI::matchFingerprints(const QList<uint>& fingerprints)
 {
@@ -244,11 +245,11 @@ QList<ModPlatform::Category> FlameAPI::loadModCategories(const QByteArray& respo
 };
 
 std::optional<ModPlatform::IndexedVersion> FlameAPI::getLatestVersion(const QList<ModPlatform::IndexedVersion>& versions,
-                                                                      const QList<ModPlatform::ModLoaderType>& instanceLoaders,
-                                                                      ModPlatform::ModLoaderTypes fallback,
+                                                                      const QList<Resources::ModLoader>& instanceLoaders,
+                                                                      Resources::ModLoaders fallback,
                                                                       bool checkLoaders)
 {
-    static const auto s_noLoader = ModPlatform::ModLoaderType(0);
+    static const auto s_noLoader = Resources::ModLoader::Unknown;
     if (!checkLoaders) {
         std::optional<ModPlatform::IndexedVersion> ver;
         for (const auto& fileTmp : versions) {
@@ -258,8 +259,8 @@ std::optional<ModPlatform::IndexedVersion> FlameAPI::getLatestVersion(const QLis
         }
         return ver;
     }
-    QHash<ModPlatform::ModLoaderType, ModPlatform::IndexedVersion> bestMatch;
-    auto checkVersion = [&bestMatch](const ModPlatform::IndexedVersion& version, const ModPlatform::ModLoaderType& loader) {
+    QHash<Resources::ModLoader, ModPlatform::IndexedVersion> bestMatch;
+    auto checkVersion = [&bestMatch](const ModPlatform::IndexedVersion& version, const Resources::ModLoader& loader) {
         if (bestMatch.contains(loader)) {
             auto best = bestMatch.value(loader);
             if (version.date > best.date) {
@@ -270,7 +271,7 @@ std::optional<ModPlatform::IndexedVersion> FlameAPI::getLatestVersion(const QLis
         }
     };
     for (const auto& fileTmp : versions) {
-        auto loaders = ModPlatform::modLoaderTypesToList(fileTmp.loaders);
+        auto loaders = fileTmp.loaders.toList();
         if (loaders.isEmpty()) {
             checkVersion(fileTmp, s_noLoader);
         } else {
@@ -280,7 +281,7 @@ std::optional<ModPlatform::IndexedVersion> FlameAPI::getLatestVersion(const QLis
         }
     }
     // edge case: mod has installed for forge but the instance is fabric => fabric version will be prioritizated on update
-    auto currentLoaders = instanceLoaders + ModPlatform::modLoaderTypesToList(fallback);
+    auto currentLoaders = instanceLoaders + fallback.toList();
     currentLoaders.append(s_noLoader);  // add a fallback in case the versions do not define a loader
 
     for (auto loader : currentLoaders) {

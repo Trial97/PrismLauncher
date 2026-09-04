@@ -195,11 +195,11 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
     }
 
     toml::array loaders;
-    for (auto loader : ModPlatform::modLoaderTypesToList(mod.loaders)) {
-        loaders.push_back(getModLoaderAsString(loader).toStdString());
+    for (const auto& loader : mod.loaders.toStringList()) {
+        loaders.push_back(loader.toStdString());
     }
     toml::array mcVersions;
-    for (auto version : mod.mcVersions) {
+    for (const auto& version : mod.mcVersions) {
         mcVersions.push_back(version.toStdString());
     }
 
@@ -209,7 +209,7 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
     }
 
     toml::array deps;
-    for (auto dep : mod.dependencies) {
+    for (const auto& dep : mod.dependencies) {
         auto tbl = toml::table{ { "addonId", dep.addonId.toStdString() }, { "type", dep.type.toString().toUpper().toStdString() } };
         if (!dep.version.isEmpty()) {
             tbl.emplace("version", dep.version.toStdString());
@@ -304,7 +304,7 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
         if (auto loaders = table["x-prismlauncher-loaders"]; loaders && loaders.is_array()) {
             for (auto&& loader : *loaders.as_array()) {
                 if (loader.is_string()) {
-                    mod.loaders |= ModPlatform::getModLoaderFromString(QString::fromStdString(loader.as_string()->value_or("")));
+                    mod.loaders |= Resources::ModLoader::fromString(QString::fromStdString(loader.as_string()->value_or(""))).value();
                 }
             }
         }

@@ -82,13 +82,13 @@ Modpack parseDirectory(QString path)
                 const auto loader = parts.first().toLower();
                 modpack.loaderVersion = parts.at(1).trimmed();
                 if (loader == "neoforge") {
-                    modpack.loaderType = ModPlatform::NeoForge;
+                    modpack.loaderType = Resources::ModLoader::NeoForge;
                 } else if (loader == "forge") {
-                    modpack.loaderType = ModPlatform::Forge;
+                    modpack.loaderType = Resources::ModLoader::Forge;
                 } else if (loader == "fabric") {
-                    modpack.loaderType = ModPlatform::Fabric;
+                    modpack.loaderType = Resources::ModLoader::Fabric;
                 } else if (loader == "quilt") {
-                    modpack.loaderType = ModPlatform::Quilt;
+                    modpack.loaderType = Resources::ModLoader::Quilt;
                 }
             }
         }
@@ -109,7 +109,7 @@ Modpack parseDirectory(QString path)
     return modpack;
 }
 
-void legacyInstanceParsing(QString path, std::optional<ModPlatform::ModLoaderType>* loaderType, QString* loaderVersion)
+void legacyInstanceParsing(QString path, std::optional<Resources::ModLoader>* loaderType, QString* loaderVersion)
 {
     auto versionsFile = QFileInfo(FS::PathCombine(path, ".ftbapp", "version.json"));
     if (!versionsFile.exists() || !versionsFile.isFile()) {
@@ -129,19 +129,19 @@ void legacyInstanceParsing(QString path, std::optional<ModPlatform::ModLoaderTyp
             auto name = Json::requireString(obj, "name", "name");
             auto version = Json::requireString(obj, "version", "version");
             if (name == "neoforge") {
-                *loaderType = ModPlatform::NeoForge;
+                *loaderType = Resources::ModLoader::NeoForge;
                 *loaderVersion = version;
                 break;
             } else if (name == "forge") {
-                *loaderType = ModPlatform::Forge;
+                *loaderType = Resources::ModLoader::Forge;
                 *loaderVersion = version;
                 break;
             } else if (name == "fabric") {
-                *loaderType = ModPlatform::Fabric;
+                *loaderType = Resources::ModLoader::Fabric;
                 *loaderVersion = version;
                 break;
             } else if (name == "quilt") {
-                *loaderType = ModPlatform::Quilt;
+                *loaderType = Resources::ModLoader::Quilt;
                 *loaderVersion = version;
                 break;
             }

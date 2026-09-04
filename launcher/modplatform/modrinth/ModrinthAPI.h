@@ -8,6 +8,7 @@
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"
 #include "modplatform/modrinth/ModrinthPackIndex.h"
+#include "resourcesmeta/ModLoader.h"
 
 #include <QDebug>
 #include <QJsonArray>
@@ -30,12 +31,12 @@ class ModrinthAPI final : public ResourceAPI {
     std::pair<Task::Ptr, QByteArray*> latestVersion(const QString& hash,
                                                     const QString& hashFormat,
                                                     std::optional<std::vector<Version>> mcVersions,
-                                                    std::optional<ModPlatform::ModLoaderTypes> loaders) const;
+                                                    std::optional<Resources::ModLoaders> loaders) const;
 
     std::pair<Task::Ptr, QByteArray*> latestVersions(const QStringList& hashes,
                                                      const QString& hashFormat,
                                                      std::optional<std::vector<Version>> mcVersions,
-                                                     std::optional<ModPlatform::ModLoaderTypes> loaders) const;
+                                                     std::optional<Resources::ModLoaders> loaders) const;
 
     std::pair<Task::Ptr, QByteArray*> getProjects(QStringList addonIds) const override;
 
@@ -48,20 +49,21 @@ class ModrinthAPI final : public ResourceAPI {
 
     static auto getAuthorURL(const QString& name) -> QString { return "https://modrinth.com/user/" + name; };
 
-    static auto getModLoaderStrings(const ModPlatform::ModLoaderTypes types) -> QStringList
+    static auto getModLoaderStrings(const Resources::ModLoaders types) -> QStringList
     {
         QStringList l;
-        for (auto loader : { ModPlatform::NeoForge, ModPlatform::Forge, ModPlatform::Fabric, ModPlatform::Quilt, ModPlatform::LiteLoader,
-                             ModPlatform::DataPack, ModPlatform::Babric, ModPlatform::BTA, ModPlatform::LegacyFabric, ModPlatform::Ornithe,
-                             ModPlatform::Rift }) {
+        for (auto loader :
+             { Resources::ModLoader::NeoForge, Resources::ModLoader::Forge, Resources::ModLoader::Fabric, Resources::ModLoader::Quilt,
+               Resources::ModLoader::LiteLoader, Resources::ModLoader::DataPack, Resources::ModLoader::Babric, Resources::ModLoader::BTA,
+               Resources::ModLoader::LegacyFabric, Resources::ModLoader::Ornithe, Resources::ModLoader::Rift }) {
             if ((types & loader) != 0U) {
-                l << getModLoaderAsString(loader);
+                l << Resources::ModLoader(loader).toString();
             }
         }
         return l;
     }
 
-    static auto getModLoaderFilters(ModPlatform::ModLoaderTypes types) -> QString
+    static auto getModLoaderFilters(Resources::ModLoaders types) -> QString
     {
         QStringList l;
         for (const auto& loader : getModLoaderStrings(types)) {
@@ -201,11 +203,12 @@ class ModrinthAPI final : public ResourceAPI {
         return s.isEmpty() ? QString() : s;
     }
 
-    static auto validateModLoaders(ModPlatform::ModLoaderTypes loaders) -> bool
+    static auto validateModLoaders(Resources::ModLoaders loaders) -> bool
     {
-        return (loaders & (ModPlatform::NeoForge | ModPlatform::Forge | ModPlatform::Fabric | ModPlatform::Quilt | ModPlatform::LiteLoader |
-                           ModPlatform::DataPack | ModPlatform::Babric | ModPlatform::BTA | ModPlatform::LegacyFabric |
-                           ModPlatform::Ornithe | ModPlatform::Rift)) != 0;
+        return (loaders & (Resources::ModLoader::NeoForge | Resources::ModLoader::Forge | Resources::ModLoader::Fabric |
+                           Resources::ModLoader::Quilt | Resources::ModLoader::LiteLoader | Resources::ModLoader::DataPack |
+                           Resources::ModLoader::Babric | Resources::ModLoader::BTA | Resources::ModLoader::LegacyFabric |
+                           Resources::ModLoader::Ornithe | Resources::ModLoader::Rift)) != 0;
     }
 
     std::optional<QString> getDependencyURL(const DependencySearchArgs& args) const override

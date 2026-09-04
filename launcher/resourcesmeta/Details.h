@@ -40,7 +40,7 @@ struct Details {
     QString mcVersion;
     QUrl homeUrl;
     QStringList authors;
-    ModLoaderTypes loaders;
+    ModLoaders loaders;
     QString status;
     QString provider;
     QStringList licenses;

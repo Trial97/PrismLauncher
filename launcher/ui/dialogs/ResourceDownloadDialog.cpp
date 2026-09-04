@@ -382,7 +382,7 @@ ResourceDownloadDialog* ResourceDownloadDialog::createMod(QWidget* parent,
         }
     }
 
-    auto loaders = instance->getPackProfile()->getSupportedModLoaders().value_or(ModPlatform::ModLoaderTypes(0));
+    auto loaders = instance->getPackProfile()->getSupportedModLoaders().value_or(Resources::ModLoader::Unknown);
 
     if (ModrinthAPI::validateModLoaders(loaders)) {
         auto* page = Modrinth::createModPage(dialog, *instance);
