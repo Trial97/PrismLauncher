@@ -58,7 +58,7 @@ void Modrinth::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
         pack.addonId = Json::requireString(obj, "id");
     }
 
-    pack.provider = ModPlatform::ResourceProvider::MODRINTH;
+    pack.provider = Resources::Platform::Modrinth;
     pack.name = Json::requireString(obj, "title");
     pack.resourceType = ModrinthAPI::getResourceType(obj["project_type"].toString());
 
@@ -231,7 +231,7 @@ ModPlatform::IndexedVersion Modrinth::loadIndexedPackVersion(QJsonObject& obj,
             file.hash = Json::requireString(hashList, preferredHashType);
             file.hashType = preferredHashType;
         } else {
-            auto hashTypes = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH);
+            auto hashTypes = Resources::Platform(Resources::Platform::Modrinth).hashType();
             for (auto& hashType : hashTypes) {
                 if (hashList.contains(hashType)) {
                     file.hash = Json::requireString(hashList, hashType);

@@ -127,8 +127,8 @@ namespace {
 
 bool checkSide(Resources::Side filter, Resources::Side value)
 {
-    return (filter != Resources::Side::Client && filter != Resources::Side::ServerSide) ||
-           (value != Resources::Side::Client && value != Resources::Side::ServerSide) || filter == value;
+    return (filter != Resources::Side::Client && filter != Resources::Side::Server) ||
+           (value != Resources::Side::Client && value != Resources::Side::Server) || filter == value;
 }
 }  // namespace
 

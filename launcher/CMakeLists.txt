@@ -516,6 +516,7 @@ set(RESOURCESMETA_SOURCES
     resourcesmeta/ModLoader.cpp
 
     resourcesmeta/Platform.h
+    resourcesmeta/Platform.cpp
 
     resourcesmeta/HashAlgorithm.h
     resourcesmeta/HashAlgorithm.cpp

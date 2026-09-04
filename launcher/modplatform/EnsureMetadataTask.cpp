@@ -17,7 +17,7 @@
 #include "settings/SettingsObject.h"
 #include "tasks/ConcurrentTask.h"
 
-EnsureMetadataTask::EnsureMetadataTask(Resource* resource, const QDir& dir, ModPlatform::ResourceProvider prov)
+EnsureMetadataTask::EnsureMetadataTask(Resource* resource, const QDir& dir, Resources::Platform prov)
     : m_indexDir(dir), m_provider(prov), m_hashingTask(nullptr), m_currentTask(nullptr)
 {
     auto hashTask = createNewHash(resource);
@@ -30,7 +30,7 @@ EnsureMetadataTask::EnsureMetadataTask(Resource* resource, const QDir& dir, ModP
     m_hashingTask = hashTask;
 }
 
-EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources, const QDir& dir, ModPlatform::ResourceProvider prov)
+EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources, const QDir& dir, Resources::Platform prov)
     : m_indexDir(dir), m_provider(prov), m_currentTask(nullptr)
 {
     auto cHashTask = makeShared<ConcurrentTask>("MakeHashesTask", APPLICATION->settings()->get("NumberOfConcurrentTasks").toInt());
@@ -47,7 +47,7 @@ EnsureMetadataTask::EnsureMetadataTask(QList<Resource*>& resources, const QDir& 
     }
 }
 
-EnsureMetadataTask::EnsureMetadataTask(QHash<QString, Resource*>& resources, const QDir& dir, ModPlatform::ResourceProvider prov)
+EnsureMetadataTask::EnsureMetadataTask(QHash<QString, Resource*>& resources, const QDir& dir, Resources::Platform prov)
     : m_resources(resources), m_indexDir(dir), m_provider(prov), m_currentTask(nullptr)
 {}
 
@@ -118,12 +118,14 @@ void EnsureMetadataTask::executeTask()
 
     Task::Ptr versionTask;
 
-    switch (m_provider) {
-        case (ModPlatform::ResourceProvider::MODRINTH):
+    switch (m_provider.value()) {
+        case (Resources::Platform::Modrinth):
             versionTask = modrinthVersionsTask();
             break;
-        case (ModPlatform::ResourceProvider::FLAME):
+        case (Resources::Platform::Curseforge):
             versionTask = flameVersionsTask();
+            break;
+        default:
             break;
     }
 
@@ -139,12 +141,14 @@ void EnsureMetadataTask::executeTask()
     connect(versionTask.get(), &Task::finished, this, [this, invalidadeLeftover] {
         Task::Ptr projectTask;
 
-        switch (m_provider) {
-            case (ModPlatform::ResourceProvider::MODRINTH):
+        switch (m_provider.value()) {
+            case (Resources::Platform::Modrinth):
                 projectTask = modrinthProjectsTask();
                 break;
-            case (ModPlatform::ResourceProvider::FLAME):
+            case (Resources::Platform::Curseforge):
                 projectTask = flameProjectsTask();
+                break;
+            default:
                 break;
         }
 
@@ -167,10 +171,10 @@ void EnsureMetadataTask::executeTask()
     });
 
     if (m_resources.size() > 1) {
-        setStatus(tr("Requesting metadata information from %1...").arg(ModPlatform::ProviderCapabilities::readableName(m_provider)));
+        setStatus(tr("Requesting metadata information from %1...").arg((m_provider).readableName()));
     } else if (!m_resources.empty()) {
         setStatus(tr("Requesting metadata information from %1 for '%2'...")
-                      .arg(ModPlatform::ProviderCapabilities::readableName(m_provider), m_resources.begin().value()->name()));
+                      .arg((m_provider).readableName(), m_resources.begin().value()->name()));
     }
 
     m_currentTask = versionTask;
@@ -225,7 +229,7 @@ void EnsureMetadataTask::emitFail(Resource* resource, QString key, RemoveFromLis
 
 Task::Ptr EnsureMetadataTask::modrinthVersionsTask()
 {
-    auto hashType = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH).first();
+    auto hashType = Resources::Platform(Resources::Platform::Modrinth).hashType().first();
 
     auto [verTask, response] = ModrinthAPI::currentVersions(m_resources.keys(), hashType);
 
@@ -508,7 +512,7 @@ void EnsureMetadataTask::updateMetadata(ModPlatform::IndexedPack& pack, ModPlatf
 
         connect(task.get(), &Task::finished, this, [this, &pack, resource] { updateMetadataCallback(pack, resource); });
 
-        m_updateMetadataTasks[ModPlatform::ProviderCapabilities::name(pack.provider) + pack.addonId.toString()] = task;
+        m_updateMetadataTasks[pack.provider.toString() + pack.addonId.toString()] = task;
         task->start();
     } catch (Json::JsonException& e) {
         qDebug() << e.cause();

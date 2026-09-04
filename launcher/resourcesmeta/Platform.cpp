@@ -16,40 +16,34 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#pragma once
-
-#include <QMetaType>
-#include <QString>
-#include <QStringList>
-#include <array>
-#include <cstdint>
-#include <utility>
-
-#include "EnumWrapper.h"
+#include "Platform.h"
 
 namespace Resources {
 
-enum class PlatformValue : std::uint8_t { Curseforge, Modrinth, Unknown };
+QString Platform::readableName() const
+{
+    switch (value()) {
+        case Curseforge:
+            return "Curseforge";
+        case Modrinth:
+            return "Modrinth";
+        case Unknown:
+            return "";
+    }
+    return "";
+}
 
-struct Platform : EnumWrapper<Platform, PlatformValue> {
-    static constexpr auto invalid() { return Unknown; };
-
-    static constexpr auto mapping()
-    {
-        return std::array{
-            std::pair{ Curseforge, "curseforge" },
-            std::pair{ Modrinth, "modrinth" },
-        };
-    };
-
-    QString readableName() const;
-    QStringList hashType() const;
-
-    using enum PlatformValue;
-    using Base = EnumWrapper<Platform, PlatformValue>;
-    using Base::Base; /* inherit ctor */
-};
+QStringList Platform::hashType() const
+{
+    switch (value()) {
+        case Modrinth:
+            return { "sha512", "sha1" };
+        case Curseforge:
+            // Try newer formats first, fall back to old format
+            return { "sha1", "md5", "murmur2" };
+        default:
+            return {};
+    }
+}
 
 }  // namespace Resources
-
-Q_DECLARE_METATYPE(Resources::Platform)

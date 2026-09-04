@@ -99,7 +99,7 @@ void removeThePrefix(QString& string)
 auto Resource::provider() const -> QString
 {
     if (metadata()) {
-        return ModPlatform::ProviderCapabilities::readableName(metadata()->provider);
+        return (metadata()->provider).readableName();
     }
 
     return QObject::tr("Unknown");

@@ -311,7 +311,7 @@ void ModFolderModel::onParseFinished()
     m_requires.clear();
     m_requiredBy.clear();
 
-    auto findByProjectID = [mods](const QVariant& modId, ModPlatform::ResourceProvider provider) -> Mod* {
+    auto findByProjectID = [mods](const QVariant& modId, Resources::Platform provider) -> Mod* {
         auto found = std::ranges::find_if(mods, [modId, provider](Mod* m) {
             return m->metadata() && m->metadata()->provider == provider && m->metadata()->project_id == modId;
         });

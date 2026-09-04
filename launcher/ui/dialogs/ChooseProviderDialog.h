@@ -4,12 +4,10 @@
 #include <QDialog>
 #include <cstdint>
 
+#include "resourcesmeta/Platform.h"
+
 namespace Ui {
 class ChooseProviderDialog;
-}
-
-namespace ModPlatform {
-enum class ResourceProvider : std::uint8_t;
 }
 
 class Mod;
@@ -24,7 +22,7 @@ class ChooseProviderDialog : public QDialog {
 
         bool try_others = false;
 
-        ModPlatform::ResourceProvider chosen;
+        Resources::Platform chosen;
     };
 
    public:
@@ -45,7 +43,7 @@ class ChooseProviderDialog : public QDialog {
     void addProviders();
     void disableInput();
 
-    auto getSelectedProvider() const -> ModPlatform::ResourceProvider;
+    auto getSelectedProvider() const -> Resources::Platform;
 
    private:
     Ui::ChooseProviderDialog* ui;

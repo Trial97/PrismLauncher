@@ -183,7 +183,7 @@ void ResourceFolderModel::installResourceWithFlameMetadata(const QString& path, 
     if (vers.addonId.isValid()) {
         ModPlatform::IndexedPack pack{
             .addonId = vers.addonId,
-            .provider = ModPlatform::ResourceProvider::FLAME,
+            .provider = Resources::Platform::Curseforge,
         };
 
         auto [job, response] = FlameAPI::get().getProject(vers.addonId.toString());

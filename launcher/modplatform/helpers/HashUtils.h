@@ -37,7 +37,7 @@ class Hasher : public Task {
     QFutureWatcher<QString> m_watcher;
 };
 
-Hasher::Ptr createHasher(const QString& filePath, ModPlatform::ResourceProvider provider);
+Hasher::Ptr createHasher(const QString& filePath, Resources::Platform provider);
 Hasher::Ptr createHasher(const QString& filePath, const QString& type);
 
 }  // namespace Hashing

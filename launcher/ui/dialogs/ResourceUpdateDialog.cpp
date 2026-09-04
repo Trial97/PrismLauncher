@@ -34,16 +34,16 @@ std::vector<Version> mcVersions(MinecraftInstance* inst)
 {
     return { inst->getPackProfile()->getComponent("net.minecraft")->getVersion() };
 }
-ModPlatform::ResourceProvider next(ModPlatform::ResourceProvider p)
+Resources::Platform next(Resources::Platform p)
 {
-    switch (p) {
-        case ModPlatform::ResourceProvider::MODRINTH:
-            return ModPlatform::ResourceProvider::FLAME;
-        case ModPlatform::ResourceProvider::FLAME:
-            return ModPlatform::ResourceProvider::MODRINTH;
+    switch (p.value()) {
+        case Resources::Platform::Modrinth:
+            return Resources::Platform::Curseforge;
+        case Resources::Platform::Curseforge:
+            return Resources::Platform::Modrinth;
+        default:
+            return Resources::Platform::Curseforge;
     }
-
-    return ModPlatform::ResourceProvider::FLAME;
 }
 
 }  // namespace
@@ -248,7 +248,7 @@ void ResourceUpdateDialog::checkCandidates()
 
             for (const auto& dep : depTask->getDependecies()) {
                 auto changelog = dep->version.changelog;
-                if (dep->pack->provider == ModPlatform::ResourceProvider::FLAME) {
+                if (dep->pack->provider == Resources::Platform::Curseforge) {
                     changelog = FlameAPI::getModFileChangelog(dep->version.addonId.toInt(), dep->version.fileId.toInt());
                 }
 
@@ -303,16 +303,18 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
     bool confirmRest = false;
     bool tryOthersRest = false;
     bool skipRest = false;
-    ModPlatform::ResourceProvider providerRest = ModPlatform::ResourceProvider::MODRINTH;
+    Resources::Platform providerRest = Resources::Platform::Modrinth;
 
     // adds resource to list based on provider
-    auto addToTmp = [&modrinthTmp, &flameTmp](Resource* resource, ModPlatform::ResourceProvider p) {
-        switch (p) {
-            case ModPlatform::ResourceProvider::MODRINTH:
+    auto addToTmp = [&modrinthTmp, &flameTmp](Resource* resource, Resources::Platform p) {
+        switch (p.value()) {
+            case Resources::Platform::Modrinth:
                 modrinthTmp.push_back(resource);
                 break;
-            case ModPlatform::ResourceProvider::FLAME:
+            case Resources::Platform::Curseforge:
                 flameTmp.push_back(resource);
+                break;
+            default:
                 break;
         }
     };
@@ -365,11 +367,11 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
 
     // prepare task for the modrinth mods
     if (!modrinthTmp.empty()) {
-        auto modrinthTask = makeShared<EnsureMetadataTask>(modrinthTmp, indexDir2, ModPlatform::ResourceProvider::MODRINTH);
+        auto modrinthTask = makeShared<EnsureMetadataTask>(modrinthTmp, indexDir2, Resources::Platform::Modrinth);
         connect(modrinthTask.get(), &EnsureMetadataTask::metadataReady, this,
                 [this](Resource* candidate) { onMetadataEnsured(candidate); });
         connect(modrinthTask.get(), &EnsureMetadataTask::metadataFailed, this, [this, &shouldTryOthers](Resource* candidate) {
-            onMetadataFailed(candidate, shouldTryOthers.find(candidate->internalId()).value(), ModPlatform::ResourceProvider::MODRINTH);
+            onMetadataFailed(candidate, shouldTryOthers.find(candidate->internalId()).value(), Resources::Platform::Modrinth);
         });
         connect(modrinthTask.get(), &EnsureMetadataTask::failed, this,
                 [this](const QString& reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->exec(); });
@@ -383,10 +385,10 @@ auto ResourceUpdateDialog::ensureMetadata() -> bool
 
     // prepare task for the flame mods
     if (!flameTmp.empty()) {
-        auto flameTask = makeShared<EnsureMetadataTask>(flameTmp, indexDir2, ModPlatform::ResourceProvider::FLAME);
+        auto flameTask = makeShared<EnsureMetadataTask>(flameTmp, indexDir2, Resources::Platform::Curseforge);
         connect(flameTask.get(), &EnsureMetadataTask::metadataReady, this, [this](Resource* candidate) { onMetadataEnsured(candidate); });
         connect(flameTask.get(), &EnsureMetadataTask::metadataFailed, this, [this, &shouldTryOthers](Resource* candidate) {
-            onMetadataFailed(candidate, shouldTryOthers.find(candidate->internalId()).value(), ModPlatform::ResourceProvider::FLAME);
+            onMetadataFailed(candidate, shouldTryOthers.find(candidate->internalId()).value(), Resources::Platform::Curseforge);
         });
         connect(flameTask.get(), &EnsureMetadataTask::failed, this,
                 [this](const QString& reason) { CustomMessageBox::selectable(this, tr("Error"), reason, QMessageBox::Critical)->exec(); });
@@ -416,17 +418,19 @@ void ResourceUpdateDialog::onMetadataEnsured(Resource* resource)
         return;
     }
 
-    switch (resource->metadata()->provider) {
-        case ModPlatform::ResourceProvider::MODRINTH:
+    switch (resource->metadata()->provider.value()) {
+        case Resources::Platform::Modrinth:
             m_modrinthToUpdate.push_back(resource);
             break;
-        case ModPlatform::ResourceProvider::FLAME:
+        case Resources::Platform::Curseforge:
             m_flameToUpdate.push_back(resource);
+            break;
+        default:
             break;
     }
 }
 
-void ResourceUpdateDialog::onMetadataFailed(Resource* resource, bool tryOthers, ModPlatform::ResourceProvider firstChoice)
+void ResourceUpdateDialog::onMetadataFailed(Resource* resource, bool tryOthers, Resources::Platform firstChoice)
 {
     if (tryOthers) {
         auto indexDir2 = indexDir();
@@ -462,7 +466,7 @@ void ResourceUpdateDialog::appendResource(const CheckUpdateTask::Update& info, Q
     itemTop->setExpanded(true);
 
     auto* providerItem = new QTreeWidgetItem(itemTop);
-    QString providerName = ModPlatform::ProviderCapabilities::readableName(info.provider);
+    QString providerName = (info.provider).readableName();
     providerItem->setText(0, tr("Provider: %1").arg(providerName));
     providerItem->setData(0, Qt::UserRole, providerName);
 
@@ -505,7 +509,7 @@ void ResourceUpdateDialog::appendResource(const CheckUpdateTask::Update& info, Q
 
     QString text = info.changelog;
     changelog->setData(0, Qt::UserRole, text);
-    if (info.provider == ModPlatform::ResourceProvider::MODRINTH) {
+    if (info.provider == Resources::Platform::Modrinth) {
         text = markdownToHTML(info.changelog.toUtf8());
     }
 

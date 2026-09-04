@@ -13,7 +13,7 @@
 void FlameMod::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
 {
     pack.addonId = Json::requireInteger(obj, "id");
-    pack.provider = ModPlatform::ResourceProvider::FLAME;
+    pack.provider = Resources::Platform::Curseforge;
     pack.name = Json::requireString(obj, "name");
     pack.slug = Json::requireString(obj, "slug");
     pack.websiteUrl = obj["links"].toObject()["websiteUrl"].toString("");
@@ -195,7 +195,7 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
     auto hashList = obj["hashes"].toArray();
     for (auto h : hashList) {
         auto hashEntry = h.toObject();
-        auto hashTypes = ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::FLAME);
+        auto hashTypes = Resources::Platform(Resources::Platform::Curseforge).hashType();
         auto hashAlgo = enumToString(hashEntry["algo"].toInt(1));
         if (hashTypes.contains(hashAlgo)) {
             file.hash = Json::requireString(hashEntry, "value");

@@ -4,6 +4,8 @@
 #include <QPushButton>
 #include <QRadioButton>
 
+#include <array>
+
 #include "modplatform/ModIndex.h"
 
 ChooseProviderDialog::ChooseProviderDialog(QWidget* parent, bool single_choice, bool allow_skipping)
@@ -65,9 +67,13 @@ void ChooseProviderDialog::confirmAll()
     accept();
 }
 
-auto ChooseProviderDialog::getSelectedProvider() const -> ModPlatform::ResourceProvider
+namespace {
+constexpr std::array<Resources::Platform, 2> s_providerChoices{ Resources::Platform::Modrinth, Resources::Platform::Curseforge };
+}
+
+auto ChooseProviderDialog::getSelectedProvider() const -> Resources::Platform
 {
-    return ModPlatform::ResourceProvider(m_providers.checkedId());
+    return s_providerChoices.at(static_cast<std::size_t>(m_providers.checkedId()));
 }
 
 void ChooseProviderDialog::addProviders()
@@ -75,8 +81,8 @@ void ChooseProviderDialog::addProviders()
     int btn_index = 0;
     QRadioButton* btn;
 
-    for (auto& provider : { ModPlatform::ResourceProvider::MODRINTH, ModPlatform::ResourceProvider::FLAME }) {
-        btn = new QRadioButton(ModPlatform::ProviderCapabilities::readableName(provider), this);
+    for (auto& provider : s_providerChoices) {
+        btn = new QRadioButton(provider.readableName(), this);
         m_providers.addButton(btn, btn_index++);
         ui->providersLayout->addWidget(btn);
     }

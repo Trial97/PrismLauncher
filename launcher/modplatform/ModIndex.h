@@ -31,20 +31,13 @@
 #include "modplatform/ResourceType.h"
 #include "resourcesmeta/Dependency.h"
 #include "resourcesmeta/ModLoader.h"
+#include "resourcesmeta/Platform.h"
 #include "resourcesmeta/ReleaseType.h"
 #include "resourcesmeta/Side.h"
 
 class QIODevice;
 
 namespace ModPlatform {
-
-enum class ResourceProvider : std::uint8_t { MODRINTH, FLAME };
-
-namespace ProviderCapabilities {
-const char* name(ResourceProvider);
-QString readableName(ResourceProvider);
-QStringList hashType(ResourceProvider);
-}  // namespace ProviderCapabilities
 
 struct ModpackAuthor {
     QString name;
@@ -113,7 +106,7 @@ struct IndexedPack {
     using Ptr = std::shared_ptr<IndexedPack>;
 
     QVariant addonId;
-    ResourceProvider provider;
+    Resources::Platform provider;
     QString name;
     QString slug;
     QString description;
@@ -155,21 +148,21 @@ struct OverrideDep {
     QString quilt;
     QString fabric;
     QString slug;
-    ModPlatform::ResourceProvider provider;
+    Resources::Platform provider;
 };
 
 inline auto getOverrideDeps() -> QList<OverrideDep>
 {
     return {
-        { .quilt = "634179", .fabric = "306612", .slug = "API", .provider = ModPlatform::ResourceProvider::FLAME },
-        { .quilt = "720410", .fabric = "308769", .slug = "KotlinLibraries", .provider = ModPlatform::ResourceProvider::FLAME },
+        { .quilt = "634179", .fabric = "306612", .slug = "API", .provider = Resources::Platform::Curseforge },
+        { .quilt = "720410", .fabric = "308769", .slug = "KotlinLibraries", .provider = Resources::Platform::Curseforge },
 
-        { .quilt = "qvIfYCYJ", .fabric = "P7dR8mSH", .slug = "API", .provider = ModPlatform::ResourceProvider::MODRINTH },
-        { .quilt = "lwVhp9o5", .fabric = "Ha28R6CL", .slug = "KotlinLibraries", .provider = ModPlatform::ResourceProvider::MODRINTH }
+        { .quilt = "qvIfYCYJ", .fabric = "P7dR8mSH", .slug = "API", .provider = Resources::Platform::Modrinth },
+        { .quilt = "lwVhp9o5", .fabric = "Ha28R6CL", .slug = "KotlinLibraries", .provider = Resources::Platform::Modrinth }
     };
 }
 
-QString getMetaURL(ResourceProvider provider, QVariant projectID);
+QString getMetaURL(Resources::Platform provider, QVariant projectID);
 
 struct Category {
     QString name;
@@ -180,4 +173,3 @@ struct Category {
 
 Q_DECLARE_METATYPE(ModPlatform::IndexedPack)
 Q_DECLARE_METATYPE(ModPlatform::IndexedPack::Ptr)
-Q_DECLARE_METATYPE(ModPlatform::ResourceProvider)

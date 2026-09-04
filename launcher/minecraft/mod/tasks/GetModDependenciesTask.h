@@ -59,20 +59,20 @@ class GetModDependenciesTask : public SequentialTask {
     QHash<QString, PackDependencyExtraInfo> getExtraInfo();
 
    private:
-    static const ResourceAPI* getAPI(ModPlatform::ResourceProvider provider)
+    static const ResourceAPI* getAPI(Resources::Platform provider)
     {
-        if (provider == ModPlatform::ResourceProvider::FLAME) {
+        if (provider == Resources::Platform::Curseforge) {
             return &FlameAPI::get();
         }
         return &ModrinthAPI::get();
     }
 
    protected slots:
-    Task::Ptr prepareDependencyTask(const Resources::Dependency&, ModPlatform::ResourceProvider, int);
-    QList<Resources::Dependency> getDependenciesForVersion(const ModPlatform::IndexedVersion&, ModPlatform::ResourceProvider providerName);
+    Task::Ptr prepareDependencyTask(const Resources::Dependency&, Resources::Platform, int);
+    QList<Resources::Dependency> getDependenciesForVersion(const ModPlatform::IndexedVersion&, Resources::Platform providerName);
     void prepare();
     Task::Ptr getProjectInfoTask(const std::shared_ptr<PackDependency>& pDep);
-    Resources::Dependency getOverride(const Resources::Dependency&, ModPlatform::ResourceProvider providerName);
+    Resources::Dependency getOverride(const Resources::Dependency&, Resources::Platform providerName);
     void removePack(const QVariant& addonId);
 
     bool isLocalyInstalled(const std::shared_ptr<PackDependency>& pDep);

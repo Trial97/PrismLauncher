@@ -8,13 +8,12 @@
 
 namespace Hashing {
 
-Hasher::Ptr createHasher(const QString& filePath, ModPlatform::ResourceProvider provider)
+Hasher::Ptr createHasher(const QString& filePath, Resources::Platform provider)
 {
-    switch (provider) {
-        case ModPlatform::ResourceProvider::MODRINTH:
-            return makeShared<Hasher>(filePath,
-                                      ModPlatform::ProviderCapabilities::hashType(ModPlatform::ResourceProvider::MODRINTH).first());
-        case ModPlatform::ResourceProvider::FLAME:
+    switch (provider.value()) {
+        case Resources::Platform::Modrinth:
+            return makeShared<Hasher>(filePath, provider.hashType().first());
+        case Resources::Platform::Curseforge:
             return makeShared<Hasher>(filePath, Resources::HashAlgorithmValue::Murmur2);
         default:
             qCritical() << "[Hashing]" << "Unrecognized mod platform!";

@@ -33,10 +33,10 @@
 #include "MMCZip.h"
 #include "modplatform/modrinth/ModrinthPackExportTask.h"
 
-ExportPackDialog::ExportPackDialog(MinecraftInstance* instance, QWidget* parent, ModPlatform::ResourceProvider provider)
+ExportPackDialog::ExportPackDialog(MinecraftInstance* instance, QWidget* parent, Resources::Platform provider)
     : QDialog(parent), m_instance(instance), m_ui(new Ui::ExportPackDialog), m_provider(provider)
 {
-    Q_ASSERT(m_provider == ModPlatform::ResourceProvider::MODRINTH || m_provider == ModPlatform::ResourceProvider::FLAME);
+    Q_ASSERT(m_provider == Resources::Platform::Modrinth || m_provider == Resources::Platform::Curseforge);
 
     m_ui->setupUi(this);
     m_ui->name->setPlaceholderText(instance->name());
@@ -46,7 +46,7 @@ ExportPackDialog::ExportPackDialog(MinecraftInstance* instance, QWidget* parent,
 
     connect(m_ui->recommendedMemoryCheckBox, &QCheckBox::toggled, m_ui->recommendedMemory, &QWidget::setEnabled);
 
-    if (m_provider == ModPlatform::ResourceProvider::MODRINTH) {
+    if (m_provider == Resources::Platform::Modrinth) {
         setWindowTitle(tr("Export Modrinth Pack"));
 
         m_ui->authorLabel->hide();
@@ -145,7 +145,7 @@ void ExportPackDialog::done(int result)
     settings->set("ExportVersion", m_ui->version->text());
     settings->set("ExportOptionalFiles", m_ui->optionalFiles->isChecked());
 
-    if (m_provider == ModPlatform::ResourceProvider::MODRINTH)
+    if (m_provider == Resources::Platform::Modrinth)
         settings->set("ExportSummary", m_ui->summary->toPlainText());
     else {
         settings->set("ExportAuthor", m_ui->author->text());
@@ -161,7 +161,7 @@ void ExportPackDialog::done(int result)
         const QString filename = FS::RemoveInvalidFilenameChars(name);
 
         QString output;
-        if (m_provider == ModPlatform::ResourceProvider::MODRINTH) {
+        if (m_provider == Resources::Platform::Modrinth) {
             output = QFileDialog::getSaveFileName(this, tr("Export %1").arg(name), FS::PathCombine(QDir::homePath(), filename + ".mrpack"),
                                                   tr("Modrinth pack") + " (*.mrpack *.zip)", nullptr);
             if (output.isEmpty())
@@ -178,7 +178,7 @@ void ExportPackDialog::done(int result)
         }
 
         Task* task;
-        if (m_provider == ModPlatform::ResourceProvider::MODRINTH) {
+        if (m_provider == Resources::Platform::Modrinth) {
             task = new ModrinthPackExportTask(name, m_ui->version->text(), m_ui->summary->toPlainText(), m_ui->optionalFiles->isChecked(),
                                               m_instance, output, std::bind(&FileIgnoreProxy::filterFile, m_proxy, std::placeholders::_1));
         } else {
@@ -212,7 +212,7 @@ void ExportPackDialog::done(int result)
 void ExportPackDialog::validate()
 {
     m_ui->buttonBox->button(QDialogButtonBox::Ok)
-        ->setDisabled(m_provider == ModPlatform::ResourceProvider::MODRINTH && m_ui->version->text().isEmpty());
+        ->setDisabled(m_provider == Resources::Platform::Modrinth && m_ui->version->text().isEmpty());
 }
 
 QString ExportPackDialog::ignoreFileName()

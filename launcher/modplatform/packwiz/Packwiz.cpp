@@ -115,7 +115,7 @@ auto V1::createModFormat([[maybe_unused]] const QDir& index_dir,
     mod.name = mod_pack.name;
     mod.filename = mod_version.fileName;
 
-    if (mod_pack.provider == ModPlatform::ResourceProvider::FLAME) {
+    if (mod_pack.provider == Resources::Platform::Curseforge) {
         mod.mode = "metadata:curseforge";
     } else {
         mod.mode = "url";
@@ -171,8 +171,8 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
     }
 
     toml::table update;
-    switch (mod.provider) {
-        case (ModPlatform::ResourceProvider::FLAME):
+    switch (mod.provider.value()) {
+        case (Resources::Platform::Curseforge):
             if (mod.file_id.toInt() == 0 || mod.project_id.toInt() == 0) {
                 qCritical() << QString("Did not write file %1 because missing information!").arg(normalized_fname);
                 return;
@@ -182,7 +182,7 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
                 { "project-id", mod.project_id.toInt() },
             };
             break;
-        case (ModPlatform::ResourceProvider::MODRINTH):
+        case (Resources::Platform::Modrinth):
             if (mod.mod_id().toString().isEmpty() || mod.version().toString().isEmpty()) {
                 qCritical() << QString("Did not write file %1 because missing information!").arg(normalized_fname);
                 return;
@@ -192,6 +192,9 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
                 { "version", mod.version().toString().toStdString() },
             };
             break;
+        default:
+            qCritical() << QString("Did not write file %1 because of an unknown provider!").arg(normalized_fname);
+            return;
     }
 
     toml::array loaders;
@@ -235,7 +238,7 @@ void V1::updateModIndex(const QDir& index_dir, Mod& mod)
                                       { "hash-format", mod.hash_format.toStdString() },
                                       { "hash", mod.hash.toStdString() },
                                   } },
-                                { "update", toml::table{ { ModPlatform::ProviderCapabilities::name(mod.provider), update } } } };
+                                { "update", toml::table{ { mod.provider.toString().toStdString(), update } } } };
         std::stringstream ss;
         ss << tbl;
         in_stream << QString::fromStdString(ss.str());
@@ -337,7 +340,7 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
     }
 
     {  // [update] info
-        using Provider = ModPlatform::ResourceProvider;
+        using Provider = Resources::Platform;
 
         auto update_table = table["update"];
         if (!update_table || !update_table.is_table()) {
@@ -346,12 +349,12 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
         }
 
         toml::table* mod_provider_table = nullptr;
-        if ((mod_provider_table = update_table[ModPlatform::ProviderCapabilities::name(Provider::FLAME)].as_table())) {
-            mod.provider = Provider::FLAME;
+        if ((mod_provider_table = update_table[Provider(Provider::Curseforge).toString().toStdString()].as_table())) {
+            mod.provider = Provider::Curseforge;
             mod.file_id = intEntry(*mod_provider_table, "file-id");
             mod.project_id = intEntry(*mod_provider_table, "project-id");
-        } else if ((mod_provider_table = update_table[ModPlatform::ProviderCapabilities::name(Provider::MODRINTH)].as_table())) {
-            mod.provider = Provider::MODRINTH;
+        } else if ((mod_provider_table = update_table[Provider(Provider::Modrinth).toString().toStdString()].as_table())) {
+            mod.provider = Provider::Modrinth;
             mod.mod_id() = stringEntry(*mod_provider_table, "mod-id");
             mod.version() = stringEntry(*mod_provider_table, "version");
         } else {

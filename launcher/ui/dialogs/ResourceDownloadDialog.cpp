@@ -212,7 +212,7 @@ void ResourceDownloadDialog::confirm()
         auto extraInfo = dependencyExtraInfo.value(task->getPack()->addonId.toString());
         confirmDialog->appendResource({ .name = task->getName(),
                                         .filename = task->getFilename(),
-                                        .provider = ModPlatform::ProviderCapabilities::name(task->getProvider()),
+                                        .provider = task->getProvider().toString(),
                                         .required_by = extraInfo.requiredByNames,
                                         .version_type = task->getVersion().versionType.toString(),
                                         .enabled = !extraInfo.maybeInstalled });
@@ -331,12 +331,14 @@ void ResourceDownloadDialog::selectedPageChanged(BasePage* previous, BasePage* s
 
 void ResourceDownloadDialog::setResourceMetadata(const std::shared_ptr<Metadata::ModStruct>& meta)
 {
-    switch (meta->provider) {
-        case ModPlatform::ResourceProvider::MODRINTH:
+    switch (meta->provider.value()) {
+        case Resources::Platform::Modrinth:
             selectPage(Modrinth::id());
             break;
-        case ModPlatform::ResourceProvider::FLAME:
+        case Resources::Platform::Curseforge:
             selectPage(Flame::id());
+            break;
+        default:
             break;
     }
 

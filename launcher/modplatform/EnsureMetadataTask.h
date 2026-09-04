@@ -12,9 +12,9 @@ class EnsureMetadataTask : public Task {
     Q_OBJECT
 
    public:
-    EnsureMetadataTask(Resource*, const QDir&, ModPlatform::ResourceProvider = ModPlatform::ResourceProvider::MODRINTH);
-    EnsureMetadataTask(QList<Resource*>&, const QDir&, ModPlatform::ResourceProvider = ModPlatform::ResourceProvider::MODRINTH);
-    EnsureMetadataTask(QHash<QString, Resource*>&, const QDir&, ModPlatform::ResourceProvider = ModPlatform::ResourceProvider::MODRINTH);
+    EnsureMetadataTask(Resource*, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
+    EnsureMetadataTask(QList<Resource*>&, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
+    EnsureMetadataTask(QHash<QString, Resource*>&, const QDir&, Resources::Platform = Resources::Platform::Modrinth);
 
     ~EnsureMetadataTask() override = default;
 
@@ -53,7 +53,7 @@ class EnsureMetadataTask : public Task {
    private:
     QHash<QString, Resource*> m_resources;
     QDir m_indexDir;
-    ModPlatform::ResourceProvider m_provider;
+    Resources::Platform m_provider;
 
     QHash<QString, ModPlatform::IndexedVersion> m_tempVersions;
     Task::Ptr m_hashingTask;
