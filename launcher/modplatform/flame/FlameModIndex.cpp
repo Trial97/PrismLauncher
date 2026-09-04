@@ -8,6 +8,7 @@
 #include "modplatform/ModIndex.h"
 #include "modplatform/flame/FlameAPI.h"
 #include "resourcesmeta/DependencyType.h"
+#include "resourcesmeta/ReleaseType.h"
 
 void FlameMod::loadIndexedPack(ModPlatform::IndexedPack& pack, QJsonObject& obj)
 {
@@ -106,6 +107,20 @@ Resources::DependencyType mapDependency(int value)
             return Resources::DependencyType::Unknown;
     }
 }
+
+Resources::ReleaseType mapReleaseType(int value)
+{
+    switch (value) {
+        case 1:
+            return Resources::ReleaseType::Release;
+        case 2:
+            return Resources::ReleaseType::Beta;
+        case 3:
+            return Resources::ReleaseType::Alpha;
+        default:
+            return Resources::ReleaseType::Unknown;
+    }
+}
 }  // namespace
 
 void FlameMod::loadIndexedPackVersions(ModPlatform::IndexedPack& pack, QJsonArray& arr)
@@ -175,22 +190,7 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
     file.fileName = Json::requireString(obj, "fileName");
     file.fileName = FS::RemoveInvalidPathChars(file.fileName);
 
-    ModPlatform::IndexedVersionType verType;
-    switch (Json::requireInteger(obj, "releaseType")) {
-        case 1:
-            verType = ModPlatform::IndexedVersionType::Release;
-            break;
-        case 2:
-            verType = ModPlatform::IndexedVersionType::Beta;
-            break;
-        case 3:
-            verType = ModPlatform::IndexedVersionType::Alpha;
-            break;
-        default:
-            verType = ModPlatform::IndexedVersionType::Unknown;
-            break;
-    }
-    file.versionType = verType;
+    file.versionType = mapReleaseType(Json::requireInteger(obj, "releaseType"));
 
     auto hashList = obj["hashes"].toArray();
     for (auto h : hashList) {

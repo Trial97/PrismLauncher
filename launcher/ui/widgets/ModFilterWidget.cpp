@@ -391,25 +391,31 @@ void ModFilterWidget::onOpenSourceFilterChanged()
     auto open = ui->openSource->isChecked();
     m_filter_changed = open != m_filter->openSource;
     m_filter->openSource = open;
-    if (m_filter_changed)
+    if (m_filter_changed) {
         emit filterChanged();
+    }
 }
 
 void ModFilterWidget::onReleaseFilterChanged()
 {
-    std::vector<ModPlatform::IndexedVersionType> releases;
-    if (ui->releaseCb->isChecked())
-        releases.push_back(ModPlatform::IndexedVersionType::Release);
-    if (ui->betaCb->isChecked())
-        releases.push_back(ModPlatform::IndexedVersionType::Beta);
-    if (ui->alphaCb->isChecked())
-        releases.push_back(ModPlatform::IndexedVersionType::Alpha);
-    if (ui->unknownCb->isChecked())
-        releases.push_back(ModPlatform::IndexedVersionType::Unknown);
+    std::vector<Resources::ReleaseType> releases;
+    if (ui->releaseCb->isChecked()) {
+        releases.emplace_back(Resources::ReleaseType::Release);
+    }
+    if (ui->betaCb->isChecked()) {
+        releases.emplace_back(Resources::ReleaseType::Beta);
+    }
+    if (ui->alphaCb->isChecked()) {
+        releases.emplace_back(Resources::ReleaseType::Alpha);
+    }
+    if (ui->unknownCb->isChecked()) {
+        releases.emplace_back(Resources::ReleaseType::Unknown);
+    }
     m_filter_changed = releases != m_filter->releases;
     m_filter->releases = releases;
-    if (m_filter_changed)
+    if (m_filter_changed) {
         emit filterChanged();
+    }
 }
 
 void ModFilterWidget::onShowMoreClicked()

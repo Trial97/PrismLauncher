@@ -31,6 +31,7 @@
 #include "modplatform/ResourceType.h"
 #include "resourcesmeta/Dependency.h"
 #include "resourcesmeta/ModLoader.h"
+#include "resourcesmeta/ReleaseType.h"
 
 class QIODevice;
 
@@ -76,27 +77,12 @@ struct DonationData {
     QString url;
 };
 
-enum class IndexedVersionTypeValue : std::uint8_t { Unknown = 0, Release = 1, Beta = 2, Alpha = 3 };
-struct IndexedVersionType : EnumWrapper<IndexedVersionType, IndexedVersionTypeValue> {
-    static constexpr auto invalid() { return Unknown; };
-
-    static constexpr auto mapping()
-    {
-        return std::array{ std::pair{ Unknown, "Unknown" }, std::pair{ Release, "Release" }, std::pair{ Beta, "Beta" },
-                           std::pair{ Alpha, "Alpha" } };
-    };
-
-    using enum IndexedVersionTypeValue;
-    using Base = EnumWrapper<IndexedVersionType, IndexedVersionTypeValue>;
-    using Base::Base; /* inherit ctor */
-};
-
 struct IndexedVersion {
     QVariant addonId;
     QVariant fileId;
     QString version;
     QString versionNumber;
-    IndexedVersionType versionType;
+    Resources::ReleaseType versionType;
     QStringList mcVersion;
     QString downloadUrl;
     QString date;

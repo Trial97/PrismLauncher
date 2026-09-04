@@ -24,7 +24,7 @@ class CheckUpdateTask : public Task {
         QString oldHash;
         QString oldVersion;
         QString newVersion;
-        std::optional<ModPlatform::IndexedVersionType> newVersionType;
+        std::optional<Resources::ReleaseType> newVersionType;
         QString changelog;
         ModPlatform::ResourceProvider provider;
         shared_qobject_ptr<ResourceDownloadTask> download;
@@ -35,7 +35,7 @@ class CheckUpdateTask : public Task {
                QString oldH,
                QString oldV,
                QString newV,
-               std::optional<ModPlatform::IndexedVersionType> newVType,
+               std::optional<Resources::ReleaseType> newVType,
                QString changelog,
                ModPlatform::ResourceProvider p,
                shared_qobject_ptr<ResourceDownloadTask> t,

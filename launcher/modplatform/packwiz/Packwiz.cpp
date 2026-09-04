@@ -300,7 +300,7 @@ auto V1::getIndexForMod(const QDir& index_dir, QString slug) -> Mod
         mod.name = stringEntry(table, "name");
         mod.filename = stringEntry(table, "filename");
         mod.side = ModPlatform::SideType::fromString(stringEntry(table, "side"));
-        mod.releaseType = ModPlatform::IndexedVersionType::fromString(table["x-prismlauncher-release-type"].value_or(""));
+        mod.releaseType = Resources::ReleaseType::fromString(table["x-prismlauncher-release-type"].value_or(""));
         if (auto loaders = table["x-prismlauncher-loaders"]; loaders && loaders.is_array()) {
             for (auto&& loader : *loaders.as_array()) {
                 if (loader.is_string()) {
