@@ -18,7 +18,6 @@
 #include "Exception.h"
 #include "FileSystem.h"
 #include "Json.h"
-#include "modplatform/helpers/HashUtils.h"
 #include "net/ApiRequest.h"
 #include "net/ChecksumValidator.h"
 #include "net/HttpMetaCache.h"
@@ -26,8 +25,9 @@
 #include "net/NetJob.h"
 
 #include "Application.h"
-#include "settings/SettingsObject.h"
 #include "BuildConfig.h"
+#include "resourcesmeta/HashAlgorithm.h"
+#include "settings/SettingsObject.h"
 #include "tasks/Task.h"
 
 namespace Meta {
@@ -123,7 +123,7 @@ void BaseEntityLoadTask::executeTask()
             if (m_entity->m_load_status == BaseEntity::LoadStatus::NotLoaded || m_entity->m_file_sha256.isEmpty()) {
                 setStatus(tr("Loading local file"));
                 fileData = FS::read(fname);
-                m_entity->m_file_sha256 = Hashing::hash(fileData, Hashing::Algorithm::Sha256);
+                m_entity->m_file_sha256 = Resources::HashAlgorithm::hash(fileData, Resources::HashAlgorithm::Sha256);
             }
 
             // on online the hash needs to match

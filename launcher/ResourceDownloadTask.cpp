@@ -33,6 +33,7 @@
 #include "modplatform/helpers/HashUtils.h"
 #include "net/ApiRequest.h"
 #include "net/ChecksumValidator.h"
+#include "resourcesmeta/HashAlgorithm.h"
 
 namespace {
 Net::ModrinthDownloadMeta createModrinthMeta(MinecraftInstance* instance, QString reason, QString dependentOn)
@@ -73,24 +74,9 @@ ResourceDownloadTask::ResourceDownloadTask(ModPlatform::IndexedPack::Ptr pack,
         m_pack_version.downloadUrl, m_pack_model->dir().absoluteFilePath(getFilename()), Net::Request::Option::NoOptions,
         createModrinthMeta(m_pack_model->instance(), std::move(downloadReason), std::move(dependentOn)));
     if (!m_pack_version.hashType.isEmpty() && !m_pack_version.hash.isEmpty()) {
-        switch (Hashing::algorithmFromString(m_pack_version.hashType)) {
-            case Hashing::Algorithm::Md4:
-                action->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Md4, m_pack_version.hash));
-                break;
-            case Hashing::Algorithm::Md5:
-                action->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Md5, m_pack_version.hash));
-                break;
-            case Hashing::Algorithm::Sha1:
-                action->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Sha1, m_pack_version.hash));
-                break;
-            case Hashing::Algorithm::Sha256:
-                action->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Sha256, m_pack_version.hash));
-                break;
-            case Hashing::Algorithm::Sha512:
-                action->addValidator(new Net::ChecksumValidator(QCryptographicHash::Algorithm::Sha512, m_pack_version.hash));
-                break;
-            default:
-                break;
+        auto alg = Resources::HashAlgorithm::fromString(m_pack_version.hashType).toCrypto();
+        if (alg != QCryptographicHash::Algorithm::NumAlgorithms) {
+            action->addValidator(new Net::ChecksumValidator(alg, m_pack_version.hash));
         }
     }
     m_filesNetJob->addNetAction(action);

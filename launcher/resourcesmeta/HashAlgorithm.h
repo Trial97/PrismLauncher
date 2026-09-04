@@ -50,6 +50,12 @@ struct HashAlgorithm : EnumWrapper<HashAlgorithm, HashAlgorithmValue> {
     QString hash(QIODevice* device) const;
     QString hash(const QString& fileName) const;
     QString hash(QByteArray data) const;
+
+    static QString hash(QIODevice* device, HashAlgorithm alg) { return alg.hash(device); }
+    static QString hash(const QString& fileName, HashAlgorithm alg) { return alg.hash(fileName); }
+    static QString hash(QByteArray data, HashAlgorithm alg) { return alg.hash(std::move(data)); }
+
+    QCryptographicHash::Algorithm toCrypto() const;
 };
 
 }  // namespace Resources

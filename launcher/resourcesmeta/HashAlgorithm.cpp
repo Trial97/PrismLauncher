@@ -48,35 +48,18 @@ QString HashAlgorithm::hash(QIODevice* device) const
     if (!device->isOpen() && !device->open(QFile::ReadOnly)) {
         return "";
     }
-    QCryptographicHash::Algorithm alg = QCryptographicHash::Sha1;
-    switch (value()) {
-        case HashAlgorithmValue::Md4:
-            alg = QCryptographicHash::Algorithm::Md4;
-            break;
-        case HashAlgorithmValue::Md5:
-            alg = QCryptographicHash::Algorithm::Md5;
-            break;
-        case HashAlgorithmValue::Sha1:
-            alg = QCryptographicHash::Algorithm::Sha1;
-            break;
-        case HashAlgorithmValue::Sha256:
-            alg = QCryptographicHash::Algorithm::Sha256;
-            break;
-        case HashAlgorithmValue::Sha512:
-            alg = QCryptographicHash::Algorithm::Sha512;
-            break;
-        case HashAlgorithmValue::Murmur2: {
-            auto shouldFilterOut = [](char c) { return (c == 9 || c == 10 || c == 13 || c == 32); };
-            auto reader = std::make_unique<QIODeviceReader>(device);
-            auto result = QString::number(Murmur2::hash(reader.get(), static_cast<std::size_t>(4) * MiB, shouldFilterOut));
-            device->close();
-            return result;
-        }
-        case HashAlgorithmValue::Unknown:
-            device->close();
-            return "";
+    if (value() == HashAlgorithmValue::Murmur2) {
+        auto shouldFilterOut = [](char c) { return (c == 9 || c == 10 || c == 13 || c == 32); };
+        auto reader = std::make_unique<QIODeviceReader>(device);
+        auto result = QString::number(Murmur2::hash(reader.get(), static_cast<std::size_t>(4) * MiB, shouldFilterOut));
+        device->close();
+        return result;
     }
-
+    auto alg = toCrypto();
+    if (alg == QCryptographicHash::Algorithm::NumAlgorithms) {
+        device->close();
+        return "";
+    }
     QCryptographicHash hash(alg);
     if (!hash.addData(device)) {
         qCritical() << "Failed to read JAR to create hash!";
@@ -97,6 +80,24 @@ QString HashAlgorithm::hash(QByteArray data) const
 {
     QBuffer buff(&data);
     return hash(&buff);
+}
+
+QCryptographicHash::Algorithm HashAlgorithm::toCrypto() const
+{
+    switch (value()) {
+        case HashAlgorithmValue::Md4:
+            return QCryptographicHash::Algorithm::Md4;
+        case HashAlgorithmValue::Md5:
+            return QCryptographicHash::Algorithm::Md5;
+        case HashAlgorithmValue::Sha1:
+            return QCryptographicHash::Algorithm::Sha1;
+        case HashAlgorithmValue::Sha256:
+            return QCryptographicHash::Algorithm::Sha256;
+        case HashAlgorithmValue::Sha512:
+            return QCryptographicHash::Algorithm::Sha512;
+        default:
+            return QCryptographicHash::Algorithm::NumAlgorithms;
+    }
 }
 
 }  // namespace Resources

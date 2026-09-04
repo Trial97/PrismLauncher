@@ -31,7 +31,7 @@
 #include "minecraft/PackProfile.h"
 #include "minecraft/mod/ModFolderModel.h"
 #include "modplatform/ModIndex.h"
-#include "modplatform/helpers/HashUtils.h"
+#include "resourcesmeta/HashAlgorithm.h"
 #include "tasks/Task.h"
 
 const QStringList ModrinthPackExportTask::PREFIXES({ "mods/", "coremods/", "resourcepacks/", "texturepacks/", "shaderpacks/" });
@@ -116,7 +116,7 @@ void ModrinthPackExportTask::collectHashes()
             qWarning() << "Could not read" << file << "error:" << openFile.errorString();
             continue;
         }
-        auto sha512 = Hashing::hash(data, Hashing::Algorithm::Sha512);
+        auto sha512 = Resources::HashAlgorithm::hash(data, Resources::HashAlgorithm::Sha512);
 
         auto allMods = instance->loaderModList()->allMods();
         if (auto modIter = std::find_if(allMods.begin(), allMods.end(), [&file](Mod* mod) { return mod->fileinfo() == file; });
@@ -128,9 +128,11 @@ void ModrinthPackExportTask::collectHashes()
                 if (!url.isEmpty() && BuildConfig.MODRINTH_MRPACK_HOSTS.contains(url.host())) {
                     qDebug() << "Resolving" << relative << "from index";
 
-                    auto sha1 = Hashing::hash(data, Hashing::Algorithm::Sha1);
+                    auto sha1 = Resources::HashAlgorithm::hash(data, Resources::HashAlgorithm::Sha1);
 
-                    ResolvedFile resolvedFile{ sha1, sha512, url.toEncoded(), openFile.size(), mod->metadata()->side };
+                    ResolvedFile resolvedFile{
+                        .sha1 = sha1, .sha512 = sha512, .url = url.toEncoded(), .size = openFile.size(), .side = mod->metadata()->side
+                    };
                     resolvedFiles[relative] = resolvedFile;
 
                     // nice! we've managed to resolve based on local metadata!
