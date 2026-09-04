@@ -35,6 +35,7 @@ QJsonObject Entry::toJson() const
     obj.insert(QStringLiteral("info"), info.toJson());
     obj.insert(QStringLiteral("hashes"), hashes.toJson());
     obj.insert(QStringLiteral("providers"), providers.toJson());
+    obj.insert(QStringLiteral("updatedAt"), Json::toJson<QDateTime>(updatedAt));
     return obj;
 }
 
@@ -50,6 +51,7 @@ void Entry::fromJson(const QJsonObject& obj)
     info.fromJson(obj.value(QStringLiteral("info")).toObject());
     hashes.fromJson(obj.value(QStringLiteral("hashes")).toObject());
     providers.fromJson(obj.value(QStringLiteral("providers")).toObject());
+    updatedAt = QDateTime::fromString(obj.value(QStringLiteral("updatedAt")).toString(), Qt::ISODate);
 }
 
 }  // namespace Resources

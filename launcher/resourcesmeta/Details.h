@@ -31,7 +31,7 @@ namespace Resources {
 // Matches the "info" object of the resource index schema.
 struct Details {
     QImage image;
-    QString imagePath;  // NOTE: schema key "imagPath"
+    QString imagePath;
     QString description;
     QString newFormatId;
     QString details;

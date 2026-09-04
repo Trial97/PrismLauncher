@@ -18,15 +18,16 @@
 
 #pragma once
 
+#include <QDateTime>
 #include <QJsonObject>
 #include <QString>
 #include <QStringList>
 
-#include "Hashes.h"
-#include "Sources.h"
 #include "Details.h"
-#include "Type.h"
+#include "Hashes.h"
 #include "Side.h"
+#include "Sources.h"
+#include "Type.h"
 
 namespace Resources {
 
@@ -40,6 +41,7 @@ struct Entry {
     Details info;
     Hashes hashes;
     Sources providers;
+    QDateTime updatedAt;
 
     QJsonObject toJson() const;
     void fromJson(const QJsonObject& obj);

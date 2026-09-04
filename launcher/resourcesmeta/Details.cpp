@@ -27,16 +27,18 @@ namespace Resources {
 QJsonObject Details::toJson() const
 {
     QJsonObject obj;
-    if (imagePath.isEmpty() && !image.isNull()) {
-        QByteArray data;
-        QBuffer buffer(&data);
-        if (buffer.open(QIODevice::WriteOnly) && image.save(&buffer, "PNG")) {
-            obj.insert(QStringLiteral("image"), QString::fromLatin1(data.toBase64()));
+    if (imagePath.isEmpty()) {
+        QString encoded;
+        if (!image.isNull()) {
+            QByteArray data;
+            QBuffer buffer(&data);
+            if (buffer.open(QIODevice::WriteOnly) && image.save(&buffer, "PNG")) {
+                encoded = QString::fromLatin1(data.toBase64());
+            }
         }
-    } else {
-        obj.insert(QStringLiteral("image"), QString());
+        obj.insert(QStringLiteral("image"), encoded);
     }
-    obj.insert(QStringLiteral("imagPath"), imagePath);
+    obj.insert(QStringLiteral("imagePath"), imagePath);
     obj.insert(QStringLiteral("description"), description);
     obj.insert(QStringLiteral("new_format_id"), newFormatId);
     obj.insert(QStringLiteral("details"), details);
@@ -58,7 +60,7 @@ QJsonObject Details::toJson() const
 
 void Details::fromJson(const QJsonObject& obj)
 {
-    imagePath = obj.value(QStringLiteral("imagPath")).toString();
+    imagePath = obj.value(QStringLiteral("imagePath")).toString();
     if (imagePath.isEmpty()) {
         const auto imageData = QByteArray::fromBase64(obj.value(QStringLiteral("image")).toString().toLatin1());
         if (!imageData.isEmpty()) {
