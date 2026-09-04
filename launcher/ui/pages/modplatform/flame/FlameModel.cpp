@@ -171,7 +171,7 @@ void ListModel::performPaginatedSearch()
         if (!projectId.isEmpty()) {
             ResourceAPI::Callback<ModPlatform::IndexedPack::Ptr> callbacks;
 
-            callbacks.onFail = [this](QString reason, int networkErrorCode) {
+            callbacks.onFail = [this](const QString& reason, int networkErrorCode) {
                 if (networkErrorCode == 404) {
                     m_searchState = ResetRequested;
                 }
@@ -184,7 +184,7 @@ void ListModel::performPaginatedSearch()
             };
             auto project = std::make_shared<ModPlatform::IndexedPack>();
             project->addonId = projectId;
-            if (auto job = FlameAPI::get().getProjectInfo({ project }, std::move(callbacks), false); job) {
+            if (auto job = FlameAPI::get().getProjectInfo({ project }, callbacks, false); job) {
                 m_jobPtr = job;
                 m_jobPtr->start();
             }
@@ -197,16 +197,25 @@ void ListModel::performPaginatedSearch()
     ResourceAPI::Callback<QList<ModPlatform::IndexedPack::Ptr>> callbacks{};
 
     callbacks.onSucceed = [this](auto& doc) { searchRequestFinished(doc); };
-    callbacks.onFail = [this](QString reason, int) { searchRequestFailed(reason); };
+    callbacks.onFail = [this](const QString& reason, int) { searchRequestFailed(reason); };
     callbacks.onAbort = [this] {
         qCritical() << "Search task aborted by an unknown reason!";
         searchRequestFailed("Aborted");
     };
 
     auto netJob = FlameAPI::get().searchProjects(
-        { ModPlatform::ResourceType::Modpack, m_nextSearchOffset, m_currentSearchTerm, sort, m_filter->loaders, m_filter->versions,
-          ModPlatform::SideType::NoSide, m_filter->categoryIds, m_filter->openSource },
-        std::move(callbacks));
+        {
+            .type = ModPlatform::ResourceType::Modpack,
+            .offset = m_nextSearchOffset,
+            .search = m_currentSearchTerm,
+            .sorting = sort,
+            .loaders = m_filter->loaders,
+            .versions = m_filter->versions,
+            .side = Resources::Side::Unknown,
+            .categoryIds = m_filter->categoryIds,
+            .openSource = m_filter->openSource,
+        },
+        callbacks);
 
     m_jobPtr = netJob;
     m_jobPtr->start();

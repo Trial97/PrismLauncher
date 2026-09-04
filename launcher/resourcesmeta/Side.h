@@ -29,9 +29,9 @@ namespace Resources {
 
 enum class SideValue : std::uint8_t {
     Unknown = 0,
-    ClientSide = 1U << 0U,
-    ServerSide = 1U << 1U,
-    UniversalSide = ClientSide | ServerSide,
+    Client = 1U << 0U,
+    Server = 1U << 1U,
+    Universal = Client | Server,
 };
 
 struct Side : EnumWrapper<Side, SideValue> {
@@ -40,9 +40,9 @@ struct Side : EnumWrapper<Side, SideValue> {
     static constexpr auto mapping()
     {
         return std::array{
-            std::pair{ ClientSide, "client" },
-            std::pair{ ServerSide, "server" },
-            std::pair{ UniversalSide, "both" },
+            std::pair{ Client, "client" },
+            std::pair{ Server, "server" },
+            std::pair{ Universal, "both" },
         };
     };
 

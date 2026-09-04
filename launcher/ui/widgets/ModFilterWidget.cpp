@@ -225,7 +225,7 @@ void ModFilterWidget::prepareBasicFilter()
     m_filter->openSource = false;
     if (m_instance) {
         m_filter->hideInstalled = false;
-        m_filter->side = ModPlatform::SideType::NoSide;  // or "both"
+        m_filter->side = Resources::Side::Unknown;  // or "both"
         Resources::ModLoaders loaders;
         if (m_instance->settings()->get("OverrideModDownloadLoaders").toBool()) {
             loaders = Resources::ModLoaders::fromList(Json::toStringList(m_instance->settings()->get("ModDownloadLoaders").toString()));
@@ -318,16 +318,16 @@ void ModFilterWidget::onLoadersFilterChanged()
 
 void ModFilterWidget::onSideFilterChanged()
 {
-    ModPlatform::SideType side;
+    Resources::Side side;
 
     if (ui->clientSide->isChecked() && !ui->serverSide->isChecked()) {
-        side = ModPlatform::SideType::ClientSide;
+        side = Resources::Side::Client;
     } else if (!ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = ModPlatform::SideType::ServerSide;
+        side = Resources::Side::Server;
     } else if (ui->clientSide->isChecked() && ui->serverSide->isChecked()) {
-        side = ModPlatform::SideType::UniversalSide;
+        side = Resources::Side::Universal;
     } else {
-        side = ModPlatform::SideType::NoSide;
+        side = Resources::Side::Unknown;
     }
 
     m_filter_changed = side != m_filter->side;

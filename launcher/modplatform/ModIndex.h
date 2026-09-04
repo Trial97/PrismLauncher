@@ -32,33 +32,13 @@
 #include "resourcesmeta/Dependency.h"
 #include "resourcesmeta/ModLoader.h"
 #include "resourcesmeta/ReleaseType.h"
+#include "resourcesmeta/Side.h"
 
 class QIODevice;
 
 namespace ModPlatform {
 
 enum class ResourceProvider : std::uint8_t { MODRINTH, FLAME };
-
-enum class SideTypeValue : std::uint8_t {
-    NoSide = 0,
-    ClientSide = 1U << 0U,
-    ServerSide = 1U << 1U,
-    UniversalSide = ClientSide | ServerSide
-};
-
-struct SideType : EnumWrapper<SideType, SideTypeValue> {
-    static constexpr auto invalid() { return NoSide; };
-
-    static constexpr auto mapping()
-    {
-        return std::array{ std::pair{ ClientSide, "client" }, std::pair{ ServerSide, "server" }, std::pair{ UniversalSide, "both" },
-                           std::pair{ NoSide, "" } };
-    };
-
-    using enum SideTypeValue;
-    using Base = EnumWrapper<SideType, SideTypeValue>;
-    using Base::Base; /* inherit ctor */
-};
 
 namespace ProviderCapabilities {
 const char* name(ResourceProvider);
@@ -93,7 +73,7 @@ struct IndexedVersion {
     bool isPreferred = true;
     QString changelog;
     QList<Resources::Dependency> dependencies;
-    SideType side = SideType::NoSide;  // this is for flame API
+    Resources::Side side = Resources::Side::Unknown;  // this is for flame API
 
     // For internal use, not provided by APIs
     bool isCurrentlySelected = false;
@@ -141,7 +121,7 @@ struct IndexedPack {
     QString logoName;
     QString logoUrl;
     QString websiteUrl;
-    SideType side = SideType::NoSide;
+    Resources::Side side = Resources::Side::Unknown;
 
     bool versionsLoaded = false;
     QList<IndexedVersion> versions;

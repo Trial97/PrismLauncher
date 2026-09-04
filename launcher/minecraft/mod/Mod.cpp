@@ -43,13 +43,12 @@
 #include <algorithm>
 
 #include "MTPixmapCache.h"
-#include "MetadataHandler.h"
 #include "Resource.h"
 #include "Version.h"
 #include "minecraft/mod/ModDetails.h"
 #include "minecraft/mod/tasks/LocalModParseTask.h"
-#include "modplatform/ModIndex.h"
 #include "resourcesmeta/ModLoader.h"
+#include "resourcesmeta/Side.h"
 
 namespace {
 
@@ -218,10 +217,11 @@ auto Mod::loaders() const -> QString
 
 auto Mod::side() const -> QString
 {
-    if (metadata())
+    if (metadata()) {
         return metadata()->side.toString();
+    }
 
-    return ModPlatform::SideType(ModPlatform::SideType::UniversalSide).toString();
+    return Resources::Side(Resources::Side::Universal).toString();
 }
 
 auto Mod::mcVersions() const -> QStringList

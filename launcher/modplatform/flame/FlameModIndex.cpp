@@ -160,7 +160,7 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
             file.mcVersion.append(str);
         }
 
-        file.side = ModPlatform::SideType::NoSide;
+        file.side = Resources::Side::Unknown;
         if (auto loader = str.toLower(); loader == "neoforge") {
             file.loaders |= Resources::ModLoader::NeoForge;
         } else if (loader == "forge") {
@@ -175,9 +175,9 @@ auto FlameMod::loadIndexedPackVersion(QJsonObject& obj, bool loadChangelog) -> M
             file.loaders |= Resources::ModLoader::Quilt;
         } else if (loader == "server" || loader == "client") {
             if (!file.side.isValid()) {
-                file.side = ModPlatform::SideType::fromString(loader);
-            } else if (file.side != ModPlatform::SideType::fromString(loader)) {
-                file.side = ModPlatform::SideType::UniversalSide;
+                file.side = Resources::Side::fromString(loader);
+            } else if (file.side != Resources::Side::fromString(loader)) {
+                file.side = Resources::Side::Universal;
             }
         }
     }

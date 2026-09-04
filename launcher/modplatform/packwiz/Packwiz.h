@@ -37,7 +37,7 @@ class V1 {
         QString slug{};
         QString name{};
         QString filename{};
-        ModPlatform::SideType side{ ModPlatform::SideType::UniversalSide };
+        Resources::Side side{ Resources::Side::Universal };
         Resources::ModLoaders loaders;
         QStringList mcVersions;
         Resources::ReleaseType releaseType;

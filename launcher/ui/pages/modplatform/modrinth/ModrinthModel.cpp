@@ -38,7 +38,6 @@
 
 #include "Application.h"
 #include "BuildConfig.h"
-#include "Json.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/modrinth/ModrinthAPI.h"
 #include "net/NetJob.h"
@@ -172,9 +171,19 @@ void ModpackListModel::performPaginatedSearch()
         searchRequestFailed("Aborted", 0);
     };
 
-    auto netJob = ModrinthAPI::get().searchProjects({ .type=ModPlatform::ResourceType::Modpack, .offset=m_nextSearchOffset, .search=m_currentSearchTerm, .sorting=sort, .loaders=m_filter->loaders,
-                                       .versions=m_filter->versions, .side=ModPlatform::SideType::NoSide, .categoryIds=m_filter->categoryIds, .openSource=m_filter->openSource },
-                                     std::move(callbacks));
+    auto netJob = ModrinthAPI::get().searchProjects(
+        {
+            .type = ModPlatform::ResourceType::Modpack,
+            .offset = m_nextSearchOffset,
+            .search = m_currentSearchTerm,
+            .sorting = sort,
+            .loaders = m_filter->loaders,
+            .versions = m_filter->versions,
+            .side = Resources::Side::Unknown,
+            .categoryIds = m_filter->categoryIds,
+            .openSource = m_filter->openSource,
+        },
+        std::move(callbacks));
 
     m_jobPtr = netJob;
     m_jobPtr->start();

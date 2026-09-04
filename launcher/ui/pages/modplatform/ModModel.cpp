@@ -125,10 +125,10 @@ QVariant ModModel::getInstalledPackVersion(ModPlatform::IndexedPack::Ptr pack) c
 
 namespace {
 
-bool checkSide(ModPlatform::SideType filter, ModPlatform::SideType value)
+bool checkSide(Resources::Side filter, Resources::Side value)
 {
-    return (filter != ModPlatform::SideType::ClientSide && filter != ModPlatform::SideType::ServerSide) ||
-           (value != ModPlatform::SideType::ClientSide && value != ModPlatform::SideType::ServerSide) || filter == value;
+    return (filter != Resources::Side::Client && filter != Resources::Side::ServerSide) ||
+           (value != Resources::Side::Client && value != Resources::Side::ServerSide) || filter == value;
 }
 }  // namespace
 
