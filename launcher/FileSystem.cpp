@@ -443,7 +443,7 @@ bool copy::operator()(const QString& offset, bool dryRun)
     // match, we copy the file.
     QDir srcDir(src);
     auto filters = QDirListing::IteratorFlag::ResolveSymlinks | QDirListing::IteratorFlag::IncludeHidden |
-                   QDirListing::IteratorFlag::Recursive | QDirListing::IteratorFlag::FollowDirSymlinks;
+                   QDirListing::IteratorFlag::Recursive;
 
     if (!m_copyDirectories) {
         filters |= QDirListing::IteratorFlag::FilesOnly;
