@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "Application.h"
+#include "BuildConfig.h"
 #include "Json.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceType.h"

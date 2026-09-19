@@ -219,7 +219,7 @@ void FlameCheckUpdate::collectBlockedMods()
         auto [task, response] = FlameAPI::get().getProjectsTask(addonIds);
         projTask = task;
         connect(projTask.get(), &Task::succeeded, this, [this, response, addonIds, quickSearch] {
-            for (auto pack : *response) {
+            for (const auto& pack : *response) {
                 auto* resource = quickSearch.find(pack.addonId.toString()).value();
 
                 setStatus(tr("Parsing API response from CurseForge for '%1'...").arg(resource->name()));
