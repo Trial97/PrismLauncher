@@ -4,9 +4,7 @@
 
 #pragma once
 
-#include <QJsonArray>
-#include <QJsonDocument>
-#include <QJsonObject>
+#include <QHash>
 #include <QList>
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceAPI.h"

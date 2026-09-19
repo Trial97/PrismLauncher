@@ -18,11 +18,11 @@
 
 #include "FlamePackIndex.h"
 
+#include "FileSystem.h"
 #include "Json.h"
 #include "Result.h"
 #include "modplatform/ModIndex.h"
 #include "modplatform/ResourceType.h"
-#include "modplatform/flame/FlameAPI.h"
 
 namespace {
 const auto g_classIDMappings = std::array{
