@@ -8,10 +8,12 @@
 
 #include "Application.h"
 #include "Json.h"
+#include "modplatform/ModIndex.h"
 #include "modplatform/ResourceType.h"
 #include "modplatform/modrinth/ModrinthPackIndex.h"
 #include "net/ApiRequest.h"
 #include "net/NetJob.h"
+#include "net/Request.h"
 
 namespace {
 
@@ -132,17 +134,6 @@ QString createFacets(const ResourceAPI::SearchArgs& args)
 }
 }  // namespace
 
-std::pair<Task::Ptr, QByteArray*> ModrinthAPI::currentVersion(const QString& hash, const QString& hashFormat)
-{
-    auto netJob = makeShared<NetJob>(QString("Modrinth::GetCurrentVersion"), APPLICATION->network());
-
-    auto [action, response] =
-        Net::ApiRequest::makeByteArray(QString(BuildConfig.MODRINTH_PROD_URL + "/version_file/%1?algorithm=%2").arg(hash, hashFormat));
-    netJob->addNetAction(action);
-
-    return { netJob, response };
-}
-
 std::pair<Task::Ptr, QByteArray*> ModrinthAPI::currentVersions(const QStringList& hashes, const QString& hashFormat)
 {
     auto netJob = makeShared<NetJob>(QString("Modrinth::GetCurrentVersions"), APPLICATION->network());
@@ -158,69 +149,6 @@ std::pair<Task::Ptr, QByteArray*> ModrinthAPI::currentVersions(const QStringList
     auto [action, response] = Net::ApiRequest::makeByteArray(QString(BuildConfig.MODRINTH_PROD_URL + "/version_files"), bodyRaw);
     netJob->addNetAction(action);
     netJob->setAskRetry(false);
-    return { netJob, response };
-}
-
-std::pair<Task::Ptr, QByteArray*> ModrinthAPI::latestVersion(const QString& hash,
-                                                             const QString& hashFormat,
-                                                             std::optional<std::vector<Version>> mcVersions,
-                                                             std::optional<ModPlatform::ModLoaderTypes> loaders) const
-{
-    auto netJob = makeShared<NetJob>(QString("Modrinth::GetLatestVersion"), APPLICATION->network());
-
-    QJsonObject bodyObj;
-
-    if (loaders.has_value()) {
-        Json::writeStringList(bodyObj, "loaders", getModLoaderStrings(loaders.value()));
-    }
-
-    if (mcVersions.has_value()) {
-        QStringList gameVersions;
-        for (auto& ver : mcVersions.value()) {
-            gameVersions.append(mapMCVersionToModrinth(ver));
-        }
-        Json::writeStringList(bodyObj, "game_versions", gameVersions);
-    }
-
-    QJsonDocument body(bodyObj);
-    auto bodyRaw = body.toJson();
-
-    auto [action, response] = Net::ApiRequest::makeByteArray(
-        QString(BuildConfig.MODRINTH_PROD_URL + "/version_file/%1/update?algorithm=%2").arg(hash, hashFormat), bodyRaw);
-    netJob->addNetAction(action);
-
-    return { netJob, response };
-}
-
-std::pair<Task::Ptr, QByteArray*> ModrinthAPI::latestVersions(const QStringList& hashes,
-                                                              const QString& hashFormat,
-                                                              std::optional<std::vector<Version>> mcVersions,
-                                                              std::optional<ModPlatform::ModLoaderTypes> loaders) const
-{
-    auto netJob = makeShared<NetJob>(QString("Modrinth::GetLatestVersions"), APPLICATION->network());
-
-    QJsonObject bodyObj;
-
-    Json::writeStringList(bodyObj, "hashes", hashes);
-    Json::writeString(bodyObj, "algorithm", hashFormat);
-
-    if (loaders.has_value()) {
-        Json::writeStringList(bodyObj, "loaders", getModLoaderStrings(loaders.value()));
-    }
-
-    if (mcVersions.has_value()) {
-        QStringList gameVersions;
-        for (auto& ver : mcVersions.value()) {
-            gameVersions.append(mapMCVersionToModrinth(ver));
-        }
-        Json::writeStringList(bodyObj, "game_versions", gameVersions);
-    }
-
-    QJsonDocument body(bodyObj);
-    auto bodyRaw = body.toJson();
-    auto [action, response] = Net::ApiRequest::makeByteArray(QString(BuildConfig.MODRINTH_PROD_URL + "/version_files/update"), bodyRaw);
-    netJob->addNetAction(action);
-
     return { netJob, response };
 }
 
@@ -366,6 +294,78 @@ Net::RPC::Spec<QList<ModPlatform::IndexedVersion>> ModrinthAPI::getVersions(cons
 
                 return Modrinth::Parse::loadIndexedPackVersions(doc);
             } };
+}
+Net::RPC::Spec<QHash<QString, ModPlatform::IndexedVersion>> ModrinthAPI::latestVersions(const QStringList& hashes,
+                                                                                        const QString& hashFormat,
+                                                                                        std::optional<std::vector<Version>> mcVersions,
+                                                                                        std::optional<ModPlatform::ModLoaderTypes> loaders)
+{
+    QString loaderFilter;
+    if (loaders.has_value() && loaders != 0) {
+        auto modLoaders = ModPlatform::modLoaderTypesToList(*loaders);
+        if (!modLoaders.isEmpty()) {
+            loaderFilter = ModPlatform::getModLoaderAsString(modLoaders.first());
+        }
+    }
+
+    QJsonObject bodyObj;
+
+    Json::writeStringList(bodyObj, "hashes", hashes);
+    Json::writeString(bodyObj, "algorithm", hashFormat);
+
+    if (loaders.has_value()) {
+        Json::writeStringList(bodyObj, "loaders", getModLoaderStrings(loaders.value()));
+    }
+
+    if (mcVersions.has_value()) {
+        QStringList gameVersions;
+        for (auto& ver : mcVersions.value()) {
+            gameVersions.append(mapMCVersionToModrinth(ver));
+        }
+        Json::writeStringList(bodyObj, "game_versions", gameVersions);
+    }
+
+    ;
+    auto body = QJsonDocument(bodyObj).toJson();
+    return { { .method = Net::HttpMethod::Post, .url = BuildConfig.MODRINTH_PROD_URL + "/version_files/update", .data = body },
+             [loaderFilter, hashFormat](const auto& response) -> Result<QHash<QString, ModPlatform::IndexedVersion>> {
+                 TRY_INTO(auto doc, Json::requireObject(response, "ModrinthCheckUpdate"))
+
+                 QHash<QString, ModPlatform::IndexedVersion> matches;
+                 for (auto hash : doc.keys()) {
+                     TRY_INTO(auto version, Json::requireObject(doc, hash))
+
+                     // Currently, we rely on a couple heuristics to determine whether an update is actually available or not:
+                     // - The file needs to be preferred: It is either the primary file, or the one found via (explicit) usage of the
+                     // loader_filter
+                     // - The version reported by the JAR is different from the version reported by the indexed version (it's usually the
+                     // case) Such is the pain of having arbitrary files for a given version .-.
+                     TRY_INTO(auto projectVer, Modrinth::Parse::loadIndexedPackVersion(version, hashFormat, loaderFilter))
+                     if (projectVer.downloadUrl.isEmpty()) {
+                         qCritical() << "Modrinth mod without download url!" << projectVer.fileName;
+                         continue;
+                     }
+                     matches[hash] = projectVer;
+                 }
+
+                 return matches;
+             } };
+}
+
+std::pair<NetJob::Ptr, QHash<QString, ModPlatform::IndexedVersion>*> ModrinthAPI::latestVersionsTask(
+    const QStringList& hashes,
+    const QString& hashFormat,
+    std::optional<std::vector<Version>> mcVersions,
+    std::optional<ModPlatform::ModLoaderTypes> loaders)
+{
+    auto spec = latestVersions(hashes, hashFormat, mcVersions, loaders);
+
+    auto netJob = makeShared<NetJob>("Modrinth::latestVersionsTask", APPLICATION->network());
+
+    auto [action, response] = Net::RPC::make<QHash<QString, ModPlatform::IndexedVersion>>(spec);
+    netJob->addNetAction(action);
+
+    return { netJob, response };
 }
 
 QUrl ModrinthAPI::getVersionsURL(const VersionSearchArgs& args)
