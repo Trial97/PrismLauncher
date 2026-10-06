@@ -31,16 +31,16 @@ struct HeaderPair {
 
 class HeaderProxy {
    public:
-    HeaderProxy() {}
-    virtual ~HeaderProxy() {}
+    HeaderProxy() = default;
+    virtual ~HeaderProxy() = default;
 
    public:
     virtual QList<HeaderPair> headers(const QNetworkRequest& request) const = 0;
 
    public:
-    void writeHeaders(QNetworkRequest& request)
+    void writeHeaders(QNetworkRequest& request) const
     {
-        for (auto header : headers(request)) {
+        for (const auto& header : headers(request)) {
             request.setRawHeader(header.headerName, header.headerValue);
         }
     }
